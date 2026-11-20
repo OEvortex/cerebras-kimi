@@ -4,7 +4,6 @@ import { PageContainer, PageHeader } from '@/components/layout/FeaturePage'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ChevronUp, Database, Loader2, Pencil, Sparkles } from 'lucide-react'
 
-import { useAppShell } from '@/context/AppShellContext'
 import type { Book, BookDepth, BookProposal } from '@/lib/book-types'
 import type { TopicSourceInput } from '@/lib/learning-api'
 import {
@@ -15,33 +14,6 @@ import {
 } from '@/hooks/useTopicSourceLibrary'
 import { SourcesStep } from '@/components/space/learning/TopicWizardSteps'
 import Tooltip from '@/shared/ui/Tooltip'
-
-/**
- * Languages a book can be written in, plus the request-driven default.
- *
- * Mirrors `_LANGUAGE_LABELS` in `deeptutor/services/prompt/language.py`, which
- * has always handled all of these — the picker offered only English and
- * Chinese, so everyone else got a book in a language they didn't ask for
- * (issue #471). Labels are English names so the UI stays English-only.
- * Every picker offers the same English labels.
- */
-const BOOK_LANGUAGES: Array<{ code: string; label: string }> = [
-  { code: 'auto', label: 'Auto' },
-  { code: 'en', label: 'English' },
-  { code: 'zh', label: 'Chinese (Simplified)' },
-  { code: 'zh-tw', label: 'Chinese (Traditional)' },
-  { code: 'ja', label: 'Japanese' },
-  { code: 'ko', label: 'Korean' },
-  { code: 'es', label: 'Spanish' },
-  { code: 'fr', label: 'French' },
-  { code: 'de', label: 'German' },
-  { code: 'uk', label: 'Ukrainian' },
-  { code: 'ru', label: 'Russian' },
-  { code: 'pt', label: 'Portuguese' },
-  { code: 'it', label: 'Italian' },
-  { code: 'tr', label: 'Turkish' },
-  { code: 'vi', label: 'Vietnamese' },
-]
 
 const DEPTH_OPTIONS: Array<{ value: BookDepth; label: string; hint: string }> = [
   {
@@ -96,9 +68,7 @@ export default function BookCreator({
   
   const zh = "en"?.toLowerCase().startsWith('zh') ?? false
   const sourceTr = useMemo(() => catalogTranslate(zh), [zh])
-  const { language: appLanguage } = useAppShell()
   const [intent, setIntent] = useState('')
-  const [language, setLanguage] = useState<string>('auto')
   const [depth, setDepth] = useState<BookDepth>('standard')
   const {
     library,
@@ -151,8 +121,8 @@ export default function BookCreator({
         notebook_refs: [],
         question_categories: [],
         question_entries: [],
-        language,
-        fallback_language: appLanguage,
+        language: 'en',
+        fallback_language: 'en',
       })
     } catch (err) {
       setSourceError(err instanceof Error ? err.message : String(err))
@@ -253,23 +223,6 @@ export default function BookCreator({
 
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap items-center gap-4">
-                <label className="text-xs text-[var(--muted-foreground)]">
-                  {"Language"}{' '}
-                  <select
-                    value={language}
-                    onChange={e => {
-                      setLanguage(e.target.value)
-                    }}
-                    className="dt-soft-input ml-1 rounded-md bg-[var(--background)] px-1.5 py-0.5 text-xs text-[var(--foreground)] outline-none"
-                  >
-                    {BOOK_LANGUAGES.map(option => (
-                      <option key={option.code} value={option.code}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
                 <div className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)]">
                   {"Depth"}
                   <div className="inline-flex rounded-[8px] bg-[rgb(var(--dt-ink,55_53_47)/0.06)] p-[3px] text-[11px]">

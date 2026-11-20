@@ -21,7 +21,6 @@ import {
   useState,
 } from "react";
 import { useChatRouteSession } from "@/features/chat/controllers/useChatRouteSession";
-import { waitForReplyLanguageSave } from "@/features/chat/controllers/reply-language-save";
 
 import {
   AlertCircle,
@@ -76,8 +75,6 @@ import {
   type MessageRequestSnapshot,
 } from "@/features/chat/ChatStateAdapter";
 import { useAppShell } from "@/context/AppShellContext";
-import { readStoredResponseLanguage } from "@/context/app-shell-storage";
-import { RESPONSE_LANGUAGE_OPTIONS } from "@/features/settings/store/response-language-options";
 
 import type { FilePreviewSource } from "@/components/chat/preview/previewerFor";
 import type { LLMSelection, StreamEvent } from "@/features/chat/model/protocol";
@@ -240,7 +237,7 @@ export default function ChatWorkspace() {
     isLoading: isCapabilityCatalogLoading,
     error: capabilityCatalogError,
   } = useCapabilityCatalog();
-  const { setActiveSessionId, language: appLanguage } = useAppShell();
+  const { setActiveSessionId } = useAppShell();
 
   const {
     state,
@@ -253,7 +250,6 @@ export default function ChatWorkspace() {
     setAnswerBy,
     setResourceSelection,
     setCreateTarget,
-    setReplyLanguageOverride,
     sendMessage,
     queueMessage,
     withdrawQueuedMessage,
@@ -276,25 +272,6 @@ export default function ChatWorkspace() {
   } = useChatStateAdapter();
 
   const entrySessionId = useRef(state.sessionId);
-  const [replyLanguageSavingKey, setReplyLanguageSavingKey] = useState<string | null>(null);
-  const replyLanguageSaveRef = useRef<{ key: string; pending: Promise<void> } | null>(null);
-  const handleReplyLanguageChange = useCallback((value: string) => {
-    const language = value || null;
-    const key = state.sessionKey;
-    const pending = setReplyLanguageOverride(language);
-    replyLanguageSaveRef.current = { key, pending };
-    setReplyLanguageSavingKey(key);
-    void pending
-      .catch((error: unknown) => {
-        notify(error instanceof Error ? error.message : "Action failed");
-      })
-      .finally(() => {
-        if (replyLanguageSaveRef.current?.pending === pending) {
-          replyLanguageSaveRef.current = null;
-          setReplyLanguageSavingKey(null);
-        }
-      });
-  }, [setReplyLanguageOverride, state.sessionKey]);
 
   const resourceReuse = useResourceReusePolicy(state.sessionKey || "draft", state.messages[0]?.id);
   const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[]>([]);
@@ -1859,15 +1836,6 @@ export default function ChatWorkspace() {
 
   const handleSend = useCallback(
     async (content: string) => {
-      // An existing session saves its selector before the next turn starts.
-      // The composer may be used immediately after changing the dropdown.
-      if (!(await waitForReplyLanguageSave(
-        replyLanguageSaveRef.current?.key === state.sessionKey
-          ? replyLanguageSaveRef.current.pending
-          : null,
-        content,
-        (draft) => prefillInputRef.current?.(draft),
-      ))) return;
       if (!state.sessionId && !state.knowledgeBasesInitialized) {
         prefillInputRef.current?.(content);
         if (knowledgeBasesFailed) void refreshKnowledgeBases();
@@ -2622,13 +2590,6 @@ export default function ChatWorkspace() {
                 onPersonaSelectionChange={setPersonaSelection}
                 personaSelectorOpen={personaSelectorOpen}
                 onPersonaSelectorOpenChange={setPersonaSelectorOpen}
-                replyLanguageOverride={state.replyLanguageOverride}
-                replyLanguageOptions={RESPONSE_LANGUAGE_OPTIONS}
-                replyLanguageDefaultLabel={RESPONSE_LANGUAGE_OPTIONS.find(
-                  (option) => option.value === readStoredResponseLanguage(),
-                )?.label ?? "English"}
-                replyLanguageDisabled={replyLanguageSavingKey === state.sessionKey || state.isStreaming}
-                onReplyLanguageChange={handleReplyLanguageChange}
                 resourceCatalog={resourceCatalog}
                 resourceSelection={state.resourceSelection}
                 onResourceSelectionChange={setResourceSelection}

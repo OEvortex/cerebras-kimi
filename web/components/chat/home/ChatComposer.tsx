@@ -111,11 +111,6 @@ export default memo(function ChatComposer({
   onPersonaSelectionChange,
   personaSelectorOpen,
   onPersonaSelectorOpenChange,
-  replyLanguageOverride,
-  replyLanguageOptions,
-  replyLanguageDefaultLabel,
-  replyLanguageDisabled,
-  onReplyLanguageChange,
   resourceCatalog,
   resourceSelection,
   onResourceSelectionChange,
@@ -544,12 +539,6 @@ export default memo(function ChatComposer({
             onSelectPersonaPicker={() => {}}
             onSelectMemoryPicker={onSelectMemoryPicker}
             onOpenPersonaSelector={undefined}
-            replyLanguageOverride={replyLanguageOverride}
-            replyLanguageOptions={replyLanguageOptions}
-            replyLanguageDefaultLabel={replyLanguageDefaultLabel}
-            replyLanguageDisabled={replyLanguageDisabled}
-            onReplyLanguageChange={onReplyLanguageChange}
-            languagePickerBelow={!hasMessages && !docked}
             placeholder={
               inputPlaceholder ??
               (createKindDef ? (createKindDef.placeholderKey) : undefined)

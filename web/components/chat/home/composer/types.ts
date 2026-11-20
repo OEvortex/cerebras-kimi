@@ -180,12 +180,6 @@ export interface ChatComposerProps {
   onPersonaSelectionChange?: (persona: string) => void;
   personaSelectorOpen?: boolean;
   onPersonaSelectorOpenChange?: (open: boolean) => void;
-  /** Main chat's session-level reply language, selected via /language. */
-  replyLanguageOverride?: string | null;
-  replyLanguageOptions?: readonly { value: string; label: string }[];
-  replyLanguageDefaultLabel?: string;
-  replyLanguageDisabled?: boolean;
-  onReplyLanguageChange?: (value: string) => void;
   /**
    * Skill / MCP narrowing for this conversation. Supplied together: the
    * catalog is what may be picked (already clipped to what the workspace

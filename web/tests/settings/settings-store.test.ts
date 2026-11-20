@@ -44,7 +44,6 @@ import {
   CODE_BLOCK_THEME_STORAGE_KEY,
   CODE_BLOCK_WRAP_LONG_LINES_STORAGE_KEY,
   DEFAULT_CODE_BLOCK_THEME,
-  isResponseLanguage,
   readStoredCodeBlockShowLineNumbers,
   readStoredCodeBlockTheme,
   readStoredCodeBlockWrapLongLines,
@@ -252,7 +251,6 @@ test('persistUiSettingsPatch sends a full ui patch verbatim — no field rewriti
   const patch: Partial<UiSettings> = {
     theme: 'glass',
     language: 'en',
-    response_language: 'en',
     code_block_theme: 'oneDark',
     code_block_show_line_numbers: false,
     code_block_wrap_long_lines: true,
@@ -470,7 +468,7 @@ test('RESPONSE_LANGUAGE_OPTIONS covers the supported response languages exactly 
   assert.deepEqual(values, ["en"])
   assert.equal(new Set(values).size, values.length, 'no duplicated codes')
   for (const value of values) {
-    assert.ok(isResponseLanguage(value), `${value} must be a valid ResponseLanguage`)
+    assert.equal(value, "en", `${value} must be the English ResponseLanguage`)
     assert.ok(option_label(options, value).length > 0, 'every option has a label')
   }
 })

@@ -27,7 +27,6 @@ export const PartnerDraftCard = memo(function PartnerDraftCard({
   const [name, setName] = useState(data.name);
   const [description, setDescription] = useState(data.description);
   const [soul, setSoul] = useState(data.soul);
-  const [language, setLanguage] = useState(data.language);
   const [emoji, setEmoji] = useState(data.emoji || "🤝");
   const [color, setColor] = useState(data.color || "#6366f1");
   const [creating, setCreating] = useState(false);

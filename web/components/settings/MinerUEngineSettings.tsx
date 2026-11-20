@@ -23,7 +23,6 @@ type MinerUDownloadType = "pipeline" | "vlm" | "all";
 
 const DEFAULT_BASE_URL = "https://mineru.net";
 const DEFAULT_HF_ENDPOINT = "https://huggingface.co";
-const LANGUAGE_AUTO = "auto";
 const TOKEN_MASK = "••••••••••••";
 const MODEL_VERSIONS: MinerUModelVersion[] = ["pipeline", "vlm"];
 const DOWNLOAD_SOURCES: MinerUDownloadSource[] = ["huggingface", "modelscope"];
@@ -75,7 +74,7 @@ function normalizeDraft(payload: MinerUPayload): MinerUSettings {
       s.model_download_source === "modelscope" ? "modelscope" : "huggingface",
     model_download_endpoint: (s.model_download_endpoint || "").replace(/\/+$/, ""),
     model_version: s.model_version === "vlm" ? "vlm" : "pipeline",
-    language: s.language || "auto",
+    language: "en",
     enable_formula: Boolean(s.enable_formula),
     enable_table: Boolean(s.enable_table),
     is_ocr: Boolean(s.is_ocr),
@@ -610,18 +609,6 @@ export function MinerUEngineSettings() {
                 </option>
               ))}
             </select>
-          }
-        />
-        <SettingRow
-          title={"Language"}
-          description={"Document language hint. Use \"auto\" to let MinerU detect it."}
-          control={
-            <input
-              className={`${inputClass} w-40`}
-              placeholder={LANGUAGE_AUTO}
-              value={draft.language}
-              onChange={(e) => patch({ language: e.target.value })}
-            />
           }
         />
         <SettingRow

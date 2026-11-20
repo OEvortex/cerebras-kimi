@@ -34,25 +34,25 @@ type Operation = {
   recovery_path?: string
 }
 const endpoint = '/api/settings/workspace/data'
-const labels: Record<string, [string, string]> = {
-  chat: ['Conversations', 'Conversations'],
-  book: ['Books', 'Books'],
-  learning: ['Mastery Path', 'Mastery Path'],
-  reading: ['Immersive Reading', 'Immersive Reading'],
-  timed_media: ['Immersive Watching', 'Immersive Watching'],
-  notebook: ['Notebooks', 'Notebooks'],
-  'co-writer': ['Writing', 'Writing'],
-  learning_journal: ['Learning journal', 'Learning journal'],
-  files: ['File library', 'File library'],
-  knowledge_bases: ['Knowledge bases', 'Knowledge bases'],
-  parse_cache: ['Document cache', 'Document cache'],
-  outputs: ['Generated outputs', 'Generated outputs'],
-  presentations: ['Presented files', 'Presented files'],
-  attachments: ['Conversation attachments', 'Conversation attachments'],
-  historical_chat: ['Historical conversation database', 'Historical conversation database'],
-  historical_agent: ['Historical agent outputs', 'Historical agent outputs'],
-  historical_output: ['Historical output folder', 'Historical output folder'],
-  historical_archive: ['Historical archives', 'Historical archives'],
+const labels: Record<string, string> = {
+  chat: 'Conversations',
+  book: 'Books',
+  learning: 'Mastery Path',
+  reading: 'Immersive Reading',
+  timed_media: 'Immersive Watching',
+  notebook: 'Notebooks',
+  'co-writer': 'Writing',
+  learning_journal: 'Learning journal',
+  files: 'File library',
+  knowledge_bases: 'Knowledge bases',
+  parse_cache: 'Document cache',
+  outputs: 'Generated outputs',
+  presentations: 'Presented files',
+  attachments: 'Conversation attachments',
+  historical_chat: 'Historical conversation database',
+  historical_agent: 'Historical agent outputs',
+  historical_output: 'Historical output folder',
+  historical_archive: 'Historical archives',
 }
 
 async function request<T>(path: string, body?: object): Promise<T> {
@@ -72,11 +72,6 @@ async function request<T>(path: string, body?: object): Promise<T> {
 }
 
 export default function DataMigrationSettingsSection() {
-  
-  const zh = "en".startsWith('zh')
-  const text = (en: string, cn: string) => (zh ? cn : (en))
-  const counted = (count: number, en: string, cn: string) =>
-    zh ? `${count} ${cn}` : (en)
   const { workspaces } = useChatWorkspaces()
   const [source, setSource] = useState(activeWorkspaceId)
   const [target, setTarget] = useState('')
@@ -88,14 +83,14 @@ export default function DataMigrationSettingsSection() {
   const [error, setError] = useState('')
   const [historical, setHistorical] = useState(false)
   const [conversationIds, setConversationIds] = useState('')
-  const label = (key: string) => (labels[key] ? text(...labels[key]) : key)
+  const label = (key: string) => labels[key] ?? key
   const statusLabel = (key: string) => ({
-    preparing: text('Preparing', 'Preparing'), copying: text('Copying', 'Copying'),
-    transferring: text('Transferring', 'Transferring'), committed: text('Finishing', 'Finishing'),
-    completed: text('Completed', 'Completed'), exported: text('Exported', 'Exported'),
-    recovered: text('Recovered', 'Recovered'), failed: text('Failed; source retained', 'Failed; source retained'),
-    cleanup_required: text('Cleanup required', 'Cleanup required'),
-    recovery_required: text('Recovery required', 'Recovery required'),
+    preparing: 'Preparing', copying: 'Copying',
+    transferring: 'Transferring', committed: 'Finishing',
+    completed: 'Completed', exported: 'Exported',
+    recovered: 'Recovered', failed: 'Failed; source retained',
+    cleanup_required: 'Cleanup required',
+    recovery_required: 'Recovery required',
   }[key] || key)
   const input = {
     source_workspace_id: source,
@@ -179,7 +174,7 @@ export default function DataMigrationSettingsSection() {
   }
   const options = (
     <>
-      <option value="">{text('Default workspace', 'Default workspace')}</option>
+      <option value="">{'Default workspace'}</option>
       {workspaces
         .filter(row => !row.archived)
         .map(row => (
@@ -191,31 +186,22 @@ export default function DataMigrationSettingsSection() {
   )
   return (
     <section className="space-y-5">
-      <h2 className="text-lg font-semibold">{text('Data migration', 'Data migration')}</h2>
+      <h2 className="text-lg font-semibold">{'Data migration'}</h2>
       <p className="text-sm leading-relaxed text-[var(--muted-foreground)]">
-        {text(
-          'Discover stored learning data, move it with its related conversations, or download an archive. Verified recovery copies are retained after migration.',
-          'Discover stored learning data, move it with its related conversations, or download an archive. Verified recovery copies are retained after migration.'
-        )}
+        {'Discover stored learning data, move it with its related conversations, or download an archive. Verified recovery copies are retained after migration.'}
       </p>
       <p className="text-sm leading-relaxed text-[var(--muted-foreground)]">
-        {text(
-          'Learning data moves as a complete feature bundle. Preview includes related sources and conversations. Choose a destination with no existing data for these features.',
-          'Learning data moves as a complete feature bundle. Preview includes related sources and conversations. Choose a destination with no existing data for these features.'
-        )}
+        {'Learning data moves as a complete feature bundle. Preview includes related sources and conversations. Choose a destination with no existing data for these features.'}
       </p>
       {selected.some(key => key.startsWith('historical_')) ? (
         <p className="text-sm text-[var(--muted-foreground)]">
-          {text(
-            'Historical data is retained as an archive inside the destination workspace. It is not automatically merged into current learning records.',
-            'Historical data is retained as an archive inside the destination workspace. It is not automatically merged into current learning records.'
-          )}
+          {'Historical data is retained as an archive inside the destination workspace. It is not automatically merged into current learning records.'}
         </p>
       ) : null}
       <fieldset disabled={busy} className="space-y-4 disabled:opacity-60">
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="space-y-2 text-sm">
-            <span>{text('Source workspace', 'Source workspace')}</span>
+            <span>{'Source workspace'}</span>
             <select
               value={source}
               onChange={event => setSource(event.target.value)}
@@ -225,7 +211,7 @@ export default function DataMigrationSettingsSection() {
             </select>
           </label>
           <label className="space-y-2 text-sm">
-            <span>{text('Destination workspace', 'Destination workspace')}</span>
+            <span>{'Destination workspace'}</span>
             <select
               value={target}
               onChange={event => setTarget(event.target.value)}
@@ -236,15 +222,15 @@ export default function DataMigrationSettingsSection() {
           </label>
         </div>
         {selected.includes('chat') && <label className="block space-y-2 text-sm">
-          <span>{text('Conversation IDs (optional)', 'Conversation IDs (optional)')}</span>
+          <span>{'Conversation IDs (optional)'}</span>
           <input value={conversationIds} onChange={event => setConversationIds(event.target.value)}
             className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] p-2" />
-          <p className="text-[var(--muted-foreground)]">{text('Leave empty to select all conversations. Separate IDs with commas; preview includes their dependencies. Export still includes the complete feature bundle.', 'Leave empty to select all conversations. Separate IDs with commas; preview includes their dependencies. Export still includes the complete feature bundle.')}</p>
+          <p className="text-[var(--muted-foreground)]">{'Leave empty to select all conversations. Separate IDs with commas; preview includes their dependencies. Export still includes the complete feature bundle.'}</p>
         </label>}
         <div className="divide-y divide-[var(--border)] rounded-xl border border-[var(--border)]">
           {!discovery ? (
             <p className="p-4 text-sm" aria-busy="true">
-              {text('Searching stored data…', 'Searching stored data…')}
+              {'Searching stored data…'}
             </p>
           ) : (
             discovery.features.map(row => (
@@ -266,9 +252,9 @@ export default function DataMigrationSettingsSection() {
                   <span className="block text-sm font-medium">{label(row.feature)}</span>
                   <span className="block text-xs text-[var(--muted-foreground)]">
                     {row.sessions !== undefined
-                      ? `${counted(row.sessions, '{{count}} conversations', '{{count}} conversations')} · `
+                      ? `${row.sessions} conversations · `
                       : ''}
-                    {counted(row.files, '{{count}} files', '{{count}} files')} · {(row.bytes / 1024 / 1024).toFixed(1)}{' '}
+                    {`${row.files} files`} · {(row.bytes / 1024 / 1024).toFixed(1)}{' '}
                     MB
                   </span>
                   <span className="mt-1 block break-all text-[11px] text-[var(--muted-foreground)]">
@@ -282,13 +268,10 @@ export default function DataMigrationSettingsSection() {
         {discovery?.historical.length ? (
           <details className="rounded-lg border border-[var(--border)] p-3 text-sm">
             <summary>
-              {text('Additional historical data', 'Additional historical data')} ({discovery.historical.length})
+              {'Additional historical data'} ({discovery.historical.length})
             </summary>
             <p className="my-2 text-xs text-[var(--muted-foreground)]">
-              {text(
-                'Historical archives can be included in exports for recovery and inspection.',
-                'Historical archives can be included in exports for recovery and inspection.'
-              )}
+              {'Historical archives can be included in exports for recovery and inspection.'}
             </p>
             {discovery.historical.map(row => (
               <p key={row.path} className="break-all text-xs">
@@ -301,7 +284,7 @@ export default function DataMigrationSettingsSection() {
                 checked={historical}
                 onChange={event => setHistorical(event.target.checked)}
               />
-              {text('Include in export', 'Include in export')}
+              {'Include in export'}
             </label>
           </details>
         ) : null}
@@ -312,7 +295,7 @@ export default function DataMigrationSettingsSection() {
             className="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] px-3 py-2 text-sm disabled:opacity-40"
           >
             <RefreshCw size={14} />
-            {text('Preview migration', 'Preview migration')}
+            {'Preview migration'}
           </button>
           <button
             disabled={!selected.length}
@@ -320,24 +303,21 @@ export default function DataMigrationSettingsSection() {
             className="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] px-3 py-2 text-sm disabled:opacity-40"
           >
             <Download size={14} />
-            {text('Export selected data', 'Export selected data')}
+            {'Export selected data'}
           </button>
         </div>
         {preview ? (
           <div className="space-y-3 rounded-xl border border-[var(--border)] p-4">
             <p className="text-sm">
-              {counted(preview.sessions, '{{count}} conversations', '{{count}} conversations')} ·{' '}
-              {counted(preview.files, '{{count}} files', '{{count}} files')} · {(preview.bytes / 1024 / 1024).toFixed(1)} MB
+              {`${preview.sessions} conversations`} ·{' '}
+              {`${preview.files} files`} · {(preview.bytes / 1024 / 1024).toFixed(1)} MB
             </p>
             <p className="text-sm">
-              {text('Included features', 'Included features')}: {preview.features.map(label).join(zh ? ', ' : ', ')}
+              {'Included features'}: {preview.features.map(label).join(', ')}
             </p>
             {preview.dependencies.length ? (
               <p className="text-xs text-[var(--muted-foreground)]">
-                {text(
-                  'Related source data included to preserve references',
-                  'Related source data included to preserve references'
-                )}
+                {'Related source data included to preserve references'}
                 : {preview.dependencies.map(label).join(', ')}
               </p>
             ) : null}
@@ -352,17 +332,14 @@ export default function DataMigrationSettingsSection() {
               className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-3 py-2 text-sm text-[var(--primary-foreground)] disabled:opacity-40"
             >
               <FolderInput size={14} />
-              {text('Migrate these data', 'Migrate these data')}
+              {'Migrate these data'}
             </button>
           </div>
         ) : null}
       </fieldset>
       {busy ? (
         <p role="status" className="text-sm">
-          {text(
-            'Processing. You can return to this page to view the result.',
-            'Processing. You can return to this page to view the result.'
-          )}
+          {'Processing. You can return to this page to view the result.'}
         </p>
       ) : null}
       {error ? (
@@ -372,7 +349,7 @@ export default function DataMigrationSettingsSection() {
       ) : null}
       {operations.length ? (
         <div className="space-y-3">
-          <h3 className="text-sm font-medium">{text('Recent operations', 'Recent operations')}</h3>
+          <h3 className="text-sm font-medium">{'Recent operations'}</h3>
           {operations.slice(0, 10).map(row => (
             <div
               key={row.id}
@@ -388,7 +365,7 @@ export default function DataMigrationSettingsSection() {
                   className="inline-flex items-center gap-1 text-[var(--primary)]"
                 >
                   <Download size={12} />
-                  {text('Download archive', 'Download archive')}
+                  {'Download archive'}
                 </a>
               ) : null}
               {!['completed', 'exported', 'recovered'].includes(row.status) ? (
@@ -397,12 +374,12 @@ export default function DataMigrationSettingsSection() {
                   onClick={() => void recover(row.id)}
                   className="rounded border border-[var(--border)] px-2 py-1"
                 >
-                  {text('Recover migration', 'Recover migration')}
+                  {'Recover migration'}
                 </button>
               ) : null}
               {row.recovery_path ? (
                 <p className="break-all text-[var(--muted-foreground)]">
-                  {text('Recovery copy', 'Recovery copy')}: {row.recovery_path}
+                  {'Recovery copy'}: {row.recovery_path}
                 </p>
               ) : null}
             </div>

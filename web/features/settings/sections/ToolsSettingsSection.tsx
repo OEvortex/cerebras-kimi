@@ -2,7 +2,7 @@
 
 import Tooltip from "@/shared/ui/Tooltip";
 import { useStagedSettings } from "@/features/settings/store/useStagedSettings";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, Loader2, Lock, Search, Wrench, X } from "lucide-react";
 import Link from "@/shared/router/link";
 
@@ -78,9 +78,6 @@ const CAPABILITY_LABELS: Record<string, string> = {
 export default function ToolsSettingsPage() {
   
   const { draftRevision } = useSettings();
-  const localizedHints = useCallback((tool: BuiltinTool): ToolHints => {
-    return tool.hints.en;
-  }, []);
   const [tools, setTools] = useState<BuiltinTool[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -161,19 +158,16 @@ export default function ToolsSettingsPage() {
       });
     }
     for (const [cap, list] of capabilities) {
-      const capLabel = CAPABILITY_LABELS[cap];
-      const label = capLabel ? (zh ? capLabel.zh : (capLabel.en)) : cap;
+      const label = CAPABILITY_LABELS[cap] ?? cap;
       out.push({
         key: `cap:${cap}`,
-        label: zh ? `${label} · Capability Tools` : `${label} · Capability Tools`,
-        hint: zh
-          ? "Tools specific to this capability; mounted only when it runs."
-          : "Tools specific to this capability; mounted only when it runs.",
+        label: `${label} · Capability Tools`,
+        hint: "Tools specific to this capability; mounted only when it runs.",
         tools: list,
       });
     }
     return out;
-  }, [tools, language]);
+  }, [tools]);
 
   const filteredSections = useMemo<ToolSection[] | null>(() => {
     if (!sections) return null;
@@ -184,8 +178,7 @@ export default function ToolsSettingsPage() {
       .map((section) => ({
         ...section,
         tools: section.tools.filter((tool) => {
-          const hints = localizedHints(tool);
-          const alternateHints = tool.hints.zh ?? tool.hints.en;
+          const hints = tool.hints.en;
           const searchableText = [
             tool.name,
             tool.description,
@@ -200,11 +193,6 @@ export default function ToolsSettingsPage() {
               alias.description,
               alias.phase,
             ]),
-            alternateHints.short_description,
-            alternateHints.when_to_use,
-            alternateHints.input_format,
-            alternateHints.guideline,
-            alternateHints.note,
             ...tool.parameters.flatMap((parameter) => [
               parameter.name,
               parameter.type,
@@ -219,7 +207,7 @@ export default function ToolsSettingsPage() {
         }),
       }))
       .filter((section) => section.tools.length > 0);
-  }, [localizedHints, query, sections]);
+  }, [query, sections]);
 
   const toggleExpanded = (name: string) => {
     setExpanded((prev) => {
@@ -313,7 +301,7 @@ export default function ToolsSettingsPage() {
                 <div className="border-t border-[var(--border)]/60">
                   {list.map((tool, idx) => {
                     const isOpen = expanded.has(tool.name);
-                    const hints = localizedHints(tool);
+                    const hints = tool.hints.en;
                     const isPending = pending.has(tool.name);
                     const isComingSoon = !!tool.coming_soon;
                     const isAvailable = tool.available !== false;
