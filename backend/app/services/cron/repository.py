@@ -119,6 +119,53 @@ class SQLiteCronRepository:
         finally:
             connection.close()
 
+    @staticmethod
+    def _ensure_cron_meta(connection: sqlite3.Connection) -> None:
+        """Upgrade a legacy ``cron_meta(key, value)`` table to the singleton schema.
+
+        Older deployments kept the revision in a key/value table. Because
+        ``CREATE TABLE IF NOT EXISTS`` is a no-op when a table with that name
+        already exists, those databases would fail on every ``cron_meta``
+        insert. Detect the old shape, carry the revision over, and replace it.
+        """
+        exists = connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='cron_meta'"
+        ).fetchone()
+        if exists is None:
+            connection.execute(
+                """
+                CREATE TABLE cron_meta (
+                    singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
+                    revision INTEGER NOT NULL
+                )
+                """
+            )
+            return
+        columns = {
+            str(info[1])
+            for info in connection.execute("PRAGMA table_info(cron_meta)").fetchall()
+        }
+        if {"singleton", "revision"} <= columns:
+            return
+        revision = 0
+        if {"key", "value"} <= columns:
+            try:
+                for key, value in connection.execute("SELECT key, value FROM cron_meta").fetchall():
+                    if str(key).lower() in {"revision", "cron_revision"}:
+                        revision = int(value)
+            except (sqlite3.Error, TypeError, ValueError):
+                revision = 0
+        connection.execute("DROP TABLE cron_meta")
+        connection.execute(
+            """
+            CREATE TABLE cron_meta (
+                singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
+                revision INTEGER NOT NULL
+            )
+            """
+        )
+        connection.execute("INSERT INTO cron_meta(singleton, revision) VALUES (1, ?)", (revision,))
+
     def _initialize(self, initial: Iterable[dict[str, Any]]) -> None:
         with self._migration_lock(), self._connect() as connection:
             connection.execute(
@@ -135,14 +182,7 @@ class SQLiteCronRepository:
             connection.execute(
                 "CREATE INDEX IF NOT EXISTS idx_cron_jobs_owner ON cron_jobs(owner_key)"
             )
-            connection.execute(
-                """
-                CREATE TABLE IF NOT EXISTS cron_meta (
-                    singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
-                    revision INTEGER NOT NULL
-                )
-                """
-            )
+            self._ensure_cron_meta(connection)
             connection.execute("INSERT OR IGNORE INTO cron_meta(singleton, revision) VALUES (1, 0)")
             if not initial:
                 return
