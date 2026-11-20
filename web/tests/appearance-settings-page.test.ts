@@ -20,8 +20,8 @@ function readAppearancePage() {
 test("appearance source contract: code blocks section follows the theme section", () => {
   const source = readAppearancePage();
 
-  const themeIndex = source.indexOf('title={t("Theme")}');
-  const codeBlocksIndex = source.indexOf('title={t("Code blocks")}');
+  const themeIndex = source.indexOf('title={"Theme"}');
+  const codeBlocksIndex = source.indexOf('title={"Code blocks"}');
 
   assert.notEqual(themeIndex, -1, "Theme section should exist");
   assert.notEqual(codeBlocksIndex, -1, "Code blocks section should exist");

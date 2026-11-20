@@ -17,7 +17,7 @@ const fields: Array<keyof LearnerProfile> = [
   "explanation_style",
 ];
 
-const fieldLabels: Record<keyof LearnerProfile, string> = {
+const fieldLabels: Record<(typeof fields)[number], string> = {
   age: "Age",
   grade_level: "Grade level",
   curriculum: "Curriculum",
