@@ -263,8 +263,7 @@ export const QUIZ_TYPE_LABEL_KEYS: Record<NormalizedQuizQuestionType, string> =
 
 /**
  * One-line summary of the quiz form, shown next to the collapsed `Settings`
- * chevron in the composer. Pass `translate` (`t` from `react-i18next`) so the
- * summary follows the active UI language.
+ * chevron in the composer. The summary is always in English.
  */
 export function summarizeQuizConfig(
   cfg: DeepQuestionFormConfig,

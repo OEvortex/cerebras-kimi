@@ -129,8 +129,7 @@ export function isProminentReadinessRow(row: SettingsReadinessRow): boolean {
  *
  * The backend's `DETAIL_CODES` is the full set; the ones left out here are the
  * "this row is running" codes, which need no sentence beside a Ready label.
- * `tests/settings-readiness-i18n.test.ts` holds the two files to that split,
- * so a new backend code cannot reach a user as a raw identifier.
+ * A new backend code must be added here so it cannot reach a user as a raw identifier.
  */
 export const EXPLAINED_DETAIL_CODES: ReadonlySet<string> = new Set([
   "active_profile_not_selected",

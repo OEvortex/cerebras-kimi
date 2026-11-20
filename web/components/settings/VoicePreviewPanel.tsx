@@ -42,10 +42,8 @@ function PreviewRequest({
 }) {
   
   const { draft } = useSettings()
-  const [text, setText] = useState(() =>
-    "en"?.startsWith('zh')
-      ? 'Hello, I am your learning companion. Let us explore new knowledge together.'
-      : 'Hello, I am your learning companion. Let us explore something new together.'
+  const [text, setText] = useState(
+    'Hello, I am your learning companion. Let us explore something new together.'
   )
   const [pending, setPending] = useState(false)
   const [url, setUrl] = useState<string | null>(null)

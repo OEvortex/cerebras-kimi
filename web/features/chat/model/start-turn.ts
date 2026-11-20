@@ -20,8 +20,6 @@ export interface StartTurnInput {
   tools?: string[] | null;
   knowledgeBases?: string[];
   language?: string | null;
-  /** Omit to preserve the session's selector; null explicitly clears it. */
-  replyLanguageOverride?: string | null;
   capabilityConfig?: Record<string, unknown>;
   allowedCapabilityConfigKeys?: readonly string[];
   attachments?: OutgoingAttachment[];

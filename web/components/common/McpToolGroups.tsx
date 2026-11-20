@@ -9,9 +9,7 @@
  * Shared by the partner tool picker and the admin grant editor: the grouping and
  * tri-state behaviour are identical in both, only the per-tool row styling
  * differs, so rows stay caller-rendered via `renderTool`. Deliberately free of
- * copy (checkbox + provider id + count + chevron) — the admin surface is not
- * wired to react-i18next, so any string here would end up duplicated or
- * untranslated.
+ * copy (checkbox + provider id + count + chevron) — the admin surface stays copy-free by design.
  */
 
 import { useState, type ReactNode } from "react";

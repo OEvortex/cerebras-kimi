@@ -98,8 +98,6 @@ export interface SessionPreferences {
   tools?: string[];
   knowledge_bases?: string[];
   language?: string;
-  /** Null/absent follows the account default; a code fixes this conversation. */
-  reply_language_override?: string | null;
   llm_selection?: LLMSelection | null;
   /** Persistent mastery state associated with this conversation. */
   mastery_path_id?: string;

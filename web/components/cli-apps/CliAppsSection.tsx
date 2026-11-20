@@ -61,12 +61,7 @@ export default function CliAppsSection() {
   // Runs once, and deliberately depends on nothing. There is no reload path
   // either — every mutation route answers with the full state, which the children
   // hand back through `setState`.
-  //
-  // `t` must stay out of the deps: react-i18next hands back a new `t` when its
-  // store settles, so an effect keyed on it re-runs, and each re-run's cleanup
-  // cancels the fetch the previous one started. The page then sits on its spinner
-  // forever while the network tab shows a perfectly good 200. Which is why the
-  // error is stored untranslated and rendered through `t` below.
+  // Runs exactly once; every mutation route answers with the full state.
   useEffect(() => {
     let cancelled = false;
     getCliApps()

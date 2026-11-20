@@ -14,7 +14,6 @@ const fields: Array<[keyof LearnerProfile, string]> = [
   ["age", "Age"],
   ["grade_level", "Grade level"],
   ["curriculum", "Curriculum"],
-  ["language", "Preferred language"],
   ["reading_level", "Reading level"],
   ["explanation_style", "Explanation style"],
 ];

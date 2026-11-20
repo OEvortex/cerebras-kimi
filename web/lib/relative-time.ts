@@ -6,8 +6,7 @@
  * 1. `getDayGroupKey(ts)` — returns a stable token (`today` / `this_week` /
  *    `earlier`) for grouping: three buckets, so a list reads as "now, lately,
  *    a while ago" rather than a calendar. Callers map that token to a
- *    translated label via i18next so the same grouping logic works across
- *    locales.
+ *    label in English, so the same grouping logic stays simple.
  *
  * 2. `formatRelativeTime(ts, locale)` — wraps `Intl.RelativeTimeFormat` with
  *    the caller's active locale instead of the previously-hardcoded `"en"`.

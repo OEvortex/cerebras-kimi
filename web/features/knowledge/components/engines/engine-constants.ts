@@ -3,8 +3,7 @@ export const INSTALL_HINTS: Record<string, string> = {
   lightrag: "pip install 'deeptutor[rag-lightrag]'",
 };
 
-// Mode one-liners, keyed by `${engineId}:${mode}`. English source strings double
-// as i18n keys (zh translations live in locales/zh/app.json).
+// Mode one-liners, keyed by `${engineId}:${mode}`, in English.
 export const MODE_DESCRIPTIONS: Record<string, string> = {
   "graphrag:local":
     "Entity-focused retrieval over the relevant local subgraph — fast and economical.",

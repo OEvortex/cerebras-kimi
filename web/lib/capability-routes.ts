@@ -40,7 +40,7 @@ export function capabilityForPath(pathname: string): Capability | null {
 
 /**
  * Human-facing phrase for a capability, used in the "ask your admin" copy.
- * Kept as plain English keys so react-i18next can translate them later.
+ * Kept as plain English strings.
  */
 export const CAPABILITY_LABEL: Record<Capability, string> = {
   llm: "an LLM model",
