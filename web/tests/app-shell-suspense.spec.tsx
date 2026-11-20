@@ -3,7 +3,7 @@ import { lazy, Suspense, type ComponentType } from 'react'
 import { expect, it, vi } from 'vitest'
 import AppShell from '@/components/layout/AppShell'
 
-vi.mock('next/navigation', () => ({ usePathname: () => '/learning' }))
+vi.mock('@/shared/router/navigation', () => ({ usePathname: () => '/learning' }))
 vi.mock('next/image', () => ({ default: () => null }))
 vi.mock('@/hooks/useDevice', () => ({ useDevice: () => ({ isMobile: false }) }))
 

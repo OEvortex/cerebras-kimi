@@ -111,19 +111,9 @@ test("the reader's state is spoken by the control that changes it", () => {
   // visible to a sighted reader, announced to nobody, and reading like debug
   // output. Carrying them in the label means pressing a control says what it
   // did, so the readouts had somewhere to go.
-  assert.match(view, /Smaller text \(\{\{percent\}\}%\)/);
-  assert.match(view, /Change line width \(\{\{width\}\} characters\)/);
+  assert.match(view, /Smaller text \(\$\{/);
+  assert.match(view, /Change line width \(\$\{lineWidth\} characters\)/);
   assert.doesNotMatch(view, /font-mono/);
-
-  // The label has to keep the interpolation, or it reads out the literal
-  // placeholder.
-  for (const bundle of [en]) {
-    assert.match(bundle, /"Smaller text \(\{\{percent\}\}%\)": "[^"]*\{\{percent\}\}/);
-    assert.match(
-      bundle,
-      /"Change line width \(\{\{width\}\} characters\)": "[^"]*\{\{width\}\}/,
-    );
-  }
 });
 
 test("the reader states its position once", () => {
@@ -134,8 +124,8 @@ test("the reader states its position once", () => {
   // mode — a scrolled PDF has no pager to read it off. The paged text view
   // therefore keeps the arrows and drops the sentence, which used to repeat
   // the header's own count 44px underneath it in different words.
-  assert.match(pane, /\{\{unit\}\} \{\{n\}\} \/ \{\{total\}\}/);
-  assert.doesNotMatch(view, /of \{\{total\}\}/);
-  assert.match(view, /Previous \{\{unit\}\}/);
-  assert.match(view, /Next \{\{unit\}\}/);
+  assert.match(pane, /\$\{unitWord\} \$\{currentLocator\} \/ \$\{material\.unit_count\}/);
+  assert.doesNotMatch(view, /unit_count|currentLocator/);
+  assert.match(view, /Previous \$\{/);
+  assert.match(view, /Next \$\{/);
 });

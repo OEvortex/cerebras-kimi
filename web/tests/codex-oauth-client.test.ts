@@ -568,7 +568,7 @@ test("Remote Codex guidance uses the real callback port and explicit user action
   );
   assert.match(
     source,
-    /t\(displayMessageKey,\s*\{\s*port:\s*callbackPort,?\s*\}\s*\)/,
+    /codexOAuthMessage\(displayMessageKey,\s*\{\s*port:\s*callbackPort,?\s*\}\s*\)/,
   );
 
   assert.match(
@@ -582,7 +582,7 @@ test("Remote Codex guidance uses the real callback port and explicit user action
   );
   assert.match(
     source,
-    /t\("codex\.oauth\.expiresIn",\s*\{\s*seconds:\s*remoteGuidance\.expires_in,\s*\}\)/,
+    /Expires in \$\{remoteGuidance\.expires_in\} seconds/,
   );
 
   const copyCommand = componentBlock(
@@ -591,8 +591,8 @@ test("Remote Codex guidance uses the real callback port and explicit user action
     "const openAuthorization",
   );
   assert.match(copyCommand, /navigator\.clipboard\.writeText\(sshCommand\)/);
-  assert.match(copyCommand, /setToast\(t\("codex\.oauth\.commandCopied"\)\)/);
-  assert.match(copyCommand, /setToast\(t\("codex\.oauth\.copyFailed"\)\)/);
+  assert.match(copyCommand, /setToast\("SSH tunnel command copied\."\)/);
+  assert.match(copyCommand, /setToast\("Could not copy the SSH tunnel command\."\)/);
 
   const openAuthorization = componentBlock(
     source,

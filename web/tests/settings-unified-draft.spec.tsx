@@ -28,8 +28,22 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/shared/api/client", () => ({
   apiUrl: (s: string) => s,
   apiFetch: (...args: unknown[]) => mocks.fetch(...args),
+  wsUrl: (s: string) => s,
+  asJsonOrThrow: async (response: Response) => {
+    if (!response.ok) {
+      let detail = `${response.status} ${response.statusText}`;
+      try {
+        const body = await response.json();
+        if (body?.detail) detail = String(body.detail);
+      } catch {
+        /* keep the status line */
+      }
+      throw new Error(detail);
+    }
+    return response.json();
+  },
 }));
-vi.mock("next/navigation", () => ({
+vi.mock("@/shared/router/navigation", () => ({
   useRouter: () => ({ push: mocks.push }),
 }));
 const t = (key: string, values?: Record<string, unknown>) => key.replace(/{{(.*?)}}/g, (_, name) => String(values?.[name] ?? name));

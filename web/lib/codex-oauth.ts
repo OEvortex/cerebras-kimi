@@ -264,3 +264,40 @@ export function codexStatusMessageKey(status: CodexOAuthStatus): string {
   if (status.operation_state === "expired") return "codex.oauth.expired";
   return "codex.oauth.disconnected";
 }
+
+const CODEX_OAUTH_MESSAGES: Record<string, string> = {
+  "codex.oauth.catalogFailed":
+    "The model catalog could not be loaded. Try again in a moment.",
+  "codex.oauth.inferenceActive":
+    "A Codex request is still running. Wait for it to finish before changing the connection.",
+  "codex.oauth.callbackMissing":
+    "The sign-in callback did not arrive. Open http://localhost:{port} in your browser to finish.",
+  "codex.oauth.callbackMissingUnknown":
+    "The sign-in callback did not arrive. Finish the OpenAI page, then check again.",
+  "codex.oauth.callbackUnavailable":
+    "The local callback listener is unavailable. Restart DeepTutor and try again.",
+  "codex.oauth.callbackUrlInvalid":
+    "The callback URL OpenAI returned was invalid. Start the sign-in again.",
+  "codex.oauth.invalidResponse":
+    "OpenAI returned an unexpected response. Try signing in again.",
+  "codex.oauth.reasoningUnsupported":
+    "That model does not support the selected reasoning effort.",
+  "codex.oauth.reasoningCatalogChanged":
+    "The Codex model catalog changed. Refresh and pick the model again.",
+  "codex.oauth.cancelled": "Sign-in was cancelled.",
+  "codex.oauth.denied": "OpenAI denied the authorization request.",
+  "codex.oauth.requestFailed": "The Codex request failed. Try again.",
+  "codex.oauth.waiting": "Waiting for you to finish signing in…",
+  "codex.oauth.activated": "Connected — the selected model is active.",
+  "codex.oauth.connected": "Connected to OpenAI Codex.",
+  "codex.oauth.expired": "The sign-in attempt expired. Start again.",
+  "codex.oauth.disconnected": "Not connected.",
+};
+
+export function codexOAuthMessage(
+  key: string,
+  options?: { port?: number | null },
+): string {
+  const template = CODEX_OAUTH_MESSAGES[key] ?? CODEX_OAUTH_MESSAGES["codex.oauth.requestFailed"];
+  return template.replace("{port}", String(options?.port ?? ""));
+}

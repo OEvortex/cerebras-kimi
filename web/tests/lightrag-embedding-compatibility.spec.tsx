@@ -201,4 +201,4 @@ it.each(["ready", "error"])(
   },
 );
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+vi.mock("@/shared/router/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));

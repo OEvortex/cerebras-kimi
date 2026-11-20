@@ -11,7 +11,7 @@ vi.mock('@/shared/api/client', () => ({
   apiUrl: (s: string) => s,
   apiFetch: (...args: unknown[]) => mocks.fetch(...args),
 }))
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }))
+vi.mock('@/shared/router/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }))
 vi.mock('next/dynamic', () => ({ default: () => () => null }))
 vi.mock('@/context/AppShellContext', () => ({
   useAppShell: () => ({

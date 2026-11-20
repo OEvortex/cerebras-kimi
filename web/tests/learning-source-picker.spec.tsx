@@ -4,7 +4,7 @@ import { expect, it, vi } from 'vitest'
 import { SourcesStep } from '@/components/space/learning/TopicWizardSteps'
 import type { SourceCandidate, SourceLibrary } from '@/hooks/useTopicSourceLibrary'
 
-vi.mock('next/navigation', () => ({
+vi.mock('@/shared/router/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({}),
   usePathname: () => '/learning/books',

@@ -5,7 +5,7 @@ import BookPage from "@/app/(workspace)/learning/books/BooksRoute";
 
 
 // A deep book URL, with the book's data still in flight.
-vi.mock("next/navigation", () => ({
+vi.mock("@/shared/router/navigation", () => ({
   useParams: () => ({ bookId: "bk-1" }),
   usePathname: () => "/learning/books/bk-1",
   useSearchParams: () => new URLSearchParams(),

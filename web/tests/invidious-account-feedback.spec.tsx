@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import InvidiousAccountFeedback from "@/components/reading/library/InvidiousAccountFeedback";
 
 const route = vi.hoisted(() => ({ result: "authorization_expired" }));
-vi.mock("next/navigation", () => ({
+vi.mock("@/shared/router/navigation", () => ({
   useSearchParams: () => new URLSearchParams({ account: route.result }),
   useParams: () => ({}),
 }));

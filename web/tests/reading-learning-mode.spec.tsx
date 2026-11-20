@@ -7,7 +7,7 @@ import { ReadingWorkspacePage } from '@/components/reading/workspace/ReadingWork
 
 const LEARNING_KEY = 'reading-learning'
 
-vi.mock('next/navigation', () => ({
+vi.mock('@/shared/router/navigation', () => ({
   useParams: () => ({ workspaceId: 'reading-1' }),
   usePathname: () => '/reading/reading-1',
   useRouter: () => ({ push: vi.fn() }),

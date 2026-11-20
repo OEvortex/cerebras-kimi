@@ -25,7 +25,7 @@ const mocks = vi.hoisted(() => ({
   emit: undefined as
     undefined | ((event: Record<string, unknown>) => void),
 }));
-vi.mock("next/navigation", () => ({ useRouter: () => router }));
+vi.mock("@/shared/router/navigation", () => ({ useRouter: () => router }));
 const router = { replace: mocks.replace };
 vi.mock("@/lib/learning-api", () => ({
   fetchMasteryTopic: mocks.topic,

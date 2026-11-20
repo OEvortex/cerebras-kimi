@@ -4,7 +4,7 @@ import { ComposerTray } from '@/components/chat/home/ComposerTray'
 import { CHAT_CAPABILITIES } from '@/features/capabilities/presentation'
 
 vi.mock('@/lib/personas-api', () => ({ listPersonas: async () => [] }))
-vi.mock('next/link', () => ({
+vi.mock('@/shared/router/link', () => ({
   default: ({ href, children, ...props }: { href: string; children: React.ReactNode }) => (
     <a href={href} {...props}>
       {children}

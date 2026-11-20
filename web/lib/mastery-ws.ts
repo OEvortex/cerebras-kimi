@@ -120,8 +120,9 @@ export class MasteryTopicSocket {
       },
       {
         ...options,
-        createSocket: (url: string) =>
-          sseSocketFactory(url) as unknown as WebSocket,
+        createSocket:
+          options.createSocket ??
+          ((url: string) => sseSocketFactory(url) as unknown as WebSocket),
       },
     );
   }

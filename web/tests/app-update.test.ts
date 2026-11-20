@@ -176,7 +176,7 @@ test("sidebar presents the update state as a clickable status dot", () => {
   );
 
   assert.match(badge, /subscribeAppUpdateStatus/);
-  assert.match(badge, /label: t\("Up to date"\)/);
+  assert.match(badge, /label: "Up to date"/);
   assert.match(badge, /bg-amber-500/);
   assert.match(badge, /bg-red-500/);
   assert.match(badge, /href="\/settings\/about"/);

@@ -17,7 +17,7 @@ import { ReadingWorkspacePage } from "@/components/reading/workspace/ReadingWork
  * `SourceNavigator` is deliberately NOT mocked here.
  */
 
-vi.mock("next/navigation", () => ({
+vi.mock("@/shared/router/navigation", () => ({
   useParams: () => ({ workspaceId: "reading-1" }),
   usePathname: () => "/learning/reading/reading-1",
   useRouter: () => ({ push: vi.fn() }),

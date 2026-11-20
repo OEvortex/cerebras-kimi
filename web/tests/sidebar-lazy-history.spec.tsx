@@ -18,7 +18,7 @@ vi.mock("@/hooks/useAuthStatus", () => ({
 
 vi.mock("@/hooks/useChatWorkspaces", () => ({ useChatWorkspaces: () => ({ workspaces: [], error: "" }) }));
 
-vi.mock("next/navigation", () => ({
+vi.mock("@/shared/router/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
   usePathname: () => "/co-writer",
   useRouter: () => ({ push: fixture.push }),

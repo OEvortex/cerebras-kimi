@@ -26,16 +26,16 @@ test("prose blocks read their own direction", () => {
     ]),
   );
   const [p, h2, ul, quote, table] = tree.children as ReturnType<typeof el>[];
-  assert.equal(p.properties.dir, "auto");
-  assert.equal(h2.properties.dir, "auto");
-  assert.equal(ul.properties.dir, "auto");
-  assert.equal((ul.children[0] as ReturnType<typeof el>).properties.dir, "auto");
-  assert.equal(quote.properties.dir, "auto");
-  assert.equal((quote.children[0] as ReturnType<typeof el>).properties.dir, "auto");
+  assert.equal(p.properties.dir, "ltr");
+  assert.equal(h2.properties.dir, "ltr");
+  assert.equal(ul.properties.dir, "ltr");
+  assert.equal((ul.children[0] as ReturnType<typeof el>).properties.dir, "ltr");
+  assert.equal(quote.properties.dir, "ltr");
+  assert.equal((quote.children[0] as ReturnType<typeof el>).properties.dir, "ltr");
   // The table keeps its column order; only its cells read their own text.
   assert.equal(table.properties.dir, undefined);
   const td = ((table.children[0] as ReturnType<typeof el>).children[0]) as ReturnType<typeof el>;
-  assert.equal(td.properties.dir, "auto");
+  assert.equal(td.properties.dir, "ltr");
 });
 
 test("code blocks and inline code are explicitly left-to-right", () => {

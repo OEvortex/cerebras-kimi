@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
   reading: { material: null, annotations: [], openMaterial: vi.fn(), closeMaterial: vi.fn(), reportViewport: vi.fn() },
   router: { push: vi.fn() }, t: (key: string) => key,
 }));
-vi.mock("next/navigation", () => ({useRouter: () => mocks.router}));
+vi.mock("@/shared/router/navigation", () => ({useRouter: () => mocks.router}));
 vi.mock("@/context/ReadingContext", () => ({useReading: () => mocks.reading}));
 vi.mock("@/features/chat/ChatStateAdapter", () => ({useChatStateAdapter: () => mocks}));
 vi.mock("@/lib/reading-turn-state", () => ({setReadingWorkspace: vi.fn()}));

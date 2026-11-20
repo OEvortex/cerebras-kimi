@@ -5,7 +5,7 @@ import PracticeRoutePage from "@/app/(workspace)/learning/practice/page";
 import * as api from "@/lib/practice-api";
 
 const replace = vi.fn();
-vi.mock("next/navigation", () => ({
+vi.mock("@/shared/router/navigation", () => ({
   usePathname: () => "/learning/practice",
   useSearchParams: () => new URLSearchParams("workspace=work-a&view=mistakes"),
   useRouter: () => ({ replace }),

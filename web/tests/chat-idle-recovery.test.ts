@@ -125,5 +125,7 @@ test("the loader vets the stored status and skips subscribing to a stale turn", 
 
   // And a row with nothing in it is not a message. One such row used to be
   // enough to hide a surface's empty state while rendering an empty bubble.
-  assert.match(adapter, /\(message\.attachments\?\.length \?\? 0\) > 0/);
+  // The filter lives in message hydration now.
+  const hydration = readFileSync("features/chat/state/hydration.ts", "utf8");
+  assert.match(hydration, /\(message\.attachments\?\.length \?\? 0\) > 0/);
 });

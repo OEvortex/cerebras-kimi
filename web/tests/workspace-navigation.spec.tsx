@@ -7,7 +7,7 @@ import { activeWorkspaceId, selectWorkspace } from '@/lib/workspace-scope'
 import { invalidateClientCache, withClientCache } from '@/lib/client-cache'
 
 const fixture = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn(), query: new URLSearchParams() }))
-vi.mock('next/navigation', () => ({
+vi.mock('@/shared/router/navigation', () => ({
   useRouter: () => ({ push: fixture.push, replace: fixture.replace }),
   usePathname: () => window.location.pathname,
   useSearchParams: () => fixture.query,

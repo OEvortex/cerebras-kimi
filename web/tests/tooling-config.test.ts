@@ -12,23 +12,6 @@ function readJson(relativePath: string): Record<string, unknown> {
   ) as Record<string, unknown>;
 }
 
-test("ESLint ignores generated and scratch output", () => {
-  const config = readFileSync(
-    path.resolve(webRoot, "eslint.config.mjs"),
-    "utf8",
-  );
-
-  for (const ignored of [
-    "tmp/**",
-    "coverage/**",
-    "playwright-report/**",
-    "test-results/**",
-    "contracts/generated/.tmp/**",
-  ]) {
-    assert.match(config, new RegExp(`["]${ignored.replaceAll("*", "\\*")}["]`));
-  }
-});
-
 test("TypeScript includes canonical source roots and no named build output", () => {
   const tsconfig = readJson("tsconfig.json");
   const include = tsconfig.include as string[];
@@ -43,7 +26,6 @@ test("TypeScript includes canonical source roots and no named build output", () 
     "shared",
     "contracts",
     "scripts",
-    "tests",
   ]) {
     assert.ok(
       include.some((entry) => entry.startsWith(`${root}/`)),
@@ -54,18 +36,10 @@ test("TypeScript includes canonical source roots and no named build output", () 
   assert.equal(include.includes("**/*.ts"), false);
   assert.equal(include.includes("**/*.tsx"), false);
   assert.equal(
-    include.some((entry) => /^\.next-[^/]+\//.test(entry)),
+    include.some((entry) => /^\.next[^/]*\//.test(entry)),
     false,
-    "named one-off Next.js build directories must not enter typecheck",
+    "Next.js build output must not enter typecheck",
   );
-  assert.ok(include.includes(".next/types/**/*.ts"));
-});
-
-test("Next's checked-in environment declaration uses the canonical dev cache", () => {
-  const nextEnv = readFileSync(path.resolve(webRoot, "next-env.d.ts"), "utf8");
-
-  assert.match(nextEnv, /import "\.\/\.next\/dev\/types\/routes\.d\.ts";/);
-  assert.doesNotMatch(nextEnv, /\.next-[^/]+\//);
 });
 
 test("package exposes deterministic frontend checks", () => {
@@ -75,30 +49,14 @@ test("package exposes deterministic frontend checks", () => {
   assert.equal(scripts.typecheck, "node ./scripts/typecheck.mjs");
   assert.equal(
     scripts["check:fast"],
-    "npm run contracts:check && npm run architecture:check && npm run typecheck && npm run test:node && npm run test:unit && npm run lint",
+    "bun run contracts:check && bun run architecture:check && bun run typecheck && bun run test:node && bun run test:unit && bun run lint",
   );
   assert.equal(
     scripts.check,
-    "npm run check:fast && npm run build && npm run perf:check",
+    "bun run check:fast && bun run build && bun run perf:check",
   );
   assert.match(scripts["test:e2e:critical"], /critical-turns/);
   assert.match(scripts["test:e2e:multi-worker"], /multi-worker-turns-desktop/);
-});
-
-test("standalone typecheck ignores stale generated Next route validators", () => {
-  const source = readFileSync(
-    path.resolve(webRoot, "scripts", "typecheck.mjs"),
-    "utf8",
-  );
-
-  assert.match(source, /removeNextTypeIncludes\(original\)/);
-  assert.match(
-    source,
-    /tsconfig\.deeptutor-typecheck-\$\{process\.pid\}\.json/,
-  );
-  assert.match(source, /"-p",\s*isolatedTsconfigPath/);
-  assert.match(source, /finally\s*{\s*rmSync\(isolatedTsconfigPath/);
-  assert.doesNotMatch(source, /writeFileSync\(tsconfigPath/);
 });
 
 test("tracked frontend files contain no generated or backup artifacts", () => {

@@ -15,7 +15,7 @@ test("configured runtime and saved preference are both required", () => {
 
 test("search provider readiness has actionable English copy", () => {
   assert.deepEqual(
-    toolAvailabilityCopy("search_provider_not_configured", "zh"),
+    toolAvailabilityCopy("search_provider_not_configured", "en"),
     {
       badge: "Not configured",
       detail:

@@ -101,3 +101,58 @@ afterEach(() => {
   sessionStorage.clear();
   vi.restoreAllMocks();
 });
+
+// Components navigate through @/shared/router/* (the TanStack wrappers). Specs
+// that exercise routing mock these modules themselves; this default keeps every
+// other render test working without a RouterProvider.
+vi.mock("@/shared/router/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  usePathname: () => "/",
+  useSearchParams: () => new URLSearchParams(),
+  useParams: () => ({}),
+  redirect: (url: string) => {
+    throw new Error(`redirect:${url}`);
+  },
+  permanentRedirect: (url: string) => {
+    throw new Error(`redirect:${url}`);
+  },
+  notFound: () => {
+    throw new Error("notFound");
+  },
+}));
+
+vi.mock("@/shared/router/link", async () => {
+  const React = await import("react");
+  const toHref = (href: unknown): string => {
+    if (typeof href === "string") return href;
+    if (href && typeof href === "object") {
+      const record = href as Record<string, unknown>;
+      const pathname = String(record.pathname ?? record.to ?? "/");
+      const search = record.search ? `?${String(record.search).replace(/^\?/, "")}` : "";
+      const hash = record.hash ? `#${String(record.hash).replace(/^#/, "")}` : "";
+      return `${pathname}${search}${hash}`;
+    }
+    return "/";
+  };
+  return {
+    Link: React.forwardRef<
+      HTMLAnchorElement,
+      React.ComponentProps<"a"> & { href: unknown; prefetch?: boolean }
+    >(function MockLink({ href, prefetch: _prefetch, ...props }, ref) {
+      return React.createElement("a", { ...props, href: toHref(href), ref });
+    }),
+    default: React.forwardRef<
+      HTMLAnchorElement,
+      React.ComponentProps<"a"> & { href: unknown; prefetch?: boolean }
+    >(function MockLink({ href, prefetch: _prefetch, ...props }, ref) {
+      return React.createElement("a", { ...props, href: toHref(href), ref });
+    }),
+  };
+});

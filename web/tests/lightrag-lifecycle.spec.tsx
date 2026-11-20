@@ -356,4 +356,4 @@ it.each(["header", "documents"])(
   },
 );
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+vi.mock("@/shared/router/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));

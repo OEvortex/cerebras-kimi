@@ -35,7 +35,7 @@ test("failed submissions stay visibly unsent and recoverable (#1594)", () => {
   assert.match(adapter, /readFailedSubmission/);
   assert.match(adapter, /clearFailedSubmission/);
   assert.match(adapter, /submissionFailed: true/);
-  const list = source("features/chat/messages/ChatMessageList.tsx");
+  const list = source("features/chat/messages/UserMessage.tsx");
   assert.match(list, /failedSubmission/);
   assert.match(list, /data-unsent="true"/);
   assert.match(list, /Not sent/);

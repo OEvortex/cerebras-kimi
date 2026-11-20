@@ -95,9 +95,6 @@ export function CalendarRail({
             {"Unscheduled tasks"}
             {unscheduled.length > 0 && <span className="dt-cal-rail-count">{unscheduled.length}</span>}
           </span>
-          <Link href="/kanban" prefetch={false} className="dt-cal-rail-link">
-            {"Task Board"}
-          </Link>
         </div>
         {tasks === null ? null : unscheduled.length ? (
           <>

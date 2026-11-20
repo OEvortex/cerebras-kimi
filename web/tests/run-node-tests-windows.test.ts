@@ -9,5 +9,6 @@ test("node test runner launches TypeScript through the current Node runtime", ()
   const source = readFileSync(runnerPath, "utf8");
 
   assert.match(source, /run\(process\.execPath/);
-  assert.match(source, /"typescript", "bin", "tsc"/);
+  assert.match(source, /from "esbuild"/);
+  assert.match(source, /register-node-test-aliases\.cjs/);
 });

@@ -397,14 +397,6 @@ function PartnerLinkList({
       <TrayFoot>
         {reuse.length > 0 && <TrayReuse kinds={reuse} />}
         <span className="dt-tray-foot-end">
-          <Link href="/partners/groups/new" prefetch={false} onClick={close}>
-            <Plus size={13} strokeWidth={1.9} />
-            {"Create a Partner Group"}
-          </Link>
-          <Link href="/partners" prefetch={false} onClick={close}>
-            {"Partners"}
-            <ArrowUpRight size={13} strokeWidth={1.9} />
-          </Link>
         </span>
       </TrayFoot>
     </>

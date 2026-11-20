@@ -9,9 +9,6 @@ import {
   normalizeMasteryMode,
 } from "../lib/mastery-mode";
 
-const t = (key: string, vars?: Record<string, unknown>) =>
-  vars ? `${key}::${JSON.stringify(vars)}` : key;
-
 test("an unknown mode is shown as the ordinary study mode", () => {
   assert.equal(normalizeMasteryMode(undefined), DEFAULT_MASTERY_MODE);
   assert.equal(normalizeMasteryMode("something_new"), "study");
@@ -23,21 +20,21 @@ test("an outline conversation always knows what it was opened to say", () => {
   // navigation through a read-once channel, so any refused send consumed it
   // and left the screen insisting work was under way, permanently. Deriving it
   // from the mode means there is nothing to lose.
-  assert.ok(masteryOpeningMessage("outline", t).length > 0);
+  assert.ok(masteryOpeningMessage("outline").length > 0);
 });
 
 test("review opens by naming what is due, or generically when nothing is", () => {
-  const withDue = masteryOpeningMessage("review", t, {
+  const withDue = masteryOpeningMessage("review", {
     dueTitles: ["加噪调度", "重参数化"],
   });
-  assert.match(withDue, /items/);
-  assert.ok(masteryOpeningMessage("review", t).length > 0);
+  assert.match(withDue, /加噪调度/);
+  assert.ok(masteryOpeningMessage("review").length > 0);
 });
 
 test("study opens with nothing, because starting is the learner's choice", () => {
   // "Start learning" does not say what to start with, so the screen offers
   // ways in instead of putting words in their mouth.
-  assert.equal(masteryOpeningMessage("study", t), "");
+  assert.equal(masteryOpeningMessage("study"), "");
 });
 
 test("a route only ever sets the mode a NEW conversation starts in", () => {

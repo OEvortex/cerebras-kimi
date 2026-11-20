@@ -11,7 +11,7 @@ vi.mock('@/lib/partner-groups-api', () => ({
   listPartnerGroups: async () => [],
   listPartnerGroupSessions: vi.fn(),
 }))
-vi.mock('next/navigation', () => ({
+vi.mock('@/shared/router/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({}),
   usePathname: () => '/learning/books',

@@ -40,7 +40,7 @@ vi.mock('@/hooks/useAuthStatus', () => ({
 vi.mock('@/hooks/useModules', () => ({
   useModules: () => ({ modules: [], available: harness.available, error: false }),
 }))
-vi.mock('next/navigation', () => ({
+vi.mock('@/shared/router/navigation', () => ({
   usePathname: () => '/learning/new',
   useRouter: () => ({ push: vi.fn() }),
   useSearchParams: () => new URLSearchParams(),

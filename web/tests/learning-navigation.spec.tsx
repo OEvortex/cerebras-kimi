@@ -2,7 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, expect, it, vi } from 'vitest'
 import { LearningNavigation } from '@/components/sidebar/LearningNavigation'
 
-vi.mock('next/navigation', () => ({ usePathname: () => '/learning', useSearchParams: () => new URLSearchParams() }))
+vi.mock('@/shared/router/navigation', () => ({ usePathname: () => '/learning', useSearchParams: () => new URLSearchParams() }))
 vi.mock('@/components/learning/LearningCreateMenu', () => ({ LearningCreateMenu: () => <button>Create learning</button> }))
 vi.mock('@/components/layout/AppShell', () => ({ useSidebarDrawer: () => null }))
 const mastery = vi.hoisted(() => ({ topics: [] as unknown[] }))

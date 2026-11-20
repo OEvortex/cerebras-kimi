@@ -3,8 +3,8 @@ import { afterEach, expect, it, vi } from "vitest";
 import MemoryWorkbench from "@/components/memory/MemoryWorkbench";
 import { apiFetch } from "@/shared/api/client";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn() }) }));
-vi.mock("next/link", () => ({ default: ({ children }: { children: React.ReactNode }) => <span>{children}</span> }));
+vi.mock("@/shared/router/navigation", () => ({ useRouter: () => ({ replace: vi.fn() }) }));
+vi.mock("@/shared/router/link", () => ({ default: ({ children }: { children: React.ReactNode }) => <span>{children}</span> }));
 vi.mock("next/dynamic", () => ({ default: () => ({ content }: { content: string }) => <div>{content}</div> }));
 vi.mock("@/components/memory/MemoryRunPanel", () => ({ default: () => null }));
 vi.mock("@/shared/api/client", async () => {

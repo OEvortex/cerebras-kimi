@@ -35,6 +35,7 @@ test("Gemini CLI is retired and agent glyphs use official local assets", () => {
   const icons = readWebFile("components", "agents", "agent-icons.tsx");
   const registry = readWebFile(
     "..",
+    "reff",
     "deeptutor",
     "services",
     "subagent",

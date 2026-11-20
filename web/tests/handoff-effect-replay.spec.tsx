@@ -4,7 +4,7 @@ import HandoffPage from "@/app/handoff/page";
 
 const runtime = vi.hoisted(() => ({ fetch: vi.fn(), replace: vi.fn() }));
 vi.mock("@/shared/api/client", () => ({ apiFetch: runtime.fetch, apiUrl: (url: string) => url }));
-vi.mock("next/navigation", () => ({
+vi.mock("@/shared/router/navigation", () => ({
   useRouter: () => ({ replace: runtime.replace }),
   useSearchParams: () => new URLSearchParams("code=example-code&next=%2Fprofile"),
 }));

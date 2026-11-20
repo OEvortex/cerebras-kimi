@@ -76,7 +76,7 @@ export function progressMessage(
   progress: Pick<ProgressInfo, "message" | "message_key" | "message_params">,
 ): string | undefined {
   if (!progress.message_key) return progress.message;
-  return (progress.message_key);
+  return progress.message || progress.message_key;
 }
 
 export interface KnowledgeIndexFailure {

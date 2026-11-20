@@ -6,7 +6,7 @@ import UsageActivity from '@/features/settings/components/UsageActivity'
 import { activityCalendar, usageYear, type UsageStatistics } from '@/lib/usage-statistics'
 const mocks = vi.hoisted(() => ({ fetch: vi.fn(), push: vi.fn(), search: 'year=2024' }))
 vi.mock('@/lib/usage-statistics', async original => ({ ...await original<object>(), fetchUsageStatistics: mocks.fetch }))
-vi.mock('next/navigation', () => ({ useRouter: () => ({push: mocks.push}), useSearchParams: () => new URLSearchParams(mocks.search) }))
+vi.mock('@/shared/router/navigation', () => ({ useRouter: () => ({push: mocks.push}), useSearchParams: () => new URLSearchParams(mocks.search) }))
 vi.mock('@/components/settings/shared', () => ({ SettingsPageHeader: ({title}: {title: string}) => <h1>{title}</h1> }))
 const day = {date: '2024-02-29', turns: 3, total_calls: 5, total_tokens: 200, tracked_turns: 3}
 const totals = {total_tokens: 200, prompt_tokens: 180, completion_tokens: 20, total_calls: 5, cache_read_input_tokens: 90, cache_creation_input_tokens: 0, cache_input_tokens: 180, cache_reported_calls: 5, cache_hit_rate: .5, ttft_seconds: 1.2, tokens_per_second: 40, duration_seconds: 8, estimated_calls: 0}

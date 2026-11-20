@@ -8,7 +8,6 @@ import { learningLibrary } from '@/lib/learning-library'
 import { fetchMasteryTopicIndex } from '@/lib/learning-api'
 import { fetchReadingCollectionIndex } from '@/lib/reading-workspace-api'
 import { listKnowledgeBases } from '@/features/knowledge/api/catalog'
-import { listPartners } from '@/lib/partners-api'
 import { knowledgeBaseRoute } from '@/lib/resource-routes'
 import {
   BOOKS_HOME,
@@ -135,34 +134,3 @@ export function KnowledgeBaseCrumb({ id, label, bare }: CrumbProps) {
   )
 }
 
-export function PartnerCrumb({
-  id,
-  label,
-  bare,
-  lead,
-  trail,
-}: CrumbProps & { lead?: ReactNode; trail?: ReactNode }) {
-  
-  const load = useCallback(
-    async (): Promise<CrumbItem[]> =>
-      (await listPartners()).map(partner => ({
-        id: partner.partner_id,
-        label: partner.name,
-        href: `/partners/${encodeURIComponent(partner.partner_id)}`,
-      })),
-    []
-  )
-  return inBar(
-    bare,
-    <InstanceCrumb
-      label={label}
-      lead={lead}
-      trail={trail}
-      menuLabel={"Partners"}
-      currentId={id}
-      load={load}
-      create={{ label: "New partner", href: '/partners/new' }}
-      all={{ label: "All partners", href: '/partners' }}
-    />
-  )
-}

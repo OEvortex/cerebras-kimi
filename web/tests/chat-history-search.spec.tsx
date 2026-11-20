@@ -9,7 +9,7 @@ const fixture = vi.hoisted(() => ({
   calls: [] as Array<{ query: string; signal?: AbortSignal }>,
 }));
 
-vi.mock("next/navigation", () => ({
+vi.mock("@/shared/router/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 vi.mock("@/context/AppShellContext", () => ({

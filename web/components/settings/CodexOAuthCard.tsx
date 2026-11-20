@@ -14,6 +14,7 @@ import {
   codexRemoteGuidance,
   CodexOAuthApiError,
   codexErrorMessageKey,
+  codexOAuthMessage,
   codexStatusMessageKey,
   completeCodexLogin,
   getCodexStatus,
@@ -347,7 +348,7 @@ export function CodexOAuthCard() {
           </p>
           {displayMessageKey && (
             <p className="mt-3 text-sm text-[var(--foreground)]">
-              {(displayMessageKey)}
+              {codexOAuthMessage(displayMessageKey, { port: callbackPort })}
             </p>
           )}
           {connected && status?.model_count !== undefined && (

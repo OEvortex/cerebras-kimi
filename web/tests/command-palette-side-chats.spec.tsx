@@ -4,7 +4,7 @@ import { expect, it, vi } from "vitest";
 import { CommandPalette } from "@/components/sidebar/CommandPalette";
 import type { SessionSummary } from "@/lib/session-api";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+vi.mock("@/shared/router/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock("@/features/capabilities/useCapabilityCatalog", () => ({
   useCapabilityFilter: () => null,
 }));

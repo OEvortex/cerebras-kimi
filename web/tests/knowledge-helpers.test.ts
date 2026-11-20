@@ -55,7 +55,6 @@ test("unbounded parser policy delegates unknown extensions", () => {
       max_file_size_bytes: 100,
       allow_any_extension: true,
     },
-    ((key: string) => key) as never,
   );
 
   assert.deepEqual(result.validFiles, [custom]);

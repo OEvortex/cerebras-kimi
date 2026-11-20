@@ -120,7 +120,7 @@ test("media relies on native player controls and PDF navigation is honest", () =
   assert.doesNotMatch(workspace, /function MediaTimeline/);
   assert.match(navigator, /material\?\.render_mode === "pdf"/);
   assert.match(navigator, /synthesised/);
-  assert.match(navigator, /Page \{\{page\}\}/);
+  assert.match(navigator, /Page \$\{index \+ 1\}/);
   assert.match(
     workspace,
     /navigatorOpen \? "Collapse contents" : "Expand contents"/,

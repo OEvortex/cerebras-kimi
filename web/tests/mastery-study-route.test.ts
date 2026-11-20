@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import test from "node:test";
 
@@ -51,27 +52,19 @@ test("an unbound draft stays on the sessionless study route", () => {
   assert.equal(isMasteryDraftSessionReady({ ...base, sessionId: null }), false);
 });
 
-test("legacy /mastery/.../study URLs permanently redirect to /sessions", async () => {
-  const nextConfig = require(path.resolve(process.cwd(), "next.config.js")) as {
-    redirects?: () => Promise<
-      Array<{ source: string; destination: string; statusCode: number }>
-    >;
-  };
-  assert.equal(typeof nextConfig.redirects, "function");
-  const redirects = await nextConfig.redirects!();
-  assert.deepEqual(
-    redirects.filter((entry) => entry.source.includes("/study")),
-    [
-      {
-        source: "/mastery/:pathId/study",
-        destination: "/learning/mastery/:pathId/sessions",
-        statusCode: 301,
-      },
-      {
-        source: "/mastery/:pathId/study/:sessionId",
-        destination: "/learning/mastery/:pathId/sessions/:sessionId",
-        statusCode: 301,
-      },
-    ],
+test("legacy /mastery/.../study URLs permanently redirect to /sessions", () => {
+  const source = readFileSync(
+    path.resolve(process.cwd(), "src/router/redirects.ts"),
+    "utf8",
+  );
+  assert.match(source, /path: "\/mastery\/\$pathId\/study"/);
+  assert.match(
+    source,
+    /\/learning\/mastery\/\$\{params\.pathId\}\/sessions\$\{location\.searchStr\}/,
+  );
+  assert.match(source, /path: "\/mastery\/\$pathId\/study\/\$sessionId"/);
+  assert.match(
+    source,
+    /\/learning\/mastery\/\$\{params\.pathId\}\/sessions\/\$\{params\.sessionId\}\$\{location\.searchStr\}/,
   );
 });

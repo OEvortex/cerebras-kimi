@@ -31,7 +31,7 @@ function translate(key: string) {
 vi.mock('@/components/common/PickerShell', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div role="dialog">{children}</div>,
 }))
-vi.mock('next/navigation', () => ({ useRouter: () => mocks.router }))
+vi.mock('@/shared/router/navigation', () => ({ useRouter: () => mocks.router }))
 vi.mock('@/components/notebook/NotebookRecordRow', () => ({
   default: ({
     record,

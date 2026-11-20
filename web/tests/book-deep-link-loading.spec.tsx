@@ -15,7 +15,7 @@ const fixture = vi.hoisted(() => ({
     key.replace(/{{(\w+)}}/g, (_match, name: string) => values?.[name] ?? ""),
 }));
 
-vi.mock("next/navigation", () => ({
+vi.mock("@/shared/router/navigation", () => ({
   useParams: () => fixture.params,
   usePathname: () => "/learning/books",
   useSearchParams: () => new URLSearchParams(),

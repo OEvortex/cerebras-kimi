@@ -242,7 +242,7 @@ test("settings-context: routes code-block state through the AppShell single sour
     "loadSettings should push backend-loaded code-block values into the AppShell source.",
   );
   // User edits stay in the global draft until Apply publishes to AppShell.
-  assert.match(source, /stageUi\(\{ code_block_show_line_numbers \}\)/);
-  assert.match(source, /stageUi\(\{ code_block_wrap_long_lines \}\)/);
+  assert.match(source, /stageUi\(\{ code_block_show_line_numbers: next \}\)/);
+  assert.match(source, /stageUi\(\{ code_block_wrap_long_lines: next \}\)/);
   assert.match(source, /syncLoadedCodeBlockSettingsToAppShell\(ui\)/);
 });

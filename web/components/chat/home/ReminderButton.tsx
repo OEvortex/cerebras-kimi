@@ -5,6 +5,7 @@ import { usePathname } from '@/shared/router/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { createCronJob } from '@/lib/cron-api'
+import Tooltip from '@/shared/ui/Tooltip'
 import { notify } from '@/lib/notifications'
 import { activeWorkspaceId } from '@/lib/workspace-scope'
 import { browserTimeZone } from '@/shared/lib/date'
@@ -121,13 +122,13 @@ export default function ReminderButton({ className = '' }: { className?: string 
 
   return (
     <div ref={rootRef} className={`relative ${className}`}>
+      <Tooltip label={"Remind me"}>
       <button
         ref={buttonRef}
         type="button"
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-label={"Remind me"}
-        title={"Remind me"}
         onClick={() => setOpen(value => !value)}
         className={`inline-flex h-8 items-center gap-1.5 rounded-lg px-2 text-[14px] font-medium transition-colors duration-150 ${
           open
@@ -138,6 +139,7 @@ export default function ReminderButton({ className = '' }: { className?: string 
         <AlarmClock size={16} strokeWidth={1.7} className="shrink-0" />
         <span className="hidden whitespace-nowrap sm:inline">{"Remind me"}</span>
       </button>
+      </Tooltip>
 
       {open && (
         <div

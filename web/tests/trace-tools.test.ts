@@ -9,9 +9,6 @@ import {
   mcpToolLabel,
 } from "../lib/trace-tools";
 
-/** Stands in for i18next: interpolates so assertions read like the UI does. */
-const t = (key: string, opts?: Record<string, unknown>) =>
-  key.replace(/\{\{(\w+)\}\}/g, (_m, name) => String(opts?.[name] ?? ""));
 
 test("an MCP tool is named without its generated prefix", () => {
   assert.equal(
@@ -89,7 +86,6 @@ test("an MCP call names the service, with its tool trailing", () => {
     "mcp_wolfram_WolframAlpha",
     { input: "2+2" },
     { source: "mcp", id: "wolfram" },
-    t,
   );
 
   assert.deepEqual(row, {
@@ -105,7 +101,6 @@ test("a CLI call names the app, with its arguments trailing", () => {
     "cli_blender",
     { args: ["render", "--out", "scene.png"] },
     { source: "cli", id: "blender" },
-    t,
   );
 
   assert.deepEqual(row, {
@@ -121,7 +116,6 @@ test("a CLI call with no arguments still reads as a row", () => {
     "cli_blender",
     {},
     { source: "cli", id: "blender" },
-    t,
   );
   assert.equal(row?.verb, "Running blender");
   assert.equal(row?.chip, null);
@@ -132,7 +126,6 @@ test("a long argument list is clipped rather than pushing the row wide", () => {
     "cli_blender",
     { args: ["render", "--input", "a".repeat(80)] },
     { source: "cli", id: "blender" },
-    t,
   );
   assert.ok((row?.chip ?? "").length <= 49, row?.chip ?? "(no chip)");
 });
@@ -141,11 +134,11 @@ test("a built-in tool is not a provider row", () => {
   // Returning something here would take over the hand-written descriptor for
   // every built-in and label them all generically.
   assert.equal(
-    describeProviderTool("read_file", { path: "a.txt" }, null, t),
+    describeProviderTool("read_file", { path: "a.txt" }, null),
     null,
   );
   assert.equal(
-    describeProviderTool("read_file", {}, { source: "", id: "" }, t),
+    describeProviderTool("read_file", {}, { source: "", id: "" }),
     null,
   );
 });
@@ -157,13 +150,12 @@ test("a provider kind this build does not know falls through to the generic row"
       "xyz_thing",
       {},
       { source: "future-provider", id: "thing" },
-      t,
     ),
     null,
   );
 });
 
 test("a provider with no id still names something rather than nothing", () => {
-  const row = describeProviderTool("mcp_x_y", {}, { source: "mcp", id: "" }, t);
+  const row = describeProviderTool("mcp_x_y", {}, { source: "mcp", id: "" });
   assert.equal(row?.verb, "Using mcp_x_y");
 });

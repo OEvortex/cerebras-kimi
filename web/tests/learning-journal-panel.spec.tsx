@@ -5,7 +5,7 @@ import LearningJournalPanel from "@/components/space/LearningJournalPanel";
 import { getLearningJournal, type LearningJournal } from "@/lib/learning-journal-api";
 
 const route = vi.hoisted(() => ({ workspace: "a" }));
-vi.mock("next/navigation", () => ({
+vi.mock("@/shared/router/navigation", () => ({
   usePathname: () => "/space/journal",
   useSearchParams: () => new URLSearchParams({ dt_workspace: route.workspace }),
 }));

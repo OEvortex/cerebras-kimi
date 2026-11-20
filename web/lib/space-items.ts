@@ -58,18 +58,4 @@ export const SPACE_ITEMS: SpaceItem[] = [
     description: "Review and organize quiz questions across sessions.",
     icon: ClipboardList,
   },
-  {
-    key: "personas",
-    href: "/space/personas",
-    label: "Personas",
-    description: "Behavior presets you can apply per chat turn.",
-    icon: UserRound,
-  },
-  {
-    key: "skills",
-    href: "/space/skills",
-    label: "Skills",
-    description: "Capability playbooks the model reads on demand.",
-    icon: Wand2,
-  },
 ];

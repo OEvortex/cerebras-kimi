@@ -23,7 +23,7 @@ vi.mock("@/hooks/useAuthStatus", () => ({
   }),
 }));
 
-vi.mock("next/link", () => ({
+vi.mock("@/shared/router/link", () => ({
   default: ({
     children,
     prefetch,
@@ -37,7 +37,7 @@ vi.mock("next/link", () => ({
     </a>
   ),
 }));
-vi.mock("next/navigation", () => ({
+vi.mock("@/shared/router/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
   usePathname: () => "/chat",
   useRouter: () => ({ push: fixture.push }),

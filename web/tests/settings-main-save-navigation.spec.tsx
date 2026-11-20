@@ -3,7 +3,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterAll, beforeAll, beforeEach, expect, it, vi } from 'vitest'
 import SettingsMain from '@/components/settings/SettingsMain'
 const mocks = vi.hoisted(() => ({ save: vi.fn(), push: vi.fn(), setActiveSection: vi.fn() }))
-vi.mock('next/navigation', () => ({
+vi.mock('@/shared/router/navigation', () => ({
   usePathname: () => '/settings/appearance',
   useRouter: () => ({ push: mocks.push }),
 }))

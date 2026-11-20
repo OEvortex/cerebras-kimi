@@ -22,8 +22,6 @@ import type { StreamEvent } from "../features/chat/model/protocol";
 
 const recorded = recordedEvents as unknown as Record<string, StreamEvent[]>;
 
-const t = (key: string, opts?: Record<string, unknown>) =>
-  key.replace(/\{\{(\w+)\}\}/g, (_m, name) => String(opts?.[name] ?? ""));
 
 /** The row a group of events resolves to, exactly as the component builds it. */
 function rowFor(events: StreamEvent[]) {
@@ -32,7 +30,7 @@ function rowFor(events: StreamEvent[]) {
   const meta = (call?.metadata ?? {}) as Record<string, unknown>;
   const toolName = String(meta.tool_name ?? "");
   const args = meta.args as Record<string, unknown> | undefined;
-  return { provider, row: describeProviderTool(toolName, args, provider, t) };
+  return { provider, row: describeProviderTool(toolName, args, provider) };
 }
 
 test("a recorded CLI app call resolves to a row naming the app and its arguments", () => {

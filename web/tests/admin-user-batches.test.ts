@@ -12,7 +12,7 @@ const usersPage = readFileSync(
   "utf8",
 );
 const authRouter = readFileSync(
-  path.resolve(process.cwd(), "..", "deeptutor", "api", "routers", "auth.py"),
+  path.resolve(process.cwd(), "..", "reff", "deeptutor", "api", "routers", "auth.py"),
   "utf8",
 );
 

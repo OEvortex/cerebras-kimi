@@ -10,7 +10,7 @@ const fixture = vi.hoisted(() => ({
   organize: vi.fn(),
   push: vi.fn(),
 }));
-vi.mock("next/navigation", () => ({
+vi.mock("@/shared/router/navigation", () => ({
   useRouter: () => ({ push: fixture.push }),
 }));
 function translate(key: string) {

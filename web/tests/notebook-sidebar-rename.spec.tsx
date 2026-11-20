@@ -12,7 +12,7 @@ const mocks = vi.hoisted(() => ({
   rename: vi.fn(),
 }));
 
-vi.mock("next/navigation", () => ({
+vi.mock("@/shared/router/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
 }));
 vi.mock("@/components/notebook/NotebookRecordRow", () => ({

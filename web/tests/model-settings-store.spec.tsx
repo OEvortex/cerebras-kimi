@@ -17,7 +17,7 @@ vi.mock("@/shared/api/client", () => ({
   apiUrl: (url: string) => url,
   apiFetch: (...args: unknown[]) => mocks.fetch(...args),
 }));
-vi.mock("next/navigation", () => ({ useRouter: () => mocks.router }));
+vi.mock("@/shared/router/navigation", () => ({ useRouter: () => mocks.router }));
 function translate(key: string) {
   return key;
 }

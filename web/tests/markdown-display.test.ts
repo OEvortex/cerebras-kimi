@@ -1,91 +1,19 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  appendWithEmphasisRepair,
   decodeEscapedUnicodeForDisplay,
   escapeUnknownHtmlTagsForDisplay,
   hasVisibleMarkdownContent,
   markdownUrlTransform,
   normalizeMarkdownForDisplay,
-  repairChineseEmphasis,
   repairMalformedStrongEmphasis,
   safeDecodeURIComponent,
 } from "../lib/markdown-display";
 
-test("repairChineseEmphasis repairs punctuation boundaries only for CJK replies", () => {
-  assert.equal(repairChineseEmphasis("中文*，重点*", "zh-CN"), "中文 *，重点*");
-  assert.equal(
-    repairChineseEmphasis("中文**，重点**", "zh"),
-    "中文 **，重点**",
-  );
-  assert.equal(repairChineseEmphasis("中文*，重点*", "en"), "中文*，重点*");
-  assert.equal(repairChineseEmphasis("中文*，重点*"), "中文*，重点*");
-});
-
-test("repairChineseEmphasis also repairs Japanese and Korean replies", () => {
-  // Both set a bracket flush against the next word, exactly as Chinese does.
-  assert.equal(
-    repairChineseEmphasis("つまり、**関連付けは「どの表を見るか」**です。", "ja"),
-    "つまり、**関連付けは「どの表を見るか」** です。",
-  );
-  assert.equal(repairChineseEmphasis("**“단어”**는", "ko"), "**“단어”** 는");
-  assert.equal(
-    appendWithEmphasisRepair("**「表」**です", "\n", "**「表」**です\n", "ja"),
-    "**「表」** です\n",
-  );
-});
-
-test("repairChineseEmphasis balances the opposite delimiter when exactly one boundary is repaired", () => {
-  assert.equal(
-    repairChineseEmphasis("中文*，重点*内容", "zh"),
-    "中文 *，重点* 内容",
-  );
-});
-
-test("repairChineseEmphasis is fed the complete raw stream, not prior display output", () => {
-  const chunks = ["中文*，重", "点*", "内容"];
-  const rawContent = chunks.join("");
-
-  assert.equal(repairChineseEmphasis(rawContent, "zh"), "中文 *，重点* 内容");
-  assert.equal(
-    repairChineseEmphasis(
-      repairChineseEmphasis(chunks.slice(0, 2).join(""), "zh") + chunks[2],
-      "zh",
-    ),
-    "中文 *，重点*内容",
-  );
-});
-test("repairChineseEmphasis leaves inner whitespace and literal stars unchanged", () => {
-  const inputs = [
-    "* 重点 *",
-    "** 重点 **",
-    "*重点 内容*",
-    "前言 * 第一项 * 与 * 第二项 * 后记",
-    "Use * as multiplication *",
-    String.raw`\* 重点 \*`,
-  ];
-  for (const input of inputs) {
-    assert.equal(repairChineseEmphasis(input, "zh"), input);
-  }
-});
-
-test("repairChineseEmphasis leaves code, math, escaped, and triple-star spans untouched", () => {
-  const input = [
-    "`中文*，重点*`",
-    "```md",
-    "中文**，重点**",
-    "```",
-    "$中文*，重点*$",
-    "\\中文\\*，重点\\*",
-    "中文***，重点***内容",
-  ].join("\n");
-  assert.equal(repairChineseEmphasis(input, "zh"), input);
-});
-
 test("repairMalformedStrongEmphasis moves label whitespace outside the closing marker", () => {
   assert.equal(
-    repairMalformedStrongEmphasis("**發布日期： **2026 年 7 月 30 日"),
-    "**發布日期：** 2026 年 7 月 30 日",
+    repairMalformedStrongEmphasis("**Date: **2026-07-30"),
+    "**Date:** 2026-07-30",
   );
 });
 
@@ -484,51 +412,3 @@ test("hasVisibleMarkdownContent keeps meaningful markdown", () => {
   );
 });
 
-/** Replay a reply arriving in chunks the way the chat reducer does. */
-function streamThrough(chunks: string[], language: string): string {
-  let raw = "";
-  let display = "";
-  for (const chunk of chunks) {
-    raw += chunk;
-    display = appendWithEmphasisRepair(display, chunk, raw, language);
-  }
-  // What STREAM_END does: settle the trailing line, which had no newline.
-  return repairChineseEmphasis(raw, language);
-}
-
-test("appendWithEmphasisRepair lands on the same text as repairing every chunk", () => {
-  const chunks = [
-    "第一行",
-    "**，重点**",
-    "\n",
-    "第二行也有",
-    "**，重点**",
-    "\n\n",
-    "```\n",
-    "code**，not touched**\n",
-    "```\n",
-    "结尾",
-    "**，重点**",
-  ];
-  const whole = chunks.join("");
-
-  assert.equal(streamThrough(chunks, "zh-CN"), repairChineseEmphasis(whole, "zh-CN"));
-});
-
-test("appendWithEmphasisRepair repairs a line as soon as its newline arrives", () => {
-  const raw = "中文**，重点**\n";
-  // Mid-line the partial tail shows through unrepaired...
-  assert.equal(
-    appendWithEmphasisRepair("中文", "**，重点**", "中文**，重点**", "zh"),
-    "中文**，重点**",
-  );
-  // ...and the newline that completes the line settles it.
-  assert.equal(appendWithEmphasisRepair("中文**，重点**", "\n", raw, "zh"), "中文 **，重点**\n");
-});
-
-test("appendWithEmphasisRepair leaves non-Chinese replies untouched", () => {
-  assert.equal(
-    appendWithEmphasisRepair("ignored", "**bold**", "text**bold**", "en"),
-    "text**bold**",
-  );
-});

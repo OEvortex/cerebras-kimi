@@ -35,7 +35,7 @@ export const CREATE_KINDS: Record<CreationKind, CreationKindDef> = {
     hintKey: "composer.tray.createHintSkill",
     draftHeaderKey: "composer.create.draft.headerSkill",
     manageLabelKey: "composer.create.manageSkills",
-    href: "/space/skills",
+    href: "/personalization",
   },
   persona: {
     kind: "persona",
@@ -45,7 +45,7 @@ export const CREATE_KINDS: Record<CreationKind, CreationKindDef> = {
     hintKey: "composer.tray.createHintPersona",
     draftHeaderKey: "composer.create.draft.headerPersona",
     manageLabelKey: "composer.create.managePersonas",
-    href: "/space/personas",
+    href: "/personalization",
   },
 };
 

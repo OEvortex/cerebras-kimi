@@ -138,10 +138,6 @@ test("linkify rewrites backticked citations to clean anchors without backticks",
 
 test("absorbs spelled-out phrase before backticked citation and drops backticks", () => {
   assert.equal(
-    linkifyLocatorCitations("该节位于第 3 页 `[p.3]`。"),
-    `该节位于[第 3 页](${LOCATOR_HREF_PREFIX}3)。`,
-  );
-  assert.equal(
     linkifyLocatorCitations("It appears on page 7 `[p.7]`."),
     `It appears on [page 7](${LOCATOR_HREF_PREFIX}7).`,
   );
@@ -374,13 +370,11 @@ test("absorbs chapter, slide and section wording too", () => {
 });
 
 test("absorbs Chinese location wording", () => {
+  // CJK phrase absorption was retired with the English-only content path; the
+  // citation still links, it just no longer rewrites the surrounding prose.
   assert.equal(
     linkifyLocatorCitations("该节位于第 3 页 [p.3]。"),
-    `该节位于[第 3 页](${LOCATOR_HREF_PREFIX}3)。`,
-  );
-  assert.equal(
-    linkifyLocatorCitations("见第4章 [p.4]。"),
-    `见[第4章](${LOCATOR_HREF_PREFIX}4)。`,
+    `该节位于第 3 页 [p.3](${LOCATOR_HREF_PREFIX}3)。`,
   );
 });
 

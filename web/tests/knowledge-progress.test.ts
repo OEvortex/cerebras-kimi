@@ -47,12 +47,7 @@ test("progress from another task cannot overwrite current state", () => {
   );
 });
 
-test("translates a templated progress line and falls back without one", () => {
-  const t = (key: string, options?: Record<string, unknown>) =>
-    key === "Describing images: {{current}}/{{total}}"
-      ? `图片描述：${options?.current}/${options?.total}`
-      : key;
-
+test("uses the backend's composed progress line", () => {
   const translated = taskStateAfterProgress(
     { ...running, logs: [] },
     "task-1",
@@ -63,16 +58,14 @@ test("translates a templated progress line and falls back without one", () => {
       message_key: "Describing images: {{current}}/{{total}}",
       message_params: { current: 3, total: 7 },
     },
-    t,
   );
-  assert.deepEqual(translated.logs, ["图片描述：3/7"]);
+  assert.deepEqual(translated.logs, ["Describing images: 3/7"]);
 
   // A producer that has not been converted still shows its rendered English.
   const legacy = taskStateAfterProgress(
     { ...running, logs: [] },
     "task-1",
     { task_id: "task-1", stage: "processing_documents", message: "Saving…" },
-    t,
   );
   assert.deepEqual(legacy.logs, ["Saving…"]);
 });

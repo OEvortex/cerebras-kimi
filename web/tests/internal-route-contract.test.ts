@@ -38,9 +38,20 @@ const pagePatterns = walk(APP_ROOT)
   .filter((file) => /^page\.(?:ts|tsx|js|jsx)$/.test(path.basename(file)))
   .map(pagePattern);
 
+// Routes that live in the TanStack router without an app/ page file: the
+// settings section route renders SettingsPageContent for /settings/$section,
+// and "/" is the index redirect.
+const ROUTE_ONLY_PATTERNS = [
+  /^\/$/,
+  /^\/settings\/[^/]+\/?$/,
+];
+
 function isPagePath(value: string): boolean {
   const pathname = value.split(/[?#]/, 1)[0] || "/";
-  return pagePatterns.some((pattern) => pattern.test(pathname));
+  return (
+    pagePatterns.some((pattern) => pattern.test(pathname)) ||
+    ROUTE_ONLY_PATTERNS.some((pattern) => pattern.test(pathname))
+  );
 }
 
 function literalNavigationTargets(file: string): string[] {
@@ -109,7 +120,4 @@ test("retired bookmark compatibility routes stay removed", () => {
     existsSync(path.join(APP_ROOT, "(workspace)/partners/groups/page.tsx")),
     false,
   );
-  const config = readFileSync(path.join(ROOT, "next.config.js"), "utf8");
-  assert.doesNotMatch(config, /\/space\/learning/);
-
 });

@@ -22,7 +22,6 @@ import {
   NotebookPen,
   Paperclip,
   Sparkles,
-  UserRound,
   Wrench,
   type LucideIcon,
 } from "lucide-react";
@@ -166,12 +165,6 @@ const SPACE_CATEGORIES: Record<string, SpaceCategoryDef> = {
     href: "/space/questions",
     label: "Question bank",
     icon: ClipboardList,
-  },
-  persona: {
-    key: "persona",
-    href: "/space/personas",
-    label: "Persona",
-    icon: UserRound,
   },
   memory: {
     key: "memory",

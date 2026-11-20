@@ -221,10 +221,6 @@ export function TaskDetails({
         <button type="button" className="dt-cal-text-button" onClick={onClearDate}>
           {"Remove due date"}
         </button>
-        <Link href="/kanban" prefetch={false} className="dt-cal-text-button">
-          {"Open board"}
-          <ArrowUpRight aria-hidden size={12} />
-        </Link>
       </div>
     </div>
   )

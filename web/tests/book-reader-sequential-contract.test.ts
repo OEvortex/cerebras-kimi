@@ -50,6 +50,6 @@ test("turning backward lands at the end and forward lands at the start", () => {
 test("the reader exposes native chapter progress and keeps direct footer turns", () => {
   assert.ok(source.includes("<progress"));
   assert.ok(source.includes("max={100}"));
-  assert.ok(source.includes("Chapter progress: {{percent}}%"));
+  assert.ok(source.includes("Chapter progress: ${readingPercent}%"));
   assert.ok(source.includes("onNavigate(page.id)"));
 });

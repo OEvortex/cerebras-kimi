@@ -9,7 +9,7 @@ import { practiceMarkdown } from "@/lib/practice-content";
 
 let query = "view=mistakes";
 const replace = vi.fn();
-vi.mock("next/navigation", () => ({
+vi.mock("@/shared/router/navigation", () => ({
   useSearchParams: () => new URLSearchParams(query),
   useRouter: () => ({ replace }),
 }));

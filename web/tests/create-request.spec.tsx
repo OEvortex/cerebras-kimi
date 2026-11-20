@@ -3,7 +3,7 @@ import { beforeEach, expect, it, vi } from 'vitest'
 import { useCreateRequest } from '@/components/learning/create-request'
 
 const mocks = vi.hoisted(() => ({ replace: vi.fn(), query: '' }))
-vi.mock('next/navigation', () => ({
+vi.mock('@/shared/router/navigation', () => ({
   useRouter: () => ({ replace: mocks.replace }),
   usePathname: () => '/learning/books',
   useSearchParams: () => new URLSearchParams(mocks.query),

@@ -1,4 +1,4 @@
-import { readdirSync, rmSync, statSync } from "node:fs";
+import { cpSync, readdirSync, rmSync, statSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -54,21 +54,43 @@ const sourceDirs = [
   "lib",
   "shared",
   "src",
+  "vendor",
 ];
 const tsFiles = sourceDirs.flatMap((dir) => {
   const full = path.join(webRoot, dir);
   try {
-    return statSync(full).isDirectory() ? collectFiles(full, ".ts") : [];
+    if (!statSync(full).isDirectory()) return [];
+    const ts = collectFiles(full, ".ts");
+    // Specs are vitest/playwright-only and use top-level await, which the CJS
+    // output can't express; node tests are .test.ts. Compile .tsx for source
+    // dirs only so tests can import components.
+    return dir === "tests" ? ts : [...ts, ...collectFiles(full, ".tsx")];
   } catch {
     return [];
   }
 });
+
+// bundle:false leaves `require("./x.json")` / asset imports in place, so the
+// non-code files tests reach for have to exist next to the compiled output.
+const assetFiles = sourceDirs.flatMap((dir) => {
+  const full = path.join(webRoot, dir);
+  try {
+    return statSync(full).isDirectory() ? collectFiles(full, ".json") : [];
+  } catch {
+    return [];
+  }
+});
+for (const file of assetFiles) {
+  const target = path.join(distRoot, path.relative(webRoot, file));
+  cpSync(file, target, { recursive: true });
+}
 
 await build({
   entryPoints: tsFiles,
   outdir: distRoot,
   outbase: webRoot,
   format: "cjs",
+  supported: { "dynamic-import": false },
   platform: "node",
   target: "node20",
   bundle: false,

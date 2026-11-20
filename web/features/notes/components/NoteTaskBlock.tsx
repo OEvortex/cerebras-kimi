@@ -89,9 +89,6 @@ export default function NoteTaskBlock({
               )
             }
           />
-          <a href="/kanban" className="text-xs text-[var(--primary)]">
-            {"Open task board"}
-          </a>
         </>
       ) : (
         <button

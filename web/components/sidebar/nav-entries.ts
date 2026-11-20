@@ -3,7 +3,6 @@ import { LEARNING_HUB } from '@/lib/learning-routes'
 import {
   Bot,
   GraduationCap,
-  HeartHandshake,
   House,
   LayoutGrid,
   ListTodo,
@@ -46,13 +45,6 @@ const PRIMARY_NAV: NavEntry[] = [
     tooltipKey: 'Home tooltip',
     requires: 'llm',
     surfaces: ['chat'],
-  },
-  {
-    href: '/partners',
-    label: 'Partners',
-    icon: HeartHandshake,
-    tooltipKey: 'Partners tooltip',
-    requires: 'llm',
   },
   {
     href: LEARNING_HUB,
