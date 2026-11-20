@@ -3,13 +3,12 @@
 import {
   normalizeLanguage as normalizeAppLanguage,
   type AppLanguage,
-  type ResponseLanguage,
 } from "@/context/languages";
 
 import { browserStorage } from "@/shared/storage";
 import { activeWorkspaceId } from "@/lib/workspace-scope";
 
-export type { AppLanguage, ResponseLanguage } from "@/context/languages";
+export type { AppLanguage } from "@/context/languages";
 
 const SUPPORTED_RESPONSE_LANGUAGE_CODES: readonly ResponseLanguage[] = [
   "en",
