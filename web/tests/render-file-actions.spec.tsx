@@ -4,7 +4,18 @@ import { beforeEach, expect, it, vi } from 'vitest'
 import { OutputFileActions } from '@/components/files/OutputFileActions'
 
 const mocks = vi.hoisted(() => ({ fetch: vi.fn() }))
-vi.mock('@/shared/api/client', () => ({ apiFetch: (...args: unknown[]) => mocks.fetch(...args) }))
+vi.mock('@/shared/api/client', () => ({
+  asJsonOrThrow: async (response: Response) => {
+    if (!response.ok) {
+      let detail = `${response.status} ${response.statusText}`;
+      try {
+        const body = await response.json();
+        if (body?.detail) detail = String(body.detail);
+      } catch { /* keep status line */ }
+      throw new Error(detail);
+    }
+    return response.json();
+  }, apiFetch: (...args: unknown[]) => mocks.fetch(...args) }))
 const url = `/files/workspace-items/ws_${'a'.repeat(32)}/wsi_${'b'.repeat(32)}`
 const preview = {
   file_path: '/workspace/outputs/movie.mp4',

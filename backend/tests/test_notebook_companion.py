@@ -98,7 +98,9 @@ def test_flashcards_propose_reviewable_learning_block(tmp_path, monkeypatch):
     assert len(json.loads(block["props"]["data"])["cards"]) == 2
 
     # Nothing is written to the page until the learner accepts the proposal.
-    assert storage.load_document(page.id).blocks == page.blocks
+    persisted = storage.load_document(page.id)
+    assert persisted is not None
+    assert persisted.blocks == page.blocks
 
 
 def test_note_suggest_rejects_unknown_operation(tmp_path, monkeypatch):

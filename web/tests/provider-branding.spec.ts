@@ -13,8 +13,8 @@ const asset = (file: string) => path.join(root, 'web/public/provider-icons', fil
 
 describe('provider branding', () => {
   it('covers every branded provider in all service registries', () => {
-    const llm = readFileSync(path.join(root, 'deeptutor/services/provider_registry.py'), 'utf8')
-    const services = readFileSync(path.join(root, 'deeptutor/services/config/provider_runtime.py'), 'utf8')
+    const llm = readFileSync(path.join(root, 'reff/deeptutor/services/provider_registry.py'), 'utf8')
+    const services = readFileSync(path.join(root, 'reff/deeptutor/services/config/provider_runtime.py'), 'utf8')
     const ids = new Set([
       ...Array.from(llm.matchAll(/name="([a-z_]+)"/g), m => m[1]),
       ...Array.from(services.matchAll(/^    "([a-z_]+)": \w+ProviderSpec\(/gm), m => m[1]),
@@ -57,22 +57,13 @@ describe('provider branding', () => {
     }
   })
 
-  it('adds Chinese originals once and preserves user account names', () => {
-    expect(formatProviderLabel('deepseek', 'DeepSeek', 'zh')).toBe('DeepSeek（深度求索）')
-    expect(formatProviderLabel('dashscope', 'Aliyun DashScope', 'zh')).toBe('Aliyun DashScope（阿里云百炼）')
-    expect(formatProviderLabel('deepseek', 'DeepSeek（深度求索）', 'zh')).toBe('DeepSeek（深度求索）')
-    expect(formatConfiguredProviderName('moonshot', 'Moonshot', 'zh')).toBe('Moonshot（月之暗面）')
-    expect(formatConfiguredProviderName('deepseek', 'My study account', 'zh')).toBe('My study account')
-    expect(formatProviderLabel('openai', 'OpenAI', 'zh')).toBe('OpenAI')
-  })
-
-  it('omits Chinese branding in every non-Chinese UI locale without altering custom names', () => {
-    for (const language of ['en', 'fr', 'de', 'uk', 'pl', 'vi', 'pt', 'ja', 'tr']) {
-      expect(formatProviderLabel('deepseek', 'DeepSeek', language)).toBe('DeepSeek')
-      expect(formatProviderLabel('deepseek', 'DeepSeek（深度求索）', language)).toBe('DeepSeek')
-      expect(formatConfiguredProviderName('moonshot', 'Moonshot（月之暗面）', language)).toBe('Moonshot')
-      expect(formatConfiguredProviderName('deepseek', '我的学习账号（深度求索）', language)).toBe('我的学习账号（深度求索）')
-    }
-    expect(formatProviderLabel('deepseek', 'DeepSeek', 'zh-CN')).toBe('DeepSeek（深度求索）')
+  it('returns catalog labels and configured names unchanged', () => {
+    // English-only UI: no locale-specific branding is added or stripped.
+    expect(formatProviderLabel('deepseek', 'DeepSeek', 'en')).toBe('DeepSeek')
+    expect(formatProviderLabel('deepseek', 'DeepSeek', 'zh')).toBe('DeepSeek')
+    expect(formatProviderLabel('openai', 'OpenAI', 'zh-CN')).toBe('OpenAI')
+    expect(formatConfiguredProviderName('moonshot', 'Moonshot', 'zh')).toBe('Moonshot')
+    expect(formatConfiguredProviderName('deepseek', 'My study account', 'en')).toBe('My study account')
+    expect(formatConfiguredProviderName('deepseek', 'DeepSeek（深度求索）', 'zh')).toBe('DeepSeek（深度求索）')
   })
 })

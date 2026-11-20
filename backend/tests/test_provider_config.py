@@ -21,8 +21,11 @@ class SelectionTests(unittest.TestCase):
         self.assertIsNone(pc.get_selection(settings))
 
         saved = pc.set_selection(settings, {"profile_id": "openai", "model_id": "gpt-4o"})
+        assert saved is not None
         self.assertEqual(saved["profile_id"], "openai")
-        self.assertEqual(pc.get_selection(settings)["model_id"], "gpt-4o")
+        selection = pc.get_selection(settings)
+        assert selection is not None
+        self.assertEqual(selection["model_id"], "gpt-4o")
         self.assertIn(("openai", "gpt-4o"), pc.recent_pairs(settings))
 
         # The selection is also stored under its own key in the shared DB.
@@ -33,8 +36,11 @@ class SelectionTests(unittest.TestCase):
 
         # Explicit override wins, without changing the persisted selection.
         override = pc.get_selection(settings, {"profile_id": "x", "model_id": "y"})
+        assert override is not None
         self.assertEqual(override["profile_id"], "x")
-        self.assertEqual(pc.get_selection(settings)["profile_id"], "openai")
+        selection = pc.get_selection(settings)
+        assert selection is not None
+        self.assertEqual(selection["profile_id"], "openai")
 
     def test_recency_is_capped_and_deduped(self) -> None:
         settings = make_settings()
@@ -171,6 +177,7 @@ class CatalogFileTests(unittest.TestCase):
 class ProbeTests(unittest.TestCase):
     def test_custom_models_parser(self) -> None:
         preset = pc.builtin_preset("experientiallabs")
+        assert preset is not None
         payload = {"model": [{
             "slug": "m1",
             "display_name": "Model One",
@@ -183,6 +190,7 @@ class ProbeTests(unittest.TestCase):
         response = mock.Mock(status_code=200)
         response.json.return_value = {"data": [{"id": "m1"}]}
         preset = pc.builtin_preset("experientiallabs")
+        assert preset is not None
         with mock.patch("httpx.Client") as client_cls:
             client = client_cls.return_value.__enter__.return_value
             client.get.return_value = response

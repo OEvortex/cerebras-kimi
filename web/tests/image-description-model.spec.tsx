@@ -7,6 +7,17 @@ import { applyExtensionPayload } from '@/lib/settings-extensions'
 const mocks = vi.hoisted(() => ({ options: vi.fn(), fetch: vi.fn() }))
 vi.mock('@/lib/llm-options', () => ({ listLLMOptions: () => mocks.options() }))
 vi.mock('@/shared/api/client', () => ({
+  asJsonOrThrow: async (response: Response) => {
+    if (!response.ok) {
+      let detail = `${response.status} ${response.statusText}`;
+      try {
+        const body = await response.json();
+        if (body?.detail) detail = String(body.detail);
+      } catch { /* keep status line */ }
+      throw new Error(detail);
+    }
+    return response.json();
+  },
   apiUrl: (value: string) => value,
   apiFetch: (...args: unknown[]) => mocks.fetch(...args),
 }))

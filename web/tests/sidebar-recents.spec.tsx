@@ -46,11 +46,11 @@ it('lists conversations by day with pinned ones first and filters them by search
   const props = { sessions, activeSessionId: null, onSelect: vi.fn(), onRename: vi.fn(), onDelete: vi.fn(), onOrganize: vi.fn() }
   const { container, rerender } = render(<OrganizedSessionList {...props} timeline={view} />)
   const headings = () => [...container.querySelectorAll('.dt-record-group > h2')].map(node => node.textContent)
-  expect(headings()).toEqual(['navigation.pinned', 'Today', 'Earlier'])
+  expect(headings()).toEqual(['Pinned', 'Today', 'Earlier'])
   expect(container.querySelectorAll('time.dt-record-time')).toHaveLength(3)
   // Ordered by creation, the conversation active today was started last week.
   rerender(<OrganizedSessionList {...props} timeline={{ ...view, sort: 'createdAt' }} />)
-  expect(headings()).toEqual(['navigation.pinned', 'Earlier'])
+  expect(headings()).toEqual(['Pinned', 'Earlier'])
   rerender(<OrganizedSessionList {...props} timeline={{ ...view, query: 'matrices' }} />)
   expect(screen.getByText('Matrices last month')).toBeInTheDocument()
   expect(screen.queryByText('Vectors today')).toBeNull()

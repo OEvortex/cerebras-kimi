@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator
+from collections.abc import Collection, Generator
 import contextlib
 import json
 from pathlib import Path
@@ -104,7 +104,7 @@ class SQLiteCronRepository:
             return payloads
 
     @contextlib.contextmanager
-    def _connect(self) -> Iterator[sqlite3.Connection]:
+    def _connect(self) -> Generator[sqlite3.Connection]:
         """Preserve transaction handling and close without relying on garbage collection."""
         connection = sqlite3.connect(self.path, timeout=30, isolation_level=None)
         try:
@@ -166,7 +166,7 @@ class SQLiteCronRepository:
         )
         connection.execute("INSERT INTO cron_meta(singleton, revision) VALUES (1, ?)", (revision,))
 
-    def _initialize(self, initial: Iterable[dict[str, Any]]) -> None:
+    def _initialize(self, initial: Collection[dict[str, Any]]) -> None:
         with self._migration_lock(), self._connect() as connection:
             connection.execute(
                 """

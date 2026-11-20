@@ -68,12 +68,16 @@ def test_note_create_and_list_manage_the_notebook(tmp_path, monkeypatch):
 
     storage = get_co_writer_storage()
     child = next(doc for doc in storage.list_documents() if doc.title == "MOSFET")
-    assert storage.load_document(child.id).parent_id is None
+    child_doc = storage.load_document(child.id)
+    assert child_doc is not None
+    assert child_doc.parent_id is None
 
     sub = _run(dito.note_create, title="Channel", content="body", parent_here=True)
     assert sub.success
     nested = next(doc for doc in storage.list_documents() if doc.title == "Channel")
-    assert storage.load_document(nested.id).parent_id == page.id
+    nested_doc = storage.load_document(nested.id)
+    assert nested_doc is not None
+    assert nested_doc.parent_id == page.id
 
     listed = _run(dito.note_list, query="mos")
     assert "MOSFET" in listed.result and "PN Junction" not in listed.result

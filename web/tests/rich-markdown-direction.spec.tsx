@@ -15,7 +15,7 @@ describe("Rich Markdown reading direction", () => {
     await waitFor(() => expect(container.querySelector(".katex")).not.toBeNull());
     const paragraphs = [...container.querySelectorAll("p")];
     expect(paragraphs.length).toBeGreaterThanOrEqual(2);
-    for (const p of paragraphs) expect(p).toHaveAttribute("dir", "auto");
+    for (const p of paragraphs) expect(p).toHaveAttribute("dir", "ltr");
     // Formulas stay left-to-right: nothing above them forces a direction.
     for (const formula of container.querySelectorAll(".katex")) {
       expect(formula.closest("[dir]")).toHaveAttribute("dir", "ltr");

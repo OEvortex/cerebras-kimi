@@ -8,11 +8,22 @@ import { LEARNING_DISPLAY_APPLIED } from '@/lib/learning-display'
 import { recoveryPrincipal, updateRecoveryPrincipal } from '@/lib/recovery-principal'
 const mocks = vi.hoisted(() => ({ fetch: vi.fn(), t: (key: string) => key }))
 vi.mock('@/shared/api/client', () => ({
+  asJsonOrThrow: async (response: Response) => {
+    if (!response.ok) {
+      let detail = `${response.status} ${response.statusText}`;
+      try {
+        const body = await response.json();
+        if (body?.detail) detail = String(body.detail);
+      } catch { /* keep status line */ }
+      throw new Error(detail);
+    }
+    return response.json();
+  },
   apiUrl: (s: string) => s,
   apiFetch: (...args: unknown[]) => mocks.fetch(...args),
 }))
 vi.mock('@/shared/router/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }))
-vi.mock('next/dynamic', () => ({ default: () => () => null }))
+vi.mock('@/shared/router/dynamic', () => ({ default: () => () => null }))
 vi.mock('@/context/AppShellContext', () => ({
   useAppShell: () => ({
     codeBlockTheme: 'github',

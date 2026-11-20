@@ -50,7 +50,7 @@ export function LearningDashboard() {
     >
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <div className="flex flex-wrap gap-1" role="group" aria-label={"Learning type"}>
-          {[{ kind: 'all', title: 'navigation.allLearning' }, ...LEARNING_SURFACES].map(surface => <button key={surface.kind} type="button" aria-pressed={kind === surface.kind} onClick={() => { setKind(surface.kind as LearningKind | 'all'); setLimit(24) }} className={`rounded-full px-3 py-1.5 text-xs transition-colors ${kind === surface.kind ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-muted/60'}`}>{(surface.title)}</button>)}
+          {[{ kind: 'all', title: 'All learning' }, ...LEARNING_SURFACES].map(surface => <button key={surface.kind} type="button" aria-pressed={kind === surface.kind} onClick={() => { setKind(surface.kind as LearningKind | 'all'); setLimit(24) }} className={`rounded-full px-3 py-1.5 text-xs transition-colors ${kind === surface.kind ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-muted/60'}`}>{(surface.title)}</button>)}
         </div>
         <input aria-label={"Search your learning"} placeholder={"Search your learning"} value={query} onChange={event => { setQuery(event.target.value); setLimit(24) }} className="ml-auto h-9 rounded-lg border border-border bg-transparent px-3 text-xs outline-none focus:border-ring" />
       </div>
@@ -139,7 +139,7 @@ export function LearningDashboard() {
           {!all.length && failed.length === 0 && <LearningWays />}
           {!recent.length && failed.length === 0 && (
             <LearningEmptyState
-              title={(all.length ? 'navigation.noResults' : 'Your next learning journey starts here')}
+              title={(all.length ? 'No matching records' : 'Your next learning journey starts here')}
               description={"Choose a book, a topic, a collection or a video to begin."}
             />
           )}

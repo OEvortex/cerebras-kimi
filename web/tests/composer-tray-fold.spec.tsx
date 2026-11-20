@@ -96,8 +96,13 @@ it('keeps following a pull that leaves the folded lip at once', () => {
 })
 
 it('leaves its own controls alone: pressing a menu opens the menu, not a drag', () => {
-  const { tray } = renderTray()
-  const trigger = screen.getByRole('button', { name: /Preferences/ })
+  const tray = render(
+    <ComposerTray
+      placement="down"
+      mode={{ capabilities: CHAT_CAPABILITIES, value: '', onChange: vi.fn() }}
+    />,
+  ).container.querySelector('.dt-composer-tray') as HTMLElement
+  const trigger = screen.getByRole('button', { name: /Mode/ })
   drag(trigger, 300, 260)
   expect(tray).not.toHaveAttribute('data-folded')
 })

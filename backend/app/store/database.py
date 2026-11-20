@@ -22,7 +22,7 @@ import sqlite3
 import threading
 import time
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any, Generator
 
 from ..config import Settings
 
@@ -141,7 +141,7 @@ def database_path(settings: Settings) -> Path:
 
 
 @contextlib.contextmanager
-def connect(settings: Settings) -> Iterator[sqlite3.Connection]:
+def connect(settings: Settings) -> Generator[sqlite3.Connection]:
     """Open the shared database with WAL and sane concurrency defaults."""
     path = database_path(settings)
     path.parent.mkdir(parents=True, exist_ok=True)

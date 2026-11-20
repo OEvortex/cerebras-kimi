@@ -21,12 +21,23 @@ vi.mock('@/features/chat/trace', () => ({
 vi.mock('@/components/chat/home/SubagentTabBody', () => ({
   default: () => <div>Local agent input</div>,
 }))
-vi.mock('next/dynamic', () => ({
+vi.mock('@/shared/router/dynamic', () => ({
   default:
     () =>
     ({ content }: { content: string }) => <div>{content}</div>,
 }))
-vi.mock('@/shared/api/client', () => ({ wsUrl: (path: string) => path }))
+vi.mock('@/shared/api/client', () => ({
+  asJsonOrThrow: async (response: Response) => {
+    if (!response.ok) {
+      let detail = `${response.status} ${response.statusText}`;
+      try {
+        const body = await response.json();
+        if (body?.detail) detail = String(body.detail);
+      } catch { /* keep status line */ }
+      throw new Error(detail);
+    }
+    return response.json();
+  }, wsUrl: (path: string) => path }))
 vi.mock('@/hooks/useChatAutoScroll', () => ({
   useChatAutoScroll: () => autoScroll,
 }))

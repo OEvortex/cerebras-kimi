@@ -40,12 +40,12 @@ const PersonalizationNavigation = dynamic(() =>
  * the bar itself says which half a switch of workspace changes.
  */
 export const CATEGORIES = [
-  { id: 'home', label: 'navigation.home', icon: HomeShelfIcon, href: '/chat', account: false },
-  { id: 'learning', label: 'navigation.learning', icon: LearningShelfIcon, href: '/learning', account: false },
-  { id: 'resources', label: 'navigation.resources', icon: ResourcesShelfIcon, href: '/space', account: false },
+  { id: 'home', label: 'Home', icon: HomeShelfIcon, href: '/chat', account: false },
+  { id: 'learning', label: 'Learning', icon: LearningShelfIcon, href: '/learning', account: false },
+  { id: 'resources', label: 'Resources', icon: ResourcesShelfIcon, href: '/space', account: false },
   {
     id: 'personalization',
-    label: 'navigation.personalization',
+    label: 'Personalization',
     icon: PersonalizationShelfIcon,
     href: '/personalization',
     account: true,

@@ -197,12 +197,12 @@ it("offers one MiniMax vendor with protocol choices instead of legacy provider a
   fireEvent.click(screen.getByRole("button", { name: "Add provider" }));
   expect(screen.queryByRole("radio", { name: "MiniMax (Anthropic)" })).toBeNull();
   expect(screen.queryByRole("radio", { name: "Custom (Anthropic API)" })).toBeNull();
-  fireEvent.change(screen.getByRole("searchbox", { name: "settings.providerServices.search" }), { target: { value: "MiniMax" } });
+  fireEvent.change(screen.getByRole("searchbox", { name: "Search providers" }), { target: { value: "MiniMax" } });
   expect(screen.getAllByRole("radio")).toHaveLength(1);
   fireEvent.click(screen.getByRole("radio", { name: "MiniMax" }));
   fireEvent.click(screen.getByRole("button", { name: "Continue" }));
   expect(mocks.settings.draft.connections?.at(-1)).toMatchObject({ provider: "minimax", api_format: "auto", base_url: "" });
-  const protocol = screen.getByRole("combobox", { name: "settings.providerServices.protocol" });
+  const protocol = screen.getByRole("combobox", { name: "Language-model API protocol" });
   expect(within(protocol).getByRole("option", { name: "OpenAI Chat Completions" })).toBeTruthy();
   expect(within(protocol).getByRole("option", { name: "Anthropic Messages" })).toBeTruthy();
 });
@@ -213,14 +213,14 @@ it("switches MiniMax default endpoints and probes with the chosen protocol while
   mocks.fetch.mockResolvedValue({ ok: true, json: async () => ({ status: "connected", models: [] }) });
   render(<Harness page="providers" providerOptions={minimaxProviders} />);
   fireEvent.click(screen.getByRole("button", { name: /MiniMax account/ }));
-  const protocol = screen.getByLabelText("settings.providerServices.protocol");
+  const protocol = screen.getByLabelText("Language-model API protocol");
   const url = screen.getByLabelText("Provider URL") as HTMLInputElement;
   expect(url.placeholder).toBe("https://api.minimax.io/v1");
   fireEvent.change(protocol, { target: { value: "anthropic" } });
   expect(url.placeholder).toBe("https://api.minimax.io/anthropic");
   expect(url.value).toBe("");
   fireEvent.click(screen.getByRole("button", { name: "Test provider" }));
-  await waitFor(() => expect(screen.getByRole("status").textContent).toContain("settings.providerServices.catalogListed"));
+  await waitFor(() => expect(screen.getByRole("status").textContent).toContain("Model list retrieved. Test a specific model to verify inference access."));
   expect(JSON.parse(mocks.fetch.mock.calls[0][1].body)).toMatchObject({ binding: "minimax", api_format: "anthropic", base_url: "https://api.minimax.io/anthropic" });
   fireEvent.change(protocol, { target: { value: "openai_chat" } });
   expect(url.placeholder).toBe("https://api.minimax.io/v1");
@@ -228,7 +228,7 @@ it("switches MiniMax default endpoints and probes with the chosen protocol while
   fireEvent.change(protocol, { target: { value: "anthropic" } });
   expect(url.value).toBe("https://gateway.test/minimax");
   fireEvent.click(screen.getByRole("button", { name: "Test provider" }));
-  await waitFor(() => expect(screen.getByRole("status").textContent).toContain("settings.providerServices.catalogListed"));
+  await waitFor(() => expect(screen.getByRole("status").textContent).toContain("Model list retrieved. Test a specific model to verify inference access."));
   expect(JSON.parse(mocks.fetch.mock.calls[1][1].body)).toMatchObject({ binding: "minimax", api_format: "anthropic", base_url: "https://gateway.test/minimax" });
   expect(mocks.settings.draft.services).toEqual(stored.services);
   expect(live).toEqual(stored);
@@ -241,7 +241,7 @@ it("keeps existing MiniMax Anthropic accounts and their models editable without 
   render(<Harness page="providers" providerOptions={minimaxProviders} />);
   fireEvent.click(screen.getByRole("button", { name: /My account/ }));
   expect((screen.getByLabelText("Provider URL") as HTMLInputElement).placeholder).toBe("https://api.minimax.io/anthropic");
-  const protocol = screen.getByLabelText("settings.providerServices.protocol");
+  const protocol = screen.getByLabelText("Language-model API protocol");
   expect(within(protocol).getAllByRole("option").map(o => o.textContent)).toEqual(["Anthropic Messages"]);
   fireEvent.click(screen.getByRole("button", { name: "Rename provider" }));
   fireEvent.change(screen.getByLabelText("Rename provider"), { target: { value: "Renamed MiniMax" } });
@@ -411,7 +411,7 @@ it("offers unverified embedding providers after opting into custom integration",
   fireEvent.click(screen.getByRole("button", { name: "Add model" }));
   const select = screen.getByLabelText("Configured provider");
   expect(within(select).queryByRole("option", { name: "xAI" })).toBeNull();
-  fireEvent.click(screen.getByLabelText("settings.serviceConfig.custom"));
+  fireEvent.click(screen.getByLabelText("Show other providers for custom integration"));
   expect(within(select).getByRole("option", { name: "xAI" })).toBeTruthy();
   fireEvent.change(select, { target: { value: "connection:x" } });
   fireEvent.change(screen.getByLabelText("Model ID"), {
@@ -582,7 +582,7 @@ it("adds a provider over plain HTTP, where crypto.randomUUID does not exist", ()
     render(<Harness page="providers" />);
     fireEvent.click(screen.getByRole("button", { name: "Add provider" }));
     fireEvent.click(screen.getByRole("radio", { name: "Custom" }));
-    fireEvent.change(screen.getByLabelText("settings.providerServices.name"), { target: { value: "My gateway" } });
+    fireEvent.change(screen.getByLabelText("Provider name"), { target: { value: "My gateway" } });
     fireEvent.change(screen.getByLabelText("Provider URL"), { target: { value: "http://gateway.test/v1" } });
     fireEvent.click(screen.getByRole("button", { name: "Continue" }));
     const staged = (mocks.settings.draft.connections ?? []).at(-1)!;
@@ -617,7 +617,7 @@ it("keeps explicit disabled services out of new model choices even in custom mod
   live.services.llm.profiles[0].service_overrides = { tts: { enabled: false } };
   render(<Harness page="voice" />);
   fireEvent.click(screen.getByRole("button", { name: "Add model" }));
-  fireEvent.click(screen.getByLabelText("settings.serviceConfig.custom"));
+  fireEvent.click(screen.getByLabelText("Show other providers for custom integration"));
   expect(within(screen.getByLabelText("Configured provider")).queryByRole("option", { name: "My account" })).toBeNull();
   expect(live.services.llm.profiles[0].models).toHaveLength(2);
 });
@@ -642,10 +642,10 @@ it("categorizes cross-service providers without duplicating accounts and support
     { value: "custom", label: "Custom", services: [] },
   ].map(p => ({ ...p, services: [...p.services] })), vendor: "", onVendor: vi.fn(), onCreate: vi.fn(), onCancel: vi.fn() };
   render(<AddProviderPanel {...props} />);
-  fireEvent.click(screen.getByRole("button", { name: "settings.providerServices.filter.multi" }));
+  fireEvent.click(screen.getByRole("button", { name: "Multiple services" }));
   expect(screen.getByRole("radio", { name: "Aggregate" })).toBeTruthy();
   expect(screen.queryByRole("radio", { name: "Search only" })).toBeNull();
-  fireEvent.click(screen.getByRole("button", { name: "settings.providerServices.filter.all" }));
+  fireEvent.click(screen.getByRole("button", { name: "All" }));
   fireEvent.change(screen.getByRole("searchbox"), { target: { value: "Search only" } });
   expect(screen.getAllByRole("radio")).toHaveLength(1);
   expect(screen.getByRole("radio", { name: "Search only" })).toBeTruthy();
@@ -657,7 +657,7 @@ it("failed reprobes replace stale discovery instead of retaining a green capabil
   render(<RegistryProbe input={{ binding: "custom", base_url: "https://gateway.test/v1" }} discovery={{ status: "connected", models: [{ id: "old" }] }} onResult={onResult} />);
   fireEvent.click(screen.getByRole("button", { name: "Test provider" }));
   await waitFor(() => expect(onResult).toHaveBeenCalledWith(expect.objectContaining({ status: "unreachable", models: [] })));
-  expect(screen.queryByText("settings.providerServices.catalogListed")).toBeNull();
+  expect(screen.queryByText("Model list retrieved. Test a specific model to verify inference access.")).toBeNull();
 });
 
 
@@ -714,7 +714,7 @@ it("imports filtered models once into the draft while preserving existing models
   expect(screen.queryByRole("checkbox", { name: "embed-only" })).toBeNull();
   fireEvent.click(screen.getByRole("checkbox", { name: "unknown" }));
   fireEvent.change(screen.getByRole("searchbox", { name: "Search models…" }), { target: { value: "CHAT-" } });
-  fireEvent.click(screen.getByRole("button", { name: "settings.modelImport.selectFiltered" }));
+  fireEvent.click(screen.getByRole("button", { name: "Select all matching models" }));
   fireEvent.click(screen.getByRole("button", { name: "Add selected models" }));
   const bucket = mocks.settings.draft.services.llm;
   expect(bucket.profiles.flatMap(p => p.models).map(m => m.model)).toEqual(["model-one", "model-two", "unknown", "chat-a", "chat-b"]);
@@ -782,10 +782,10 @@ it("fetches models, clears selection and prevents duplicates after reopening imp
   open();
   fireEvent.click(screen.getByRole("button", { name: "Get model list" }));
   await screen.findByRole("checkbox", { name: "new-a" });
-  fireEvent.click(screen.getByRole("button", { name: "settings.modelImport.selectFiltered" }));
-  fireEvent.click(screen.getByRole("button", { name: "settings.modelImport.clear" }));
+  fireEvent.click(screen.getByRole("button", { name: "Select all matching models" }));
+  fireEvent.click(screen.getByRole("button", { name: "Clear selection" }));
   expect(screen.getByRole("button", { name: "Add selected models" })).toBeDisabled();
-  fireEvent.click(screen.getByRole("button", { name: "settings.modelImport.selectFiltered" }));
+  fireEvent.click(screen.getByRole("button", { name: "Select all matching models" }));
   fireEvent.click(screen.getByRole("button", { name: "Add selected models" }));
   open();
   expect(screen.getByRole("checkbox", { name: /new-a/ })).toBeDisabled();

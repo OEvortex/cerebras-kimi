@@ -119,7 +119,7 @@ export function RecordHeader({
                       }}
                     >
                       <span className="min-w-0 flex-1">
-                        {(value === 'updatedAt' ? 'navigation.lastActive' : 'navigation.createdTime')}
+                        {(value === 'updatedAt' ? 'Last active' : 'Created time')}
                       </span>
                       {view.sort === value && <Check size={14} strokeWidth={2} />}
                     </button>

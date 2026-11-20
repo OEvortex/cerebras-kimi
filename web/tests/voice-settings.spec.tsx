@@ -13,6 +13,17 @@ const mock = vi.hoisted(() => ({ settings: {} as SettingsContextValue, fetch: vi
 vi.mock('@/lib/notifications', () => ({ notify: mock.notify }))
 vi.mock('@/features/settings/store/SettingsStore', () => ({ useSettings: () => mock.settings }))
 vi.mock('@/shared/api/client', () => ({
+  asJsonOrThrow: async (response: Response) => {
+    if (!response.ok) {
+      let detail = `${response.status} ${response.statusText}`;
+      try {
+        const body = await response.json();
+        if (body?.detail) detail = String(body.detail);
+      } catch { /* keep status line */ }
+      throw new Error(detail);
+    }
+    return response.json();
+  },
   apiUrl: (url: string) => url,
   apiFetch: (...args: unknown[]) => mock.fetch(...args),
 }))
@@ -194,7 +205,7 @@ it('switching model preserves an explicit voice without substituting a static vo
     target: { value: 'seed-tts-1.0' },
   })
   expect(mock.settings.draft.services.tts.profiles[0].models[1].voice).toBe('vivi-v2')
-  await waitFor(() => expect(screen.getByText('settings.voiceDiscovery.unsupported')).toBeTruthy())
+  await waitFor(() => expect(screen.getByText('This provider/model has no supported live voice lookup with this connection. You can enter a voice ID from your provider; no built-in voice list is used.')).toBeTruthy())
   expect(screen.queryByRole('textbox', { name: 'Voice instructions' })).toBeNull()
   expect(mock.settings.draft.services.tts.active_model_id).toBe('old')
 })

@@ -234,7 +234,7 @@ function Preview({ service, profile, model }: Props) {
       ) : (
         <label className="block space-y-2 text-xs font-medium">
           <span>
-            {(service === 'search' ? 'settings.servicePreview.query' : 'settings.servicePreview.prompt')}
+            {(service === 'search' ? 'Search query' : 'Describe what to generate')}
           </span>
           <textarea
             className={inputClass}

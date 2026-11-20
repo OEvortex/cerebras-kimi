@@ -98,7 +98,7 @@ vi.mock('next/navigation', async importOriginal => {
   }
 })
 
-vi.mock('next/dynamic', () => ({
+vi.mock('@/shared/router/dynamic', () => ({
   // ChatWorkspace mounts pickers/modals off-screen via next/dynamic; a null
   // stub keeps their trees out of the smoke run without touching the shell.
   default: () => () => null,

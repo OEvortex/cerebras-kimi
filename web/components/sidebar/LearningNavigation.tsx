@@ -145,7 +145,7 @@ export function LearningNavigation({
             !loading &&
             !failed.length && (
               <p className="dt-navigation-empty">
-                {(view.query ? 'navigation.noResults' : 'navigation.noLearning')}
+                {(view.query ? 'No matching records' : 'Create a learning activity to begin.')}
               </p>
             )
           }
@@ -180,9 +180,10 @@ function RecordNode({
   const questions = record.children ?? []
   const expandable = questions.length > 0 || (sessions.length > 0 && Boolean(render))
   const expanded = expandable && open
+  const toggleCount = questions.length || sessions.length
   const toggleLabel = questions.length
-    ? (expanded ? 'navigation.hidePracticeQuestions' : 'navigation.showPracticeQuestions')
-    : (expanded ? 'navigation.hideRecordChats' : 'navigation.showRecordChats')
+    ? `${expanded ? "Hide" : "Show"} ${toggleCount} question${toggleCount === 1 ? "" : "s"}`
+    : `${expanded ? "Hide" : "Show"} ${toggleCount} conversation${toggleCount === 1 ? "" : "s"}`
   return (
     <div className="dt-record-node">
       <div className={`dt-record-node-row ${selected ? 'is-active' : ''} ${expanded ? 'is-open' : ''}`}>

@@ -4,7 +4,18 @@ import type { StreamEvent } from "@/features/chat/model/protocol";
 import { MasterySourcePresentation } from "@/components/chat/home/MasterySourcePresentation";
 
 const apiFetch = vi.hoisted(() => vi.fn());
-vi.mock("@/shared/api/client", () => ({ apiFetch, apiUrl: (url: string) => url }));
+vi.mock("@/shared/api/client", () => ({
+  asJsonOrThrow: async (response: Response) => {
+    if (!response.ok) {
+      let detail = `${response.status} ${response.statusText}`;
+      try {
+        const body = await response.json();
+        if (body?.detail) detail = String(body.detail);
+      } catch { /* keep status line */ }
+      throw new Error(detail);
+    }
+    return response.json();
+  }, apiFetch, apiUrl: (url: string) => url }));
 
 const preview = "/api/knowledge-bases/course/source-page?document=lecture.pdf&page=7&digest=abc";
 function event(sources: unknown[]): StreamEvent {

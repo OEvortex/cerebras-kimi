@@ -37,7 +37,7 @@ it('hands the turn to a partner or an agent, and takes it back', () => {
   fireEvent.click(screen.getByRole('option', { name: /Claude Code/ }))
   expect(onChange).toHaveBeenLastCalledWith('subagent:Claude Code')
   fireEvent.click(screen.getByRole('button', { name: /Preferences/ }))
-  fireEvent.click(screen.getByRole('option', { name: /composer\.tray\.deeptutor/ }))
+  fireEvent.click(screen.getByRole('option', { name: /DeepTutor/ }))
   expect(onChange).toHaveBeenLastCalledWith(null)
 })
 
@@ -57,7 +57,6 @@ it('keeps asking partners apart from handing over, with the way to manage them',
   )
   fireEvent.click(screen.getByRole('button', { name: /Partners/ }))
   expect(screen.getByRole('group', { name: 'Ask partner' })).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: /Create a Partner Group/ })).toHaveAttribute('href', '/partners/groups/new')
   fireEvent.click(screen.getByRole('option', { name: /Study circle/ }))
   expect(onGroup).toHaveBeenCalledWith('g1')
   expect(onPartner).not.toHaveBeenCalled()

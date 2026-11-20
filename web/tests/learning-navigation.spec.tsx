@@ -28,10 +28,10 @@ beforeEach(() => {
 
 it('sorts by creation independently of activity and retains the preference', () => {
   const view = render(<LearningNavigation />)
-  const records = () => within(screen.getByRole('region', { name: 'navigation.learningRecords' })).getAllByRole('link')
+  const records = () => within(screen.getByRole('region', { name: 'Your learning' })).getAllByRole('link')
   expect(records()[0]).toHaveTextContent('Older material')
-  fireEvent.click(screen.getByRole('button', { name: 'navigation.sortRecords' }))
-  fireEvent.click(screen.getByRole('menuitemradio', { name: 'navigation.createdTime' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Sort by' }))
+  fireEvent.click(screen.getByRole('menuitemradio', { name: 'Created time' }))
   expect(records()[0]).toHaveTextContent('Newly created material')
   expect(records()[1]).toHaveAttribute('href', '/learning/practice?question=1&dt_workspace=physics')
   view.unmount()
@@ -41,10 +41,10 @@ it('sorts by creation independently of activity and retains the preference', () 
 
 it('searches records without discarding the rest of the library', () => {
   render(<LearningNavigation />)
-  fireEvent.click(screen.getByRole('button', { name: 'navigation.searchLearning' }))
-  const input = screen.getByRole('searchbox', { name: 'navigation.searchLearning' })
+  fireEvent.click(screen.getByRole('button', { name: 'Search your learning' }))
+  const input = screen.getByRole('searchbox', { name: 'Search your learning' })
   fireEvent.change(input, { target: { value: 'recently' } })
-  const list = within(screen.getByRole('region', { name: 'navigation.learningRecords' }))
+  const list = within(screen.getByRole('region', { name: 'Your learning' }))
   expect(list.getAllByRole('link')).toHaveLength(1)
   expect(list.getByRole('link')).toHaveTextContent('Older material')
   fireEvent.keyDown(input, { key: 'Escape' })
@@ -58,7 +58,7 @@ it('collapses one practice session into a row that expands to its questions', ()
     { id: 1, question: 'Loose question', created_at: 3, updated_at: 10, content_workspace_id: '' },
   ]
   render(<LearningNavigation />)
-  const region = within(screen.getByRole('region', { name: 'navigation.learningRecords' }))
+  const region = within(screen.getByRole('region', { name: 'Your learning' }))
   // One row for the set, one for the entry without a session — the questions
   // themselves only appear once the set is opened.
   expect(region.getAllByRole('link').map(link => link.getAttribute('href'))).toEqual([
@@ -67,7 +67,7 @@ it('collapses one practice session into a row that expands to its questions', ()
   ])
   expect(region.getAllByRole('link')[0]).toHaveTextContent('Physics set')
   expect(region.queryByText('Q3')).toBeNull()
-  fireEvent.click(region.getByRole('button', { name: 'navigation.showPracticeQuestions' }))
+  fireEvent.click(region.getByRole('button', { name: /Show \d+ questions?/ }))
   expect(region.getAllByRole('link').map(link => link.getAttribute('href'))).toEqual([
     '/learning/practice?dt_workspace=',
     '/learning/practice?question=3&dt_workspace=',
@@ -75,7 +75,7 @@ it('collapses one practice session into a row that expands to its questions', ()
     '/learning/practice?question=1&dt_workspace=',
   ])
   expect(region.getByText('Q3')).toBeInTheDocument()
-  fireEvent.click(region.getByRole('button', { name: 'navigation.hidePracticeQuestions' }))
+  fireEvent.click(region.getByRole('button', { name: /Hide \d+ questions?/ }))
   expect(region.queryByText('Q3')).toBeNull()
 })
 
@@ -95,18 +95,18 @@ it('files a conversation under the record it was held in', () => {
     activeSessionId: null,
     render: list => <ul>{list.map(row => <li key={row.session_id}>{row.title}</li>)}</ul>,
   }} />)
-  const region = within(screen.getByRole('region', { name: 'navigation.learningRecords' }))
+  const region = within(screen.getByRole('region', { name: 'Your learning' }))
   // The path takes the time of its latest conversation and leads the list.
   expect(region.getAllByRole('link')[0]).toHaveTextContent('Vectors')
   expect(region.queryByText('Dot products')).toBeNull()
   // A conversation whose path is gone stands on its own.
   expect(region.getByText('Old path chat')).toBeInTheDocument()
-  fireEvent.click(region.getByRole('button', { name: 'navigation.showRecordChats' }))
+  fireEvent.click(region.getByRole('button', { name: /Show \d+ conversations?/ }))
   expect(region.getByText('Dot products')).toBeInTheDocument()
   // Searching for a conversation finds it inside its record.
-  fireEvent.click(region.getByRole('button', { name: 'navigation.hideRecordChats' }))
-  fireEvent.click(screen.getByRole('button', { name: 'navigation.searchLearning' }))
-  fireEvent.change(screen.getByRole('searchbox', { name: 'navigation.searchLearning' }), { target: { value: 'dot' } })
+  fireEvent.click(region.getByRole('button', { name: /Hide \d+ conversations?/ }))
+  fireEvent.click(screen.getByRole('button', { name: 'Search your learning' }))
+  fireEvent.change(screen.getByRole('searchbox', { name: 'Search your learning' }), { target: { value: 'dot' } })
   expect(region.getByText('Dot products')).toBeInTheDocument()
   expect(region.queryByText('Old path chat')).toBeNull()
 })

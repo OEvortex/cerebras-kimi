@@ -78,7 +78,7 @@ it('opens the exact source and keeps it visible even with a previous filter', as
   render(<NotebookConsole initialNotebookId="inbox" initialRecordId="b" />)
   expect(screen.getByRole('button', { name: 'Beta' })).toHaveAttribute('aria-expanded', 'true')
   expect(screen.getByRole('button', { name: 'Alpha' })).toHaveAttribute('aria-expanded', 'false')
-  fireEvent.change(screen.getByPlaceholderText('Search records in this notebook'), {
+  fireEvent.change(screen.getByPlaceholderText('Search records in this collection'), {
     target: { value: 'unmatched' },
   })
   expect(screen.getByRole('button', { name: 'Beta' })).toBeVisible()
@@ -168,7 +168,7 @@ it('inserts a filtered multi-selection as one batch in the order it was picked',
   fireEvent.change(screen.getByLabelText('Search favorites'), { target: { value: 'Alpha' } })
   expect(screen.queryByRole('checkbox', { name: 'Beta' })).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('checkbox', { name: /Alpha.*Saved source/ }))
-  fireEvent.click(screen.getByRole('button', { name: 'Insert {{count}}' }))
+  fireEvent.click(screen.getByRole('button', { name: /Insert \d+/ }))
   expect(insert).toHaveBeenCalledOnce()
   expect(insert.mock.calls[0][0].map((clip: { sourceId: string }) => clip.sourceId)).toEqual([
     'b',

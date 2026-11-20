@@ -21,7 +21,7 @@ DIFFICULTIES = ("easy", "medium", "hard")
 CHOICE_KEYS = ("A", "B", "C", "D")
 BLANK = "____"
 
-_AGENTS: dict[tuple[str, str], Any] = {}
+_AGENTS: dict[tuple[Any, ...], Any] = {}
 
 
 def derive_topic(content: str) -> str:

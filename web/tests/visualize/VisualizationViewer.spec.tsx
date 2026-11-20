@@ -43,7 +43,7 @@ vi.mock("chart.js/auto", async () => {
   };
 });
 
-vi.mock("next/dynamic", async () => {
+vi.mock("@/shared/router/dynamic", async () => {
   const React = await import("react");
   return {
     default: (

@@ -6,7 +6,18 @@ import { apiFetch } from "@/shared/api/client";
 vi.mock("@/components/common/PickerShell", () => ({ default: ({ open, children }: { open: boolean; children: React.ReactNode }) => open ? <div>{children}</div> : null }));
 vi.mock("@/components/common/PickerHeader", () => ({ default: () => null }));
 vi.mock("@/lib/notebook-api", () => ({ listNotebooks: async () => [{ id: "notes", name: "My notes", record_count: 0 }], createNotebook: vi.fn() }));
-vi.mock("@/shared/api/client", () => ({ apiUrl: (url: string) => url, apiFetch: vi.fn() }));
+vi.mock("@/shared/api/client", () => ({
+  asJsonOrThrow: async (response: Response) => {
+    if (!response.ok) {
+      let detail = `${response.status} ${response.statusText}`;
+      try {
+        const body = await response.json();
+        if (body?.detail) detail = String(body.detail);
+      } catch { /* keep status line */ }
+      throw new Error(detail);
+    }
+    return response.json();
+  }, apiUrl: (url: string) => url, apiFetch: vi.fn() }));
 afterEach(() => { cleanup(); vi.clearAllMocks(); });
 
 const payload = { recordType: "chat" as const, title: "Title", userQuery: "Question", output: "Answer" };

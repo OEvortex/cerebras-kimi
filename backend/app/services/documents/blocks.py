@@ -77,14 +77,15 @@ def coarse_markdown_to_blocks(content: str) -> list[dict[str, Any]]:
             continue
         bullet = re.match(r"^[-*+]\s+(.*)$", stripped)
         numbered = re.match(r"^\d+[.)]\s+(.*)$", stripped)
-        if bullet or numbered:
+        match = bullet or numbered
+        if match:
             flush()
             blocks.append(
                 {
                     "id": uuid.uuid4().hex[:12],
                     "type": "bulletListItem" if bullet else "numberedListItem",
                     "props": {},
-                    "content": [{"type": "text", "text": (bullet or numbered).group(1), "styles": {}}],
+                    "content": [{"type": "text", "text": match.group(1), "styles": {}}],
                     "children": [],
                 }
             )

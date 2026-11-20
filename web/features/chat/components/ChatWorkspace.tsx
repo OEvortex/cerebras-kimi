@@ -628,10 +628,10 @@ export default function ChatWorkspace() {
     state.sessionId,
   ]);
   // Chat-only UI: sessions restored with a non-chat capability fall back
-  // to the default agent/chat mode.
+  // to the default agent/chat mode once any in-flight stream settles.
   useEffect(() => {
-    if (state.activeCapability) setCapability(null);
-  }, [state.activeCapability, setCapability]);
+    if (state.activeCapability && !state.isStreaming) setCapability(null);
+  }, [state.activeCapability, state.isStreaming, setCapability]);
 
   const isVisualizeMode = activeCap.value === "visualize";
   const isResearchMode = activeCap.value === "deep_research";

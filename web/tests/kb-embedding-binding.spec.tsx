@@ -34,6 +34,17 @@ vi.mock("@/hooks/useLLMOptions", () => ({
   useLLMOptions: fixtures.llmOptions,
 }));
 vi.mock("@/shared/api/client", () => ({
+  asJsonOrThrow: async (response: Response) => {
+    if (!response.ok) {
+      let detail = `${response.status} ${response.statusText}`;
+      try {
+        const body = await response.json();
+        if (body?.detail) detail = String(body.detail);
+      } catch { /* keep status line */ }
+      throw new Error(detail);
+    }
+    return response.json();
+  },
   apiFetch: (...args: unknown[]) => fixtures.fetch(...args),
   apiUrl: (url: string) => url,
 }));

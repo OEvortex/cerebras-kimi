@@ -12,7 +12,8 @@ from app.agent.dt_session import rebind
 
 
 class _Session:
-    pass
+    _dt_store: object
+    _dt_record: object
 
 
 def test_rebind_points_at_the_current_record() -> None:

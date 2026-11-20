@@ -146,11 +146,23 @@ function VoiceLookup({
           className={registryButton}
         >
           {loading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-          {(loading ? 'settings.voiceDiscovery.loading' : 'Refresh')}
+          {(loading ? "Fetching voices…" : "Refresh")}
         </button>
       </div>
       <p role="status" className="text-xs leading-relaxed text-[var(--muted-foreground)]">
-        {(!hasModel ? 'settings.voiceDiscovery.modelFirst' : loading ? 'settings.voiceDiscovery.loading' : error ? 'settings.voiceDiscovery.failed' : result?.status === 'unsupported' ? 'settings.voiceDiscovery.unsupported' : !result?.voices.length ? 'settings.voiceDiscovery.empty' : result.scope === 'custom' ? 'settings.voiceDiscovery.custom' : 'settings.voiceDiscovery.account')}
+        {(!hasModel
+          ? "Choose a model to fetch its voices."
+          : loading
+            ? "Fetching voices…"
+            : error
+              ? "Could not fetch voices. Check the provider connection and permissions, then retry."
+              : result?.status === "unsupported"
+                ? "This provider/model has no supported live voice lookup with this connection. You can enter a voice ID from your provider; no built-in voice list is used."
+                : !result?.voices.length
+                  ? "The provider returned no available voices for this selection."
+                  : result.scope === "custom"
+                    ? "Live custom voices for this model. This API does not list system voices. Preview a voice before applying."
+                    : "Voices returned live by your account. The provider does not filter by model; preview to confirm compatibility.")}
       </p>
       {Boolean(result?.voices.length) && (
         <label className="block space-y-1.5 text-xs font-medium">

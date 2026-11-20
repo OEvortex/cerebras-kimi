@@ -4,7 +4,18 @@ import { RECOVERY_PRINCIPAL_CHANGED, recoveryPrincipal, updateRecoveryPrincipal 
 import { clearFailedSubmission, moveFailedSubmissions, readFailedSubmissions, storeFailedSubmission } from "@/lib/failed-submissions";
 
 const fixture = vi.hoisted(() => ({ fetch: vi.fn() }));
-vi.mock("@/shared/api/client", () => ({ apiFetch: fixture.fetch, apiUrl: (path: string) => path, setRuntimeAuthEnabled: vi.fn() }));
+vi.mock("@/shared/api/client", () => ({
+  asJsonOrThrow: async (response: Response) => {
+    if (!response.ok) {
+      let detail = `${response.status} ${response.statusText}`;
+      try {
+        const body = await response.json();
+        if (body?.detail) detail = String(body.detail);
+      } catch { /* keep status line */ }
+      throw new Error(detail);
+    }
+    return response.json();
+  }, apiFetch: fixture.fetch, apiUrl: (path: string) => path, setRuntimeAuthEnabled: vi.fn() }));
 
 beforeEach(() => {
   localStorage.clear();

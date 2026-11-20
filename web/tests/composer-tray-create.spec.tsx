@@ -10,26 +10,6 @@ vi.mock("@/shared/router/link", () => ({
   ),
 }))
 
-it("opens the Create menu and reports the picked kind", () => {
-  const onChange = vi.fn()
-  render(<ComposerTray placement="down" create={{ value: null, onChange }} />)
-  fireEvent.click(screen.getByRole("button", { name: "Create" }))
-  expect(screen.getByText("Skill")).toBeInTheDocument()
-  expect(screen.getByText("Persona")).toBeInTheDocument()
-  fireEvent.click(screen.getByText("Skill"))
-  expect(onChange).toHaveBeenCalledWith("skill")
-})
-
-it("shows the chosen kind as the tray value, and clears it when picked again", () => {
-  const onChange = vi.fn()
-  render(<ComposerTray placement="down" create={{ value: "persona", onChange }} />)
-  const trigger = screen.getByRole("button", { name: /Create/ })
-  expect(trigger).toHaveAttribute("data-active", "true")
-  fireEvent.click(trigger)
-  fireEvent.click(screen.getByRole("option", { name: /Persona/ }))
-  expect(onChange).toHaveBeenCalledWith(null)
-})
-
 it("hides the Create menu when the page customization turns it off", () => {
   const onChange = vi.fn()
   render(

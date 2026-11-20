@@ -14,7 +14,7 @@ const fixture = vi.hoisted(() => ({
   t: (key: string) => key,
   refresh: vi.fn(async () => {}),
 }));
-vi.mock("next/dynamic", () => ({ default: () => () => null }));
+vi.mock("@/shared/router/dynamic", () => ({ default: () => () => null }));
 vi.mock("@/features/knowledge/api/engines", async (original) => ({
   ...(await original<typeof import("@/features/knowledge/api/engines")>()),
   getLightRagConfig: async () => ({ llm_profile_id: "", llm_model_id: "" }),

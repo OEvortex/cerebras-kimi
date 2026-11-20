@@ -231,7 +231,7 @@ function ProbeForm({
           role="status"
           className={`text-[13px] leading-relaxed ${result.status === "connected" ? "text-emerald-700 dark:text-emerald-400" : "text-[var(--muted-foreground)]"}`}
         >
-          {(result.status === "connected" && input.service !== "search" ? "settings.providerServices.catalogListed" : PROBE_MESSAGES[result.status] || PROBE_MESSAGES.http_error)}
+          {(result.status === "connected" && input.service !== "search" ? "Model list retrieved. Test a specific model to verify inference access." : PROBE_MESSAGES[result.status] || PROBE_MESSAGES.http_error)}
           {result.warning === "partial_models" && <p className="mt-2">{"The provider returned only part of the model list. Missing types remain unknown and can be added manually."}</p>}
           {result.http_status != null && ` · HTTP ${result.http_status}`}
           {result.warning === "empty_results" && (

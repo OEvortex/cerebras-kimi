@@ -11,7 +11,7 @@ import {
   favoriteTranscript,
 } from '@/lib/favorite-content'
 
-vi.mock('next/dynamic', () => ({
+vi.mock('@/shared/router/dynamic', () => ({
   default:
     () =>
     ({ content }: { content: string }) => <div>{content}</div>,

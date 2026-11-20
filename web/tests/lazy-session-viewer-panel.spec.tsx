@@ -13,7 +13,7 @@ const fixture = vi.hoisted(() => ({
   calls: [] as string[],
 }));
 
-vi.mock("next/dynamic", async () => {
+vi.mock("@/shared/router/dynamic", async () => {
   const { forwardRef, useEffect, useImperativeHandle } = await import("react");
   const LoadedPanel = forwardRef<SessionViewerPanelHandle>(function LoadedPanel(
     _props,

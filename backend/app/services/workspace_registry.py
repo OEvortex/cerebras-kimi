@@ -440,10 +440,12 @@ def workspace_snapshot(settings: Settings) -> dict[str, Any]:
     from .. import provider_config
 
     catalog = provider_config.load_catalog(settings)
-    services = catalog.get("services") if isinstance(catalog.get("services"), dict) else {}
+    services_raw = catalog.get("services")
+    services: dict[str, Any] = services_raw if isinstance(services_raw, dict) else {}
     models: dict[str, Any] = {}
     for service in provider_config.SERVICES:
-        bucket = services.get(service) if isinstance(services.get(service), dict) else {}
+        bucket_raw = services.get(service)
+        bucket: dict[str, Any] = bucket_raw if isinstance(bucket_raw, dict) else {}
         profiles = []
         active_profile_id = bucket.get("active_profile_id")
         active_model_id = None

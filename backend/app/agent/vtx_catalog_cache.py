@@ -93,13 +93,14 @@ def install_model_fetch_cache() -> None:
     """
     try:
         from vtx.ai import model_fetcher
+        from vtx.ai.models import Model
     except Exception:  # noqa: BLE001
         return
 
     original = model_fetcher.get_fetched_models
-    cache: dict[tuple[str, int, int], list[Any]] = {}
+    cache: dict[tuple[str, int, int], list[Model]] = {}
 
-    def get_fetched_models(provider: Any) -> list[Any]:
+    def get_fetched_models(provider) -> list[Model]:
         slug = str(getattr(provider, "slug", "") or "")
         try:
             stat = model_fetcher._cache_path(slug).stat()
@@ -117,4 +118,9 @@ def install_model_fetch_cache() -> None:
         # Callers may sort or filter the result; never hand out the cache itself.
         return list(cached)
 
-    model_fetcher.get_fetched_models = get_fetched_models
+    # The vtx function's `provider` parameter is unannotated, so ty infers a
+    # distinct structural type for each definition and rejects the direct
+    # assignment even though the signatures are identical. Route the patch
+    # through `Any` to express the deliberate monkeypatch.
+    fetcher: Any = model_fetcher
+    fetcher.get_fetched_models = get_fetched_models

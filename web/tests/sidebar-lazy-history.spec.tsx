@@ -76,7 +76,7 @@ it("loads conversation history while navigation remains usable, then preserves s
     screen.getByRole("link", { name: "Co-Writer" }),
   );
   expect(scroller).not.toContainElement(
-    screen.getByRole("tab", { name: "navigation.home" }),
+    screen.getByRole("tab", { name: "Home" }),
   );
   // Settings lives in the header's workspace menu, outside the history scroller.
   fireEvent.click(screen.getByRole("button", { name: /General workspace/ }));
@@ -112,9 +112,9 @@ it("keeps Home pinned even when a previous layout folded it into More", () => {
     }),
   );
   render(<SidebarShell />);
-  expect(screen.getAllByRole("tab", { name: "navigation.home" })).toHaveLength(1);
+  expect(screen.getAllByRole("tab", { name: "Home" })).toHaveLength(1);
   expect(screen.queryByRole("button", { name: "Arrange Home" })).toBeNull();
-  fireEvent.click(screen.getByRole("link", { name: "navigation.newChat" }));
+  fireEvent.click(screen.getByRole("link", { name: "New conversation" }));
   // The new chat stays in the tab's workspace (General here).
   expect(fixture.push).toHaveBeenCalledWith("/chat?dt_workspace=");
 });

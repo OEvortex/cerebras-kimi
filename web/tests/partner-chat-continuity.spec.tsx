@@ -70,7 +70,7 @@ vi.mock("@/components/partners/PartnerAvatar", () => ({
   default: () => <div data-testid="avatar" />,
 }));
 vi.mock("@/features/chat/trace", () => ({ AssistantActivity: () => null }));
-vi.mock("next/dynamic", () => ({
+vi.mock("@/shared/router/dynamic", () => ({
   default: () => ({ content }: { content: string }) => <span>{content}</span>,
 }));
 vi.mock("@/hooks/useChatAutoScroll", async () => {

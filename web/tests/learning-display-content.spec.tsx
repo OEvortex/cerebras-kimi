@@ -12,7 +12,7 @@ import { LearningText } from '@/components/common/LearningText'
 import SimpleMarkdownRenderer from '@/components/common/SimpleMarkdownRenderer'
 import RichMarkdownRenderer from '@/components/common/RichMarkdownRenderer'
 import { MasteryQuestionCard } from '@/components/chat/home/MasteryQuestionCard'
-vi.mock('next/dynamic', () => ({
+vi.mock('@/shared/router/dynamic', () => ({
   default: () => (props: MarkdownRendererProps) => <SimpleMarkdownRenderer {...props} />,
 }))
 it.each([SimpleMarkdownRenderer, RichMarkdownRenderer])(

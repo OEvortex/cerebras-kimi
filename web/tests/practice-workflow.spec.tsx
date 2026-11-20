@@ -4,7 +4,7 @@ import { PracticeSession } from "@/components/learning/practice/PracticeSession"
 import { PracticeImport } from "@/components/learning/practice/PracticeImport";
 import * as api from "@/lib/practice-api";
 
-vi.mock("next/dynamic", () => ({
+vi.mock("@/shared/router/dynamic", () => ({
   default:
     () =>
     ({ content }: { content: string }) => <div>{content}</div>,

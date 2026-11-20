@@ -5,7 +5,7 @@ import { apiFetch } from "@/shared/api/client";
 
 vi.mock("@/shared/router/navigation", () => ({ useRouter: () => ({ replace: vi.fn() }) }));
 vi.mock("@/shared/router/link", () => ({ default: ({ children }: { children: React.ReactNode }) => <span>{children}</span> }));
-vi.mock("next/dynamic", () => ({ default: () => ({ content }: { content: string }) => <div>{content}</div> }));
+vi.mock("@/shared/router/dynamic", () => ({ default: () => ({ content }: { content: string }) => <div>{content}</div> }));
 vi.mock("@/components/memory/MemoryRunPanel", () => ({ default: () => null }));
 vi.mock("@/shared/api/client", async () => {
   const actual = await vi.importActual<typeof import("@/shared/api/client")>("@/shared/api/client");

@@ -4,7 +4,18 @@ import OfficePdfPreview from "@/components/chat/preview/previewers/OfficePdfPrev
 
 const fixture = vi.hoisted(() => ({ apiFetch: vi.fn() }));
 
-vi.mock("@/shared/api/client", () => ({ apiFetch: fixture.apiFetch }));
+vi.mock("@/shared/api/client", () => ({
+  asJsonOrThrow: async (response: Response) => {
+    if (!response.ok) {
+      let detail = `${response.status} ${response.statusText}`;
+      try {
+        const body = await response.json();
+        if (body?.detail) detail = String(body.detail);
+      } catch { /* keep status line */ }
+      throw new Error(detail);
+    }
+    return response.json();
+  }, apiFetch: fixture.apiFetch }));
 vi.mock("@/components/chat/preview/previewers/PdfPreview", () => ({
   default: ({ url, filename }: { url: string; filename: string }) => (
     <div data-testid="pdf-preview" data-url={url}>

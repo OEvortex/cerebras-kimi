@@ -4,7 +4,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import KbVisualCoverage from "@/components/knowledge/KbVisualCoverage";
 import { apiFetch } from "@/shared/api/client";
 
-vi.mock("@/shared/api/client", () => ({ apiFetch: vi.fn(), apiUrl: (path: string) => path }));
+vi.mock("@/shared/api/client", () => ({
+  asJsonOrThrow: async (response: Response) => {
+    if (!response.ok) {
+      let detail = `${response.status} ${response.statusText}`;
+      try {
+        const body = await response.json();
+        if (body?.detail) detail = String(body.detail);
+      } catch { /* keep status line */ }
+      throw new Error(detail);
+    }
+    return response.json();
+  }, apiFetch: vi.fn(), apiUrl: (path: string) => path }));
 vi.mock("@/features/knowledge/api/files", () => ({ knowledgeBaseFilePath: (kb: string, name: string) => `/api/knowledge-bases/${kb}/files/${name}` }));
 
 const report = { documents: [{ source_path: "book.pdf", retained_count: 100, page_fallback: true, issues: [{ reason: "referenced_image_not_retained", status: "unverified", page: 88 }] }],

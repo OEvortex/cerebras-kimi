@@ -576,7 +576,7 @@ class SessionStore:
                 message["parent_message_id"] = new_parent
             preferences = session.get("preferences")
             selections = preferences.get("selected_branches") if isinstance(preferences, dict) else None
-            if isinstance(selections, dict):
+            if isinstance(preferences, dict) and isinstance(selections, dict):
                 remapped: dict[str, int] = {}
                 for parent_key, child_id in selections.items():
                     if parent_key == "null":
@@ -694,7 +694,7 @@ class SessionStore:
     # -- search ------------------------------------------------------------
 
     @staticmethod
-    def _query_terms(query: str) -> list[str]:
+    def _query_terms(query: str) -> List[str]:
         operators = {"and", "or", "not", "near"}
         return [
             token
@@ -718,7 +718,7 @@ class SessionStore:
         *,
         limit: int = 5,
         page_id: str = "",
-    ) -> list[dict[str, Any]]:
+    ) -> List[dict[str, Any]]:
         """Ranked message hits grouped by session (best hit per session).
 
         Uses the FTS5 index when available and falls back to a token LIKE scan.
@@ -1111,7 +1111,7 @@ class SessionStore:
                 connection.execute("ROLLBACK")
                 raise
 
-    def turn_events(self, turn_id: str, after_seq: int = 0) -> list[dict[str, Any]]:
+    def turn_events(self, turn_id: str, after_seq: int = 0) -> List[dict[str, Any]]:
         """Persisted event log for a finished turn (WS replay after restart)."""
         with self._connect() as connection:
             rows = connection.execute(

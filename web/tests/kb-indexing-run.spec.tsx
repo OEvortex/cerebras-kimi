@@ -4,7 +4,18 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import KbIndexingRun from "@/components/knowledge/KbIndexingRun";
 import { apiFetch } from "@/shared/api/client";
 
-vi.mock("@/shared/api/client", () => ({ apiFetch: vi.fn() }));
+vi.mock("@/shared/api/client", () => ({
+  asJsonOrThrow: async (response: Response) => {
+    if (!response.ok) {
+      let detail = `${response.status} ${response.statusText}`;
+      try {
+        const body = await response.json();
+        if (body?.detail) detail = String(body.detail);
+      } catch { /* keep status line */ }
+      throw new Error(detail);
+    }
+    return response.json();
+  }, apiFetch: vi.fn() }));
 const run = { task_id: "owned", state: "running", phase: "embedding", started_at: 1, last_activity_at: 2,
   last_progress_at: 2, phase_current: 1, phase_total: 1, cancel_requested: false,
   documents: { "book.pdf": { status: "unknown", parse_reused: true }, "bad.pdf": { status: "failed", reason: "invalid_output" } } };

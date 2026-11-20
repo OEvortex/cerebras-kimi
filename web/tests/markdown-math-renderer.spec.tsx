@@ -10,7 +10,7 @@ describe("math Markdown rendering", () => {
   it("renders the plain inline formulas from the reported chat response with KaTeX", async () => {
     const { container } = render(
       <MarkdownRenderer
-        content="假设有一个函数 $f(x)$，在 $x=2$ 这个点上，函数值趋近 $5$。"
+        content="Suppose $f(x)$, and at $x=2$ the value approaches $5$."
         variant="prose"
       />,
     );
@@ -57,7 +57,7 @@ describe("math Markdown rendering", () => {
   it("keeps prices as prices in a message that also renders maths", async () => {
     const { container } = render(
       <MarkdownRenderer
-        content={"设 $x=1$。门票 $5 和 $10，共 $15。"}
+        content={"Let $x=1$. Tickets cost $5 and $10, $15 total."}
         variant="prose"
       />,
     );
@@ -67,7 +67,7 @@ describe("math Markdown rendering", () => {
         1,
       );
     });
-    expect(container).toHaveTextContent("门票 $5 和 $10，共 $15。");
+    expect(container).toHaveTextContent("Tickets cost $5 and $10, $15 total.");
   });
 
   it("renders generated quiz stems and option formulas with KaTeX", async () => {
@@ -81,11 +81,11 @@ describe("math Markdown rendering", () => {
         questions: [
           {
             question_id: "q1",
-            question: "若 $f(x)=x^2$，则 $f(2)$ 等于多少？",
+            question: "If $f(x)=x^2$, what is $f(2)$?",
             question_type: "multiple_choice",
             options: { A: "$2$", B: "$4$" },
             correct_answer: "B",
-            explanation: "代入可得 $f(2)=2^2=4$。",
+            explanation: "Substituting gives $f(2)=2^2=4$.",
           },
         ],
       },

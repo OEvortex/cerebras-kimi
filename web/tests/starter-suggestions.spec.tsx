@@ -3,7 +3,18 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import StarterSuggestions from '@/components/chat/home/StarterSuggestions'
 
 const fetcher = vi.hoisted(() => vi.fn())
-vi.mock('@/shared/api/client', () => ({ apiFetch: fetcher, apiUrl: (path: string) => path }))
+vi.mock('@/shared/api/client', () => ({
+  asJsonOrThrow: async (response: Response) => {
+    if (!response.ok) {
+      let detail = `${response.status} ${response.statusText}`;
+      try {
+        const body = await response.json();
+        if (body?.detail) detail = String(body.detail);
+      } catch { /* keep status line */ }
+      throw new Error(detail);
+    }
+    return response.json();
+  }, apiFetch: fetcher, apiUrl: (path: string) => path }))
 const response = (payload: object) => ({ ok: true, json: async () => payload })
 beforeEach(() => fetcher.mockReset())
 afterEach(() => vi.useRealTimers())
@@ -84,11 +95,11 @@ it('fills the composer with the picked request instead of sending it', async () 
   expect(onPick).toHaveBeenLastCalledWith('Explain BM25')
   // Ways to start stay closed until one is chosen, and close once used.
   expect(screen.queryByRole('button', { name: /starters\.solve\.2/ })).toBeNull()
-  const solve = screen.getByRole('button', { name: 'starters.solve' })
+  const solve = screen.getByRole('button', { name: 'Solve' })
   fireEvent.click(solve)
   expect(solve).toHaveAttribute('aria-expanded', 'true')
   fireEvent.click(screen.getByRole('button', { name: /starters\.solve\.2/ }))
-  expect(onPick).toHaveBeenLastCalledWith('starters.solve.2.prompt')
+  expect(onPick).toHaveBeenLastCalledWith('Check my solution to a problem: go through it step by step, find where and why it goes wrong, and give the corrected working in full. If I haven't shared the problem and my solution, ask me to send them.')
   expect(solve).toHaveAttribute('aria-expanded', 'false')
   expect(screen.queryByRole('button', { name: /starters\.solve\.2/ })).toBeNull()
 })

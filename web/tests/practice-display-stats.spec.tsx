@@ -17,7 +17,7 @@ vi.mock("@/lib/practice-api", async original => ({
   ...(await original<typeof api>()),
   getPracticeAnalytics: vi.fn(),
 }));
-vi.mock("next/dynamic", () => ({
+vi.mock("@/shared/router/dynamic", () => ({
   default:
     () =>
     ({ content }: { content: string }) => <div>{content}</div>,

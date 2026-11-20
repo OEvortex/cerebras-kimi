@@ -3,7 +3,18 @@ import { describe, expect, it, vi } from "vitest";
 import HandoffPage from "@/app/handoff/page";
 
 const runtime = vi.hoisted(() => ({ fetch: vi.fn(), replace: vi.fn() }));
-vi.mock("@/shared/api/client", () => ({ apiFetch: runtime.fetch, apiUrl: (url: string) => url }));
+vi.mock("@/shared/api/client", () => ({
+  asJsonOrThrow: async (response: Response) => {
+    if (!response.ok) {
+      let detail = `${response.status} ${response.statusText}`;
+      try {
+        const body = await response.json();
+        if (body?.detail) detail = String(body.detail);
+      } catch { /* keep status line */ }
+      throw new Error(detail);
+    }
+    return response.json();
+  }, apiFetch: runtime.fetch, apiUrl: (url: string) => url }));
 vi.mock("@/shared/router/navigation", () => ({
   useRouter: () => ({ replace: runtime.replace }),
   useSearchParams: () => new URLSearchParams("code=example-code&next=%2Fprofile"),
