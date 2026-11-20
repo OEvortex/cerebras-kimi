@@ -150,8 +150,6 @@ function SubagentLine({ channel, text }: { channel: string; text: string }) {
 }
 
 function ToolResultBlock({ text }: { text: string }) {
-  
-  const zh = "en"?.toLowerCase().startsWith("zh");
   const [open, setOpen] = useState(false);
   const lines = text.split("\n");
   const overflow = lines.length > RESULT_PREVIEW_LINES;
@@ -175,12 +173,8 @@ function ToolResultBlock({ text }: { text: string }) {
           className="mt-1 text-[11px] text-[var(--muted-foreground)]/80 transition-colors hover:text-[var(--foreground)]"
         >
           {open
-            ? zh
-              ? "collapse"
-              : "collapse"
-            : zh
-              ? `… expand +${hidden} lines`
-              : `… +${hidden} lines`}
+            ? "collapse"
+            : `… +${hidden} lines`}
         </button>
       )}
     </div>

@@ -1,6 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { expect, it, vi } from 'vitest'
-import { catalogTranslate, hydrateTopicSource, useTopicSourceLibrary } from '@/hooks/useTopicSourceLibrary'
+import { hydrateTopicSource, useTopicSourceLibrary } from '@/hooks/useTopicSourceLibrary'
 import { apiFetch } from '@/shared/api/client'
 
 vi.mock('@/shared/api/client', () => ({ apiUrl: (path: string) => path, apiFetch: vi.fn() }))
@@ -62,11 +62,3 @@ it('reads the current workspace indexes and pins file expansion and book hydrati
   expect(window.location.search).toBe('?dt_workspace=destination')
 })
 
-it('reads fallback labels from the English catalog', async () => {
-  const t = i18n.getFixedT('en')
-  const translate = catalogTranslate(t, false)
-
-  expect(translate('未命名题目', 'Untitled question')).toBe(t('Untitled question'))
-  expect(translate('未命名', 'Untitled')).toBe(t('Untitled'))
-  expect(translate('{{name}} 中的文件', 'File in {{name}}', { name: 'notes' })).toContain('notes')
-})

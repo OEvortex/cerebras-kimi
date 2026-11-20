@@ -414,24 +414,6 @@ export async function updateSessionTitle(
   return data.session;
 }
 
-export async function updateSessionReplyLanguage(
-  sessionId: string,
-  language: string | null,
-  workspaceId?: string,
-): Promise<{ preferences?: SessionPreferences }> {
-  const response = await apiFetch(
-    apiUrl(scopedUrl(`/api/sessions/${sessionId}/reply-language`, workspaceId)),
-    {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ language }),
-    },
-  );
-  const data = await expectJson<{ session: { preferences?: SessionPreferences } }>(response);
-  invalidateClientCache("sessions:");
-  return data.session;
-}
-
 export async function getMessageTrace(
   sessionId: string,
   messageId: number,

@@ -23,12 +23,7 @@ import React, {
 } from "react";
 import type { ClientCommand } from "@/contracts/generated/turn-protocol";
 import {
-  RESPONSE_LANGUAGE_EVENT,
-  RESPONSE_LANGUAGE_STORAGE_KEY,
-  isResponseLanguage,
   readStoredChatResponseTimeout,
-  readStoredResponseLanguage,
-  resolveResponseLanguage,
   writeStoredActiveSessionId,
 } from "@/context/app-shell-storage";
 import type {
@@ -46,7 +41,6 @@ import {
   deleteMessage,
   updateBranchSelection,
   updateSessionTitle,
-  updateSessionReplyLanguage,
   type MessageTracePage,
   type SessionMessage,
   type DeleteMessageResult,
@@ -574,11 +568,6 @@ export function ChatStateAdapterProvider({
         session.preferences?.workspace_mode,
         session.preferences?.capability,
       );
-      const replyLanguageOverride = isResponseLanguage(
-        session.preferences?.reply_language_override,
-      )
-        ? session.preferences.reply_language_override
-        : null;
       // A stored `running` is only believable while it is recent — see
       // `resolveLoadedRunStatus`. A turn the backend never got to close out
       // (crash, restart) would otherwise open the conversation into a
@@ -687,10 +676,8 @@ export function ChatStateAdapterProvider({
           skills: asStringArray(session.preferences?.skills),
           mcp: asStringArray(session.preferences?.mcp),
         },
-        // Historical `preferences.language` is only the last turn's account
-        // default. The dedicated selector is the durable conversation choice.
-        language: replyLanguageOverride ?? readStoredResponseLanguage(),
-        replyLanguageOverride,
+        // English is the only conversation language.
+        language: "en",
         selectedBranches: normalizeSelectedBranches(
           session.preferences?.selected_branches,
         ),
@@ -744,32 +731,6 @@ export function ChatStateAdapterProvider({
       : null;
     writeStoredActiveSessionId(current?.sessionId ?? null);
   }, [state.selectedKey, state.sessions]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const syncLanguage = (language: string | null | undefined) => {
-      dispatch({
-        type: "SET_LANGUAGE",
-        lang: resolveResponseLanguage(language, readStoredResponseLanguage()),
-      });
-    };
-    const onResponseLanguage = (event: Event) => {
-      const detail = (event as CustomEvent<{ language?: string }>).detail;
-      syncLanguage(detail?.language);
-    };
-    const onStorage = (event: StorageEvent) => {
-      if (event.key === RESPONSE_LANGUAGE_STORAGE_KEY)
-        syncLanguage(event.newValue);
-    };
-
-    window.addEventListener(RESPONSE_LANGUAGE_EVENT, onResponseLanguage);
-    window.addEventListener("storage", onStorage);
-    return () => {
-      window.removeEventListener(RESPONSE_LANGUAGE_EVENT, onResponseLanguage);
-      window.removeEventListener("storage", onStorage);
-    };
-  }, []);
 
   // URL is now the source of truth for session loading.
   // Initialize a draft session, restoring first-message failures before a
@@ -894,10 +855,7 @@ export function ChatStateAdapterProvider({
       const effectiveMasterySessionMode =
         exactReplay ? (replaySnapshot?.masterySessionMode ?? null) :
         replaySnapshot?.masterySessionMode ?? session.masterySessionMode;
-      const effectiveLanguage =
-        replaySnapshot?.language ??
-        session.replyLanguageOverride ??
-        readStoredResponseLanguage();
+      const effectiveLanguage = "en";
       // Persona resolution: replay snapshot wins; then an explicit per-call
       // persona (quiz follow-up surface); then the session-level preference.
       // Always a string — "" means Default / no persona.
@@ -1007,7 +965,6 @@ export function ChatStateAdapterProvider({
         capability: effectiveCapability,
         workspaceMode: effectiveWorkspaceMode,
         workspaceId: session.workspaceId ?? null,
-        replyLanguageOverride: session.replyLanguageOverride ?? null,
         enabledTools: [...effectiveTools],
         knowledgeBases: [...effectiveKnowledgeBases],
         language: effectiveLanguage,
@@ -1194,15 +1151,6 @@ export function ChatStateAdapterProvider({
         capabilityOnce,
         attachments: effectiveAttachments,
         language: effectiveLanguage,
-        // A draft has no session to PATCH yet. Persist its selector with the
-        // first turn; existing sessions use their server-side preference.
-        ...(!session.sessionId && (exactReplay
-          ? replaySnapshot?.replyLanguageOverride
-          : session.replyLanguageOverride)
-          ? { replyLanguageOverride: exactReplay
-              ? replaySnapshot?.replyLanguageOverride
-              : session.replyLanguageOverride }
-          : {}),
         notebookReferences: effectiveNotebookReferences,
         historyReferences: effectiveHistoryReferences,
         questionNotebookReferences: effectiveQuestionNotebookReferences,
@@ -1437,14 +1385,14 @@ export function ChatStateAdapterProvider({
       overrides: replaySnapshot
         ? {
             replay_snapshot: true,
-            // The failed turn's context is replayed, but the model and the
-            // reply language are the ones selected right now (#2105). The
-            // reasoning-effort override is validated like a live send
-            // (#641): unsupported values are omitted, not forwarded.
+            // The failed turn's context is replayed, but the model is the one
+            // selected right now (#2105). The reasoning-effort override is
+            // validated like a live send (#641): unsupported values are
+            // omitted, not forwarded.
             llm_selection: sanitizeOutgoingLLMSelection(session.llmSelection),
-            language: session.replyLanguageOverride ?? readStoredResponseLanguage(),
+            language: "en",
           }
-        : { language: readStoredResponseLanguage() },
+        : { language: "en" },
     });
   }, [sendThroughRunner]);
 
@@ -1615,8 +1563,7 @@ export function ChatStateAdapterProvider({
       messages: current.messages,
       isStreaming: current.isStreaming,
       currentStage: current.currentStage,
-      language: current.language,
-      replyLanguageOverride: current.replyLanguageOverride,
+      language: "en",
       selectedBranches: current.selectedBranches,
       queuedMessages: current.queuedMessages ?? [],
       lastTurnFailed: isFailedTurnVisible(
@@ -1712,34 +1659,8 @@ export function ChatStateAdapterProvider({
     dispatch({ type: "SET_CREATE_TARGET", createTarget });
   }, []);
 
-  const setLanguage = useCallback((lang: string) => {
-    dispatch({ type: "SET_LANGUAGE", lang });
-  }, []);
-
-  const setReplyLanguageOverride = useCallback(async (language: string | null) => {
-    if (language !== null && !isResponseLanguage(language)) {
-      throw new Error("Unsupported reply language");
-    }
-    const currentState = stateRef.current;
-    const key = currentState.selectedKey;
-    if (!key) return;
-    const session = currentState.sessions[key];
-    if (!session) return;
-    if (!session.sessionId) {
-      dispatch({ type: "SET_REPLY_LANGUAGE_OVERRIDE", key, language });
-      return;
-    }
-    const updated = await updateSessionReplyLanguage(
-      session.sessionId,
-      language,
-      session.workspaceId ?? undefined,
-    );
-    const saved = updated.preferences?.reply_language_override;
-    dispatch({
-      type: "SET_REPLY_LANGUAGE_OVERRIDE",
-      key,
-      language: isResponseLanguage(saved) ? saved : null,
-    });
+  const setLanguage = useCallback((_lang: string) => {
+    dispatch({ type: "SET_LANGUAGE", lang: "en" });
   }, []);
 
   const renameSessionTitle = useCallback(async (title: string) => {
@@ -2124,7 +2045,6 @@ export function ChatStateAdapterProvider({
       setResourceSelection,
       setCreateTarget,
       setLanguage,
-      setReplyLanguageOverride,
       sendMessage,
       queueMessage,
       withdrawQueuedMessage,
@@ -2162,7 +2082,6 @@ export function ChatStateAdapterProvider({
       setResourceSelection,
       setCreateTarget,
       setLanguage,
-      setReplyLanguageOverride,
       sendMessage,
       queueMessage,
       withdrawQueuedMessage,

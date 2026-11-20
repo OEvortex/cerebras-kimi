@@ -153,29 +153,6 @@ const PROVIDER_ALIASES: Readonly<Record<string, string>> = {
   "bytepluscodingplan": "byteplus_coding_plan"
 };
 
-const CHINESE_NAMES: Readonly<Record<string, { name: string; labels: string[] }>> = {
-  aihubmix: {"name": "AiHubMix", "labels": ["AiHubMix"]},
-  siliconflow: {"name": "SiliconFlow", "labels": ["SiliconFlow"]},
-  volcengine: {"name": "VolcEngine", "labels": ["VolcEngine", "Volcengine Ark (Seedream)", "Volcengine Ark (Seedance)"]},
-  volcengine_coding_plan: {"name": "VolcEngine", "labels": ["VolcEngine Coding Plan"]},
-  volcengine_speech: {"name": "VolcEngine Speech", "labels": ["Volcengine Speech (Doubao)"]},
-  deepseek: {"name": "DeepSeek", "labels": ["DeepSeek"]},
-  zhipu: {"name": "Zhipu AI", "labels": ["Zhipu AI", "Zhipu"]},
-  dashscope: {"name": "Aliyun", "labels": ["DashScope", "Aliyun DashScope"]},
-  aliyun: {"name": "Aliyun", "labels": ["Aliyun DashScope"]},
-  aliyun_iqs: {"name": "Aliyun IQS", "labels": ["Aliyun IQS"]},
-  moonshot: {"name": "Moonshot", "labels": ["Moonshot", "Moonshot AI"]},
-  minimax: {"name": "MiniMax", "labels": ["MiniMax"]},
-  minimax_anthropic: {"name": "MiniMax", "labels": ["MiniMax (Anthropic)"]},
-  stepfun: {"name": "Step Fun", "labels": ["Step Fun", "StepFun"]},
-  xiaomi_mimo: {"name": "Xiaomi MiMo", "labels": ["Xiaomi MIMO", "Xiaomi MiMo"]},
-  qianfan: {"name": "Qianfan", "labels": ["Qianfan", "Baidu Qianfan"]},
-  bocha: {"name": "Bocha", "labels": ["Bocha"]},
-  doubao: {"name": "Doubao", "labels": ["Doubao"]},
-  codebuddy: {"name": "CodeBuddy", "labels": ["CodeBuddy/WorkBuddy", "CodeBuddy"]},
-  baidu: {"name": "Baidu", "labels": ["Baidu"]},
-};
-
 export function canonicalProviderBrand(provider?: string | null): string {
   const key = provider?.trim().toLowerCase() ?? "";
   return Object.hasOwn(PROVIDER_ALIASES, key) ? PROVIDER_ALIASES[key] : key;
@@ -186,22 +163,12 @@ export function providerIconSpec(provider?: string | null): ProviderIconSpec | u
   return Object.hasOwn(PROVIDER_ICONS, key) ? PROVIDER_ICONS[key] : undefined;
 }
 
-/** Chinese originals are presentation only and follow the active UI locale. */
-export function formatProviderLabel(provider: string, label: string, language: string): string {
-  const key = canonicalProviderBrand(provider);
-  const chinese = Object.hasOwn(CHINESE_NAMES, key) ? CHINESE_NAMES[key] : undefined;
-  if (!chinese) return label;
-  const suffix = ` (${chinese.name})`;
-  const english = label.endsWith(suffix) ? label.slice(0, -suffix.length) : label;
-  if (!/^zh(?:[-_]|$)/i.test(language)) return english;
-  return english.includes(chinese.name) ? english : `${english}${suffix}`;
+/** Presentation label for a provider — the catalog's English name as-is. */
+export function formatProviderLabel(_provider: string, label: string, _language: string): string {
+  return label;
 }
 
-/** Enrich default account names while preserving names the user chose themselves. */
-export function formatConfiguredProviderName(provider: string, name: string, language: string): string {
-  const key = canonicalProviderBrand(provider);
-  const chinese = Object.hasOwn(CHINESE_NAMES, key) ? CHINESE_NAMES[key] : undefined;
-  const english = formatProviderLabel(provider, name, "en");
-  if (!chinese?.labels.some(label => label.toLowerCase() === english.trim().toLowerCase())) return name;
-  return formatProviderLabel(provider, english, language);
+/** Configured account names are shown exactly as the user saved them. */
+export function formatConfiguredProviderName(_provider: string, name: string, _language: string): string {
+  return name;
 }

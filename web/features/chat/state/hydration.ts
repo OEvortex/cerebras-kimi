@@ -170,7 +170,7 @@ export function hydrateRequestSnapshot(
     ),
     enabledTools: asStringArray(stored.enabledTools),
     knowledgeBases: asStringArray(stored.knowledgeBases),
-    language: typeof stored.language === "string" ? stored.language : "en",
+    language: "en",
     ...(attachments.length ? { attachments } : {}),
   };
 

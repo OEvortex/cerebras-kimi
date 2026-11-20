@@ -1,8 +1,7 @@
 'use client'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import {
-  catalogTranslate,
   useTopicSourceLibrary,
   sourceRequest,
   type SourceCandidate,
@@ -21,9 +20,7 @@ export default function NoteSourcePicker({
   onKnowledge: (name: string, workspace: string) => void
 }) {
   
-  const zh = "en".startsWith('zh')
-  const tr = useMemo(() => catalogTranslate(zh), [zh])
-  const { library, loading } = useTopicSourceLibrary(tr)
+  const { library, loading } = useTopicSourceLibrary()
   const [query, setQuery] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')

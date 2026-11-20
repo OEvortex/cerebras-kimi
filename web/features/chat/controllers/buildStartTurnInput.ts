@@ -77,10 +77,7 @@ export function buildStartTurnInput(input: StartTurnInput): StartTurnCommand {
     session_id: input.sessionId ?? null,
     tools: input.tools ?? null,
     knowledge_bases: input.knowledgeBases ?? [],
-    language: input.language ?? null,
-    ...(input.replyLanguageOverride !== undefined
-      ? { reply_language_override: input.replyLanguageOverride }
-      : {}),
+    language: "en",
     config: capabilityConfig(input),
     attachments: input.attachments ?? [],
     notebook_references: input.notebookReferences ?? [],

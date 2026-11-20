@@ -13,7 +13,7 @@ import {
   type RefObject,
 } from "react";
 
-import { Bot, Check, Languages, UserRound } from "lucide-react";
+import { Bot, Check, UserRound } from "lucide-react";
 import ChatSpaceMenu, {
   type ChatSpaceSelectionCounts,
 } from "@/components/chat/space/ChatSpaceMenu";
@@ -72,13 +72,6 @@ interface ComposerInputProps {
    * session personas (e.g. quiz follow-up) omit this command.
    */
   onOpenPersonaSelector?: () => void;
-  /** Current conversation's reply-language choice. Null follows the account default. */
-  replyLanguageOverride?: string | null;
-  replyLanguageOptions?: readonly { value: string; label: string }[];
-  replyLanguageDefaultLabel?: string;
-  replyLanguageDisabled?: boolean;
-  onReplyLanguageChange?: (value: string) => void;
-  languagePickerBelow?: boolean;
   /**
    * Override the default placeholder. When unset, falls back to the
    * main chat ("How can I help you today?") / visualize defaults.
@@ -135,13 +128,13 @@ function atMentionQuery(value: string, cursorPos: number): string {
   return match ? match[2] : "";
 }
 
-type SlashCommand = "persona" | "language";
+type SlashCommand = "persona";
 
 /** Slash commands only match at the start of the composer. */
 function matchingSlashCommands(
   value: string,
   cursorPos: number,
-  enabled: readonly SlashCommand[] = ["persona", "language"],
+  enabled: readonly SlashCommand[] = ["persona"],
 ): SlashCommand[] {
   const match = /^\/([a-z]*)$/i.exec(value.slice(0, cursorPos));
   if (!match) return [];
@@ -177,12 +170,6 @@ export const ComposerInput = memo(
       onSelectPersonaPicker,
       onSelectMemoryPicker,
       onOpenPersonaSelector,
-      replyLanguageOverride = null,
-      replyLanguageOptions = [],
-      replyLanguageDefaultLabel = "English",
-      replyLanguageDisabled = false,
-      onReplyLanguageChange,
-      languagePickerBelow = false,
       placeholder,
       placeholderCompletion,
       minHeight = 28,
@@ -200,22 +187,12 @@ export const ComposerInput = memo(
     const [showSlashPopup, setShowSlashPopup] = useState(false);
     const [slashCommands, setSlashCommands] = useState<SlashCommand[]>([]);
     const [activeSlashIndex, setActiveSlashIndex] = useState(0);
-    const [showLanguagePopup, setShowLanguagePopup] = useState(false);
-    const [activeLanguageIndex, setActiveLanguageIndex] = useState(0);
     const [atQuery, setAtQuery] = useState("");
     const slashListId = useId();
-    const languageListId = useId();
-    const availableSlashCommands = useMemo<SlashCommand[]>(() => [
-      ...(onOpenPersonaSelector ? ["persona" as const] : []),
-      ...(onReplyLanguageChange && !replyLanguageDisabled ? ["language" as const] : []),
-    ], [onOpenPersonaSelector, onReplyLanguageChange, replyLanguageDisabled]);
-    const languageChoices = useMemo(() => [
-      {
-        value: "",
-        label: `${"Account default"} (${replyLanguageDefaultLabel})`,
-      },
-      ...replyLanguageOptions,
-    ], [replyLanguageDefaultLabel, replyLanguageOptions]);
+    const availableSlashCommands = useMemo<SlashCommand[]>(
+      () => (onOpenPersonaSelector ? ["persona"] : []),
+      [onOpenPersonaSelector],
+    );
     // Main chat passes ``onSelectAgent`` → ``@`` picks a connected agent. Other
     // surfaces (quiz follow-up) omit it and keep the @ Space menu.
     const agentMentionMode = Boolean(onSelectAgent);
@@ -276,7 +253,6 @@ export const ComposerInput = memo(
       setSlashCommands(matches);
       setActiveSlashIndex(0);
       setShowSlashPopup(matches.length > 0);
-      setShowLanguagePopup(false);
     }, [availableSlashCommands]);
 
     const handleInputChange = useCallback(
@@ -314,21 +290,8 @@ export const ComposerInput = memo(
       setSlashCommands([]);
       if (command === "persona") {
         onOpenPersonaSelector?.();
-        return;
       }
-      const selectedIndex = languageChoices.findIndex(
-        (choice) => choice.value === (replyLanguageOverride ?? ""),
-      );
-      setActiveLanguageIndex(Math.max(0, selectedIndex));
-      setShowLanguagePopup(true);
-      textareaRef.current?.focus();
-    }, [setInputBoth, onInputChange, onOpenPersonaSelector, languageChoices, replyLanguageOverride, textareaRef]);
-
-    const handleSelectReplyLanguage = useCallback((value: string) => {
-      setShowLanguagePopup(false);
-      onReplyLanguageChange?.(value);
-      textareaRef.current?.focus();
-    }, [onReplyLanguageChange, textareaRef]);
+    }, [setInputBoth, onInputChange, onOpenPersonaSelector]);
 
     const doSend = useCallback(() => {
       const content = inputRef.current.trim();
@@ -341,7 +304,6 @@ export const ComposerInput = memo(
       onInputChange("");
       setShowAtPopup(false);
       setShowSlashPopup(false);
-      setShowLanguagePopup(false);
     }, [canSendEmpty, onSend, setInputBoth, onInputChange]);
 
     const clearTrailingMention = useCallback(() => {

@@ -55,9 +55,7 @@ export function createSessionEntry(
     messages: [],
     isStreaming: false,
     currentStage: "",
-    language:
-      typeof window === "undefined" ? "en" : readStoredResponseLanguage(),
-    replyLanguageOverride: null,
+    language: "en",
     status: "idle",
     submissionBaseStatus: "idle",
     activeTurnId: null,
@@ -76,16 +74,12 @@ export function createSessionEntry(
 
 export function withCurrentGenerationSettings(
   snapshot: MessageRequestSnapshot,
-  session: Pick<
-    SessionEntry,
-    "llmSelection" | "language" | "replyLanguageOverride"
-  >,
+  session: Pick<SessionEntry, "llmSelection" | "language">,
 ): MessageRequestSnapshot {
   return {
     ...snapshot,
     llmSelection: session.llmSelection,
-    language: session.replyLanguageOverride ?? readStoredResponseLanguage(),
-    replyLanguageOverride: session.replyLanguageOverride,
+    language: "en",
   };
 }
 
@@ -109,7 +103,7 @@ export function restoredFailedMessage(
     knowledgeBases: Array.isArray(base.knowledgeBases)
       ? base.knowledgeBases
       : [],
-    language: typeof base.language === "string" ? base.language : "en",
+    language: "en",
   } as MessageRequestSnapshot;
   return {
     id: nextOptimisticId(),
@@ -405,23 +399,8 @@ function reduce(state: ProviderState, action: Action): ProviderState {
     case "SET_LANGUAGE":
       return updateSelectedSession(state, (session) => ({
         ...session,
-        language: session.replyLanguageOverride ?? action.lang,
+        language: "en",
       }));
-    case "SET_REPLY_LANGUAGE_OVERRIDE": {
-      const session = state.sessions[action.key];
-      if (!session) return state;
-      return {
-        ...state,
-        sessions: {
-          ...state.sessions,
-          [action.key]: {
-            ...session,
-            replyLanguageOverride: action.language,
-            language: action.language ?? readStoredResponseLanguage(),
-          },
-        },
-      };
-    }
     case "ADD_USER_MSG": {
       const session =
         state.sessions[action.key] ?? createSessionEntry(action.key);
@@ -960,11 +939,7 @@ function reduce(state: ProviderState, action: Action): ProviderState {
             lastSeq: 0,
             status: action.status || "idle",
             submissionBaseStatus: action.serverStatus ?? action.status ?? "idle",
-            language: action.language ?? existing.language,
-            replyLanguageOverride:
-              action.replyLanguageOverride !== undefined
-                ? action.replyLanguageOverride
-                : existing.replyLanguageOverride,
+            language: "en",
             selectedBranches:
               action.selectedBranches ?? existing.selectedBranches,
             updatedAt: Date.now(),

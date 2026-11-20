@@ -186,9 +186,6 @@ export default function AppearanceSettingsPage() {
               Learning starts with a question. Explore an idea, connect it to
               what you know, and explain it in your own words.
             </p>
-            <p className="hidden" lang="zh">
-              Learning starts with a question.
-            </p>
           </div>
           <button
             type="button"

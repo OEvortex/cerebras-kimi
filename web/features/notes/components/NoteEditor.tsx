@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react'
 import type { PartialBlock } from '@blocknote/core'
-import { en, zh } from '@blocknote/core/locales'
+import { en } from '@blocknote/core/locales'
 import {
   BlockNoteViewRaw,
   FormattingToolbarController,
@@ -57,7 +57,7 @@ export default function NoteEditor({
       tables: { headers: true },
       extensions: [noteInputRules],
       dictionary: (() => {
-        const base = "en".startsWith('zh') ? zh : en
+        const base = en
         return {
           ...base,
           placeholders: {

@@ -52,8 +52,6 @@ type Tab = "installed" | "store";
  * store read-only and the page says so rather than offering a button that 403s.
  */
 export default function CliAppsSection() {
-  
-  const zh = "en"?.toLowerCase().startsWith("zh");
   const { isAdmin, loading: authLoading } = useAuthStatus();
 
   const [state, setState] = useState<CliAppState | null>(null);
@@ -130,7 +128,6 @@ export default function CliAppsSection() {
         <Installed
           state={state}
           isAdmin={isAdmin}
-          zh={zh}
           onChanged={setState}
           onBrowse={() => setTab("store")}
         />
@@ -144,13 +141,11 @@ export default function CliAppsSection() {
 function Installed({
   state,
   isAdmin,
-  zh,
   onChanged,
   onBrowse,
 }: {
   state: CliAppState | null;
   isAdmin: boolean;
-  zh: boolean;
   onChanged: (next: CliAppState) => void;
   onBrowse: () => void;
 }) {

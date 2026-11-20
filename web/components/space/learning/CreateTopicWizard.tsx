@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type RefObject } from "react";
+import { useState, type RefObject } from "react";
 
 import {
   AlertCircle,
@@ -17,7 +17,6 @@ import type { LLMSelection } from "@/features/chat/model/protocol";
 import { useLLMOptions } from "@/hooks/useLLMOptions";
 import { useModalDialog } from "@/hooks/useModalDialog";
 import {
-  catalogTranslate,
   hydrateTopicSource,
   toggleSourceSelection,
   useTopicSourceLibrary,
@@ -58,8 +57,6 @@ export function CreateTopicWizard({
   returnFocusRef: RefObject<HTMLElement | null>;
 }) {
   
-  const zh = "en"?.toLowerCase().startsWith("zh") ?? false;
-  const sourceTr = useMemo(() => catalogTranslate(zh), [zh]);
   const [step, setStep] = useState(1);
   const [goal, setGoal] = useState("");
   const [emoji, setEmoji] = useState("🧭");
@@ -69,7 +66,7 @@ export function CreateTopicWizard({
     candidates,
     childLists,
     loadChildren,
-  } = useTopicSourceLibrary(sourceTr);
+  } = useTopicSourceLibrary();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);

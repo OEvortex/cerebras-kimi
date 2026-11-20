@@ -169,7 +169,7 @@ export function useTopicSourceLibrary() {
       setLibrary(previous => ({ ...previous, loadingKinds: (previous.loadingKinds ?? []).filter(kind => kind !== 'questionSets'), failures: [...new Set([...previous.failures, 'practice'])] }))
       setQuestionPage(previous => ({ ...previous, loading: false }))
     }
-  }, [tr])
+  }, [])
   const searchQuestions = useCallback((query: string) => { void loadQuestions(query) }, [loadQuestions])
   const moreQuestions = useCallback(() => { if (!questionPage.loading) void loadQuestions(questionPage.query, questionPage.offset) }, [loadQuestions, questionPage])
 
@@ -190,7 +190,7 @@ export function useTopicSourceLibrary() {
       key: JSON.stringify([row.content_workspace_id ?? '', kind, id]),
       kind,
       sourceId: String(id),
-      label: String(label || tr('Untitled', 'Untitled')),
+      label: String(label || 'Untitled'),
       detail: String(detail || ''),
       content_workspace_id: String(row.content_workspace_id ?? ''),
       content_workspace_name: String(row.content_workspace_name || ''),
@@ -221,7 +221,7 @@ export function useTopicSourceLibrary() {
             excerpt: String(row.last_message || ''),
           }))
         case 'practice':
-          return items.map(row => questionCandidate(row, tr))
+          return items.map(row => questionCandidate(row))
         case 'drafts':
           return items.map(row => ({
             ...candidate(row, 'cowriter', row.id, row.title),
@@ -303,7 +303,7 @@ export function useTopicSourceLibrary() {
       disposed = true
       questionEpoch.current += 1
     }
-  }, [tr])
+  }, [])
 
   // Child lists are fetched per row, only when the learner opens one: a
   // workspace with a dozen libraries, categories and partners would otherwise
@@ -322,7 +322,7 @@ export function useTopicSourceLibrary() {
             }
       )
       try {
-        const listed = await fetchChildren(candidate, tr)
+        const listed = await fetchChildren(candidate)
         setChildLists(previous => ({
           ...previous,
           [parentKey]: { loading: false, error: '', candidates: listed },
@@ -336,12 +336,12 @@ export function useTopicSourceLibrary() {
             error:
               reason instanceof Error
                 ? reason.message
-                : tr('Could not load the list', 'Could not load the list'),
+                : 'Could not load the list',
           },
         }))
       }
     },
-    [tr]
+    []
   )
 
   const candidates = useMemo(
@@ -365,8 +365,7 @@ export function useTopicSourceLibrary() {
 
 /** One expandable row's children, by kind. Throws so the caller can show why. */
 async function fetchChildren(
-  candidate: SourceCandidate,
-  tr: Translate
+  candidate: SourceCandidate
 ): Promise<SourceCandidate[]> {
   const parentKey = candidate.key
   if (candidate.kind === 'knowledge_base') {
@@ -387,7 +386,7 @@ async function fetchChildren(
           kind: 'file' as const,
           sourceId: entry.name,
           label: entry.name,
-          detail: tr('File in {{name}}', 'File in {{name}}', { name: kbName }),
+          detail: `File in ${kbName}`,
           available: true,
           kbName,
           path: entry.name,
@@ -406,10 +405,10 @@ async function fetchChildren(
       key: `question_bank:${entry.id}`,
       kind: 'question_bank' as const,
       sourceId: String(entry.id),
-      label: entry.question.slice(0, 80) || tr('Untitled question', 'Untitled question'),
+      label: entry.question.slice(0, 80) || 'Untitled question',
       detail: entry.is_correct
-        ? tr('Answered correctly', 'Answered correctly')
-        : tr('Answered wrong', 'Answered wrong'),
+        ? 'Answered correctly'
+        : 'Answered wrong',
       available: true,
       excerpt: entry.question,
       parentKey,
@@ -422,8 +421,8 @@ async function fetchChildren(
       kind: 'chat' as const,
       // The reference form chat's own transcript reader understands.
       sourceId: `partner:${candidate.sourceId}:${session.session_key}`,
-      label: session.title || tr('Untitled conversation', 'Untitled conversation'),
-      detail: tr('{{count}} messages', '{{count}} messages', { count: session.message_count }),
+      label: session.title || 'Untitled conversation',
+      detail: `${session.message_count} messages`,
       available: true,
       excerpt: session.last_message || '',
       parentKey,
@@ -435,8 +434,8 @@ async function fetchChildren(
       key: `partner_group:${candidate.sourceId}:${session.session_key}`,
       kind: 'partner_group' as const,
       sourceId: `${candidate.sourceId}:${session.session_key}`,
-      label: session.title || tr('Untitled discussion', 'Untitled discussion'),
-      detail: tr('{{count}} messages', '{{count}} messages', { count: session.message_count }),
+      label: session.title || 'Untitled discussion',
+      detail: `${session.message_count} messages`,
       available: true,
       parentKey,
     }))

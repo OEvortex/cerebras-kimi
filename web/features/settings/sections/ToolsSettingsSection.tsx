@@ -70,14 +70,14 @@ type ToolSection = {
 
 // Display labels for capability-owned tool sections, keyed by the backend's
 // capability id. Falls back to the raw id for any unmapped capability.
-const CAPABILITY_LABELS: Record<string, { zh: string; en: string }> = {
-  solve: { zh: "Deep Solve", en: "Deep Solve" },
-  mastery: { zh: "Mastery Path", en: "Mastery Path" },
+const CAPABILITY_LABELS: Record<string, string> = {
+  solve: "Deep Solve",
+  mastery: "Mastery Path",
 };
 
 export default function ToolsSettingsPage() {
   
-  const { language, draftRevision } = useSettings();
+  const { draftRevision } = useSettings();
   const localizedHints = useCallback((tool: BuiltinTool): ToolHints => {
     return tool.hints.en;
   }, []);
@@ -124,7 +124,6 @@ export default function ToolsSettingsPage() {
 
   const sections = useMemo<ToolSection[] | null>(() => {
     if (!tools) return null;
-    const zh = false;
     // Buckets: toggleable (Experience Enhancement) first, then locked-on built-ins, then one
     // section per capability for its owned tools. Backend order is preserved
     // within each bucket (mirrors USER_TOGGLEABLE_TOOL_NAMES / the
@@ -148,20 +147,16 @@ export default function ToolsSettingsPage() {
     if (experience.length) {
       out.push({
         key: "experience",
-        label: zh ? "Experience Enhancement" : "Experience Enhancement",
-        hint: zh
-          ? "User-toggleable. Switch on or off to shape the chat agent's behavior."
-          : "User-toggleable. Switch on or off to shape the chat agent's behavior.",
+        label: "Experience Enhancement",
+        hint: "User-toggleable. Switch on or off to shape the chat agent's behavior.",
         tools: experience,
       });
     }
     if (builtin.length) {
       out.push({
         key: "builtin",
-        label: zh ? "Built-in Tools" : "Built-in Tools",
-        hint: zh
-          ? "Mounted automatically by the chat agent when needed. Not user-toggleable."
-          : "Mounted automatically by the chat agent when needed. Not user-toggleable.",
+        label: "Built-in Tools",
+        hint: "Mounted automatically by the chat agent when needed. Not user-toggleable.",
         tools: builtin,
       });
     }
