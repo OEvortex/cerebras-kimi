@@ -34,7 +34,6 @@ const allSources = sourceRoots.flatMap(sourceFiles);
 
 test("browser storage methods stay behind the shared boundary", () => {
   const violations = allSources
-    .filter((file) => !portablePath(file).endsWith("components/ThemeScript.tsx"))
     .filter((file) => !portablePath(file).includes("shared/storage/"))
     .filter((file) =>
       /(?:window\.)?(?:localStorage|sessionStorage)\.(?:getItem|setItem|removeItem)/.test(

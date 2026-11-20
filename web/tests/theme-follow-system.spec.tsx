@@ -1,10 +1,8 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { render } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 
-import ThemeScript from "@/components/ThemeScript";
 import { THEME_STORAGE_KEY, initializeTheme, setTheme } from "@/lib/theme";
 
 type SchemeListener = (event: { matches: boolean; media: string }) => void;
@@ -64,14 +62,6 @@ function installColorScheme(initialDark: boolean) {
   });
 
   return media;
-}
-
-function runThemeScript() {
-  const view = render(<ThemeScript />);
-  const code = view.container.querySelector("script")?.textContent ?? "";
-  expect(code).not.toBe("");
-  new Function(code)();
-  view.unmount();
 }
 
 afterEach(() => {
@@ -144,40 +134,6 @@ describe("system theme follows the OS", () => {
   });
 });
 
-describe("theme script before hydration", () => {
-  it("paints the OS theme without writing the fallback into localStorage", () => {
-    installColorScheme(true);
-
-    runThemeScript();
-
-    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBeNull();
-    expect(document.documentElement.classList.contains("dark")).toBe(true);
-    expect(document.documentElement.classList.contains("theme-snow")).toBe(false);
-  });
-
-  it("paints a stored system preference from the OS without overwriting it", () => {
-    installColorScheme(false);
-    localStorage.setItem(THEME_STORAGE_KEY, "system");
-
-    runThemeScript();
-
-    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe("system");
-    expect(document.documentElement.classList.contains("theme-snow")).toBe(true);
-    expect(document.documentElement.classList.contains("dark")).toBe(false);
-  });
-
-  it("still paints an explicit stored theme", () => {
-    installColorScheme(true);
-    localStorage.setItem(THEME_STORAGE_KEY, "glass");
-
-    runThemeScript();
-
-    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe("glass");
-    expect(document.documentElement.classList.contains("theme-glass")).toBe(true);
-    expect(document.documentElement.classList.contains("dark")).toBe(true);
-  });
-});
-
 describe("appearance settings", () => {
   it("offers a System option alongside the explicit themes", () => {
     const source = readFileSync(
@@ -186,7 +142,7 @@ describe("appearance settings", () => {
     );
 
     expect(source).toMatch(/id:\s*"system"/);
-    expect(source).toMatch(/t\("System"\)/);
+    expect(source).toMatch(/label:\s*"System"/);
   });
 
   it("starts the live system listener from the app shell", () => {
