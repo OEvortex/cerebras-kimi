@@ -63,7 +63,6 @@ const VALID_UI: UiSettings = {
   content_line_spacing: 'normal',
   theme: 'dark',
   language: 'en',
-  response_language: 'en',
   code_block_theme: 'dracula',
   code_block_show_line_numbers: true,
   code_block_wrap_long_lines: true,

@@ -26,7 +26,6 @@ import {
 
 import type { SourceChildren, SourceCandidate, SourceLibrary } from '@/hooks/useTopicSourceLibrary'
 
-import type { Translate } from './format'
 
 
 /**

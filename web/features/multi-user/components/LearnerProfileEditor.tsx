@@ -13,7 +13,6 @@ const fields: Array<keyof LearnerProfile> = [
   "age",
   "grade_level",
   "curriculum",
-  "language",
   "reading_level",
   "explanation_style",
 ];
@@ -22,7 +21,7 @@ const fieldLabels: Record<keyof LearnerProfile, string> = {
   age: "Age",
   grade_level: "Grade level",
   curriculum: "Curriculum",
-  language: "Preferred language",
+  language: "Language",
   reading_level: "Reading level",
   explanation_style: "Explanation style",
 };

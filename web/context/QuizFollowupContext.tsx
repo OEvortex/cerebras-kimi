@@ -518,7 +518,7 @@ export function QuizFollowupProvider({ children }: ProviderProps) {
         mcp: input.mcp ?? [],
         session_id: current.sessionId,
         attachments: input.attachments,
-        language: input.language,
+        language: "en",
         ...(Object.keys(capabilityConfig).length
           ? { config: capabilityConfig }
           : {}),

@@ -12,7 +12,6 @@ import {
   updateMasteryTopicMap,
 } from "@/lib/learning-api";
 
-import type { Translate } from "./format";
 import { RouteDraftEditor } from "./RouteDraftEditor";
 import { isRouteDraftValid } from "./route-draft";
 

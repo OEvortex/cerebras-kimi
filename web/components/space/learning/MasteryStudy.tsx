@@ -60,7 +60,7 @@ import { ActivityHeader } from "@/components/activity";
 import { ModeSwitch } from "./ModeSwitch";
 import { MasteryPathCrumb } from "@/components/layout/instance-crumbs";
 import { PageBarSlot, usePageBarOffers } from "@/components/layout/PageChrome";
-import { topicDisplayName, type Translate } from "./format";
+import { topicDisplayName } from "./format";
 
 
 import { ProgressRing } from "./ProgressRing";

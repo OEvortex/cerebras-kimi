@@ -6,7 +6,6 @@ import type { ModuleInit, TopicDraft } from "@/lib/learning-api";
 import { randomUuid } from "@/lib/random-uuid";
 
 
-import type { Translate } from "./format";
 import {
   moveRouteModule,
   moveRouteWaypoint,

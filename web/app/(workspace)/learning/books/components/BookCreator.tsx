@@ -1,13 +1,12 @@
 'use client'
 
 import { PageContainer, PageHeader } from '@/components/layout/FeaturePage'
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { ChevronUp, Database, Loader2, Pencil, Sparkles } from 'lucide-react'
 
 import type { Book, BookDepth, BookProposal } from '@/lib/book-types'
 import type { TopicSourceInput } from '@/lib/learning-api'
 import {
-  catalogTranslate,
   useTopicSourceLibrary,
   hydrateTopicSource,
   toggleSourceSelection,
@@ -65,9 +64,6 @@ export default function BookCreator({
   onConfirmProposal,
   confirmLoading = false,
 }: BookCreatorProps) {
-  
-  const zh = "en"?.toLowerCase().startsWith('zh') ?? false
-  const sourceTr = useMemo(() => catalogTranslate(zh), [zh])
   const [intent, setIntent] = useState('')
   const [depth, setDepth] = useState<BookDepth>('standard')
   const {
@@ -76,7 +72,7 @@ export default function BookCreator({
     candidates,
     childLists,
     loadChildren,
-  } = useTopicSourceLibrary(sourceTr)
+  } = useTopicSourceLibrary()
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [sourceError, setSourceError] = useState('')
   const [preparing, setPreparing] = useState(false)

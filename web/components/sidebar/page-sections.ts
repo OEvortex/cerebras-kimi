@@ -52,7 +52,7 @@ export function pageSections({
     !allowedSurfaces || allowedSurfaces.includes(kind === 'mastery' || kind === 'practice' ? 'chat' : kind)
   const shelf = (groups: DashboardGroup[]) =>
     visibleGroups(groups, isAvailable).flatMap(group =>
-      group.items.map(item => ({ href: item.href, label: item.title.en, icon: item.icon }))
+      group.items.map(item => ({ href: item.href, label: item.title, icon: item.icon }))
     )
   const sections: PageSection[] = [
     {

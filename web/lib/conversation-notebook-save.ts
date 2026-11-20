@@ -43,7 +43,7 @@ export function buildConversationNotebookSave(
       metadata: {
         source: options.source,
         capability: options.activeCapability || options.source,
-        ui_language: options.language,
+        ui_language: "en",
         session_id: options.sessionId,
         total_message_count: messages.length,
       },

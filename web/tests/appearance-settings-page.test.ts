@@ -13,46 +13,9 @@ const appearancePagePath = path.join(
   "AppearanceSettingsSection.tsx",
 );
 
-const overviewPagePath = path.join(
-  process.cwd(),
-  "components",
-  "settings",
-  "SettingsOverview.tsx",
-);
-
 function readAppearancePage() {
   return fs.readFileSync(appearancePagePath, "utf8");
 }
-
-function readOverviewPage() {
-  return fs.readFileSync(overviewPagePath, "utf8");
-}
-
-test("settings source contract: language settings live on Overview instead of Appearance", () => {
-  const appearance = readAppearancePage();
-  const overview = readOverviewPage();
-
-  assert.doesNotMatch(appearance, /title=\{t\("Language"\)\}/);
-  assert.doesNotMatch(appearance, /updateLanguage|updateResponseLanguage/);
-  assert.match(overview, /title=\{t\("Language"\)\}/);
-  assert.match(overview, /updateLanguage/);
-  assert.match(overview, /updateResponseLanguage/);
-});
-
-test("settings source contract: model output language offers the extended registry", () => {
-  const overview = readOverviewPage();
-
-  assert.match(overview, /RESPONSE_LANGUAGE_OPTIONS\.map/);
-  const responseRow = overview.indexOf('t("Model output language")');
-  const responseControl = overview.indexOf("<select", responseRow);
-  const responseHandler = overview.indexOf(
-    "updateResponseLanguage",
-    responseControl,
-  );
-  assert.notEqual(responseRow, -1);
-  assert.notEqual(responseControl, -1);
-  assert.notEqual(responseHandler, -1);
-});
 
 test("appearance source contract: code blocks section follows the theme section", () => {
   const source = readAppearancePage();

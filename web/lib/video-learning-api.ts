@@ -223,7 +223,7 @@ export async function resolveVideo(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         url,
-        language,
+        language: "en",
         ...(providerOverride ? { provider_override: providerOverride } : {}),
       }),
     }),

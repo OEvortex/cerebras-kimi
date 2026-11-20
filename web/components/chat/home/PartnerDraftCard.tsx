@@ -41,7 +41,7 @@ export const PartnerDraftCard = memo(function PartnerDraftCard({
         name,
         description,
         soul,
-        language,
+        language: "en",
         emoji,
         color,
         start: true,
@@ -108,19 +108,12 @@ export const PartnerDraftCard = memo(function PartnerDraftCard({
                 className={`${fieldClass} min-h-16 resize-y`}
                 placeholder={"Description"}
               />
-              <div className="grid grid-cols-[72px_1fr_80px] gap-2">
+              <div className="grid grid-cols-[72px_80px] gap-2">
                 <input
                   aria-label={"Emoji"}
                   value={emoji}
                   onChange={(event) => setEmoji(event.target.value)}
                   className={fieldClass}
-                />
-                <input
-                  aria-label={"Language"}
-                  value={language}
-                  onChange={(event) => setLanguage(event.target.value)}
-                  className={fieldClass}
-                  placeholder={"Auto / zh / en"}
                 />
                 <input
                   aria-label={"Color"}

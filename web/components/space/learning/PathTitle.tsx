@@ -6,7 +6,6 @@ import { Check, Pencil, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Tooltip from "@/shared/ui/Tooltip";
 
-import type { Translate } from "./format";
 
 /**
  * The path's name, and the only place it can be changed.

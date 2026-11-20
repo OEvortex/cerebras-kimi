@@ -128,7 +128,7 @@ function textOnlyRecord(record: FailedSubmissionRecord): FailedSubmissionRecord 
     requestSnapshot: {
       content: record.content,
       capability: record.capability,
-      language: typeof snapshot?.language === "string" ? snapshot.language : "en",
+      language: "en",
       enabledTools: [],
       knowledgeBases: [],
     },
