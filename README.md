@@ -80,7 +80,7 @@ mode, AGENTS.md/skills and git context are replaced by the tutor prompt in
 - **`learning`** — `status|update|journal|weak` progress tracking
 - **`mastery`** — Guided Learning loop `topics|start|status|quiz|grade|note|leave`
 - **`quiz`** — `generate|grade`
-- **`video`** — Remotion pipeline `scaffold|render|list` → `workspace/videos/*.mp4`
+- **`video`** — Remotion video lesson: a writer sub-agent authors `Lesson.tsx` against the bundled kit (`backend/app/agent/video_lesson/remotion/`); the backend compiles and frame-checks it with a pinned Node toolchain, times narration captions, and publishes a self-contained player page under `/files/videos/<slug>/lesson.html` played live in the chat's `VideoLessonViewer` (no server-side MP4). First use installs the pinned npm packages into `data/runtime/remotion` (override with `DEEPTUTOR_REMOTION_RUNTIME`).
 - **`workspace`** — jailed ops for artifacts DeepTutor itself creates
 - **`question_bank`** — stored question entries
 - **`cron`** — `list|schedule|cancel` for scheduled reminders/automations (`at`, `every_seconds`, `cron_expr`); a due job runs a turn in the session it was scheduled from and appears on the calendar's Automations layer

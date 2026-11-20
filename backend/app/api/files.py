@@ -10,6 +10,11 @@ from fastapi.responses import FileResponse
 
 router = APIRouter(tags=["files"])
 
+# Generated video lessons are pages of model-written script. Serve them in an
+# opaque origin (even when opened directly) with no access to the API's cookies
+# or same-origin data. The in-chat player applies the same sandbox to its iframe.
+_SANDBOXED_PAGE_CSP = "sandbox allow-scripts allow-popups"
+
 _MIME: dict[str, str] = {
     ".png": "image/png",
     ".jpg": "image/jpeg",
@@ -47,8 +52,7 @@ async def serve_file(file_path: str, request: Request) -> FileResponse:
     if not resolved.is_file():
         raise HTTPException(status_code=404, detail="Not Found")
     media_type = _MIME.get(resolved.suffix.lower(), "application/octet-stream")
-    return FileResponse(
-        resolved,
-        media_type=media_type,
-        headers={"Cache-Control": "private, max-age=60"},
-    )
+    headers = {"Cache-Control": "private, max-age=60"}
+    if media_type.startswith("text/html") and "videos" in resolved.parts:
+        headers["Content-Security-Policy"] = _SANDBOXED_PAGE_CSP
+    return FileResponse(resolved, media_type=media_type, headers=headers)

@@ -693,11 +693,50 @@ class AgentRuntime:
                     out = event.result
                     text = _tool_result_text(out)
                     tool_meta: dict[str, Any] = {}
-                    # The video tool publishes a Cleya-rendered MP4 (or a
-                    # legacy HyperFrames composition) into the /files tree and
-                    # marks its result with a machine-readable prefix. Turn
-                    # that into an artifact so the chat embeds it with the
-                    # right player.
+                    # The video tool publishes a self-contained Remotion player
+                    # page into the /files tree and marks its result with a
+                    # machine-readable prefix. Emit a `video_lesson` result so
+                    # the chat mounts its sandboxed VideoLessonViewer.
+                    # Marker format: VIDEO_LESSON_RESULT:<json>
+                    if (
+                        event.tool_name == "video"
+                        and text.startswith("VIDEO_LESSON_RESULT:")
+                        and not getattr(out, "is_error", False)
+                    ):
+                        try:
+                            lesson = json.loads(text.split(":", 1)[1])
+                        except (ValueError, IndexError):
+                            lesson = {}
+                        rel = str(lesson.get("rel") or "").strip()
+                        if rel and ".." not in rel and not rel.startswith("/"):
+                            title = str(lesson.get("title") or "").strip()
+                            summary = str(lesson.get("summary") or "").strip()
+                            await self._emit(handle, self._stream_event(
+                                handle, "result", source="video_lesson",
+                                stage="responding",
+                                metadata={
+                                    "response": summary,
+                                    "title": title,
+                                    "artifacts": [{
+                                        "type": "html",
+                                        "url": f"/files/{rel}",
+                                        "filename": rel.rsplit("/", 1)[-1],
+                                        "content_type": "text/html",
+                                        "label": title or None,
+                                    }],
+                                    "code": {
+                                        "language": "tsx",
+                                        "content": str(lesson.get("code") or ""),
+                                    },
+                                    "render": {
+                                        "duration_seconds": lesson.get("duration_seconds"),
+                                        "attempts": list(range(
+                                            max(1, int(lesson.get("attempts") or 1)))),
+                                    },
+                                }))
+                            text = summary or "Video lesson ready."
+
+                    # Legacy marker for pre-Remotion MP4/HyperFrames lessons.
                     # Marker format: VIDEO_ARTIFACT:<rel>|<title>|<readable>
                     if (
                         event.tool_name == "video"

@@ -415,344 +415,37 @@ def mastery(action: str, topic: str = "", question: str = "",
 
 
 # ---------------------------------------------------------------------------
-# video — natural-language query -> Cleya lesson sub-agent -> rendered MP4
-# served under /files (the chat's native video preview plays it). The sub-agent
-# writes a declarative Cleya SceneSpec; this tool validates it, renders it
-# headlessly with Chrome + FFmpeg, and publishes the result.
+# video — natural-language query -> Remotion lesson -> self-contained HTML page
+# played live in the browser. The writer sub-agent produces a Lesson.tsx against
+# the shipped kit; the runtime compiles and frame-checks it, then publishes a
+# player page under /files for the chat's VideoLessonViewer.
 # ---------------------------------------------------------------------------
 
-_JSON_BLOCK = re.compile(r"```json[ \t]*\n(.*?)\n```", re.S)
-_VIDEO_ARTIFACT_PREFIX = "VIDEO_ARTIFACT:"
-_CLEYA_RENDER_TIMEOUT = 900.0
-_CLEYA_CHECK_TIMEOUT = 60.0
-# Chrome + FFmpeg are CPU-heavy. Serialize renders so two lessons cannot
-# starve each other (or the rest of the turn) on a small box.
-_VIDEO_RENDER_LOCK = asyncio.Lock()
-_VIDEO_LAYER_TYPES = {"text", "rect", "counter", "bar", "svg"}
-
-
-def _parse_lesson(reply: str) -> dict[str, Any] | None:
-    """Pull the lesson JSON (metadata + scene) from a sub-agent reply."""
-    blocks = _JSON_BLOCK.findall(reply)
-    if not blocks:
-        start, end = reply.find("{"), reply.rfind("}")
-        if start >= 0 and end > start:
-            blocks = [reply[start:end + 1]]
-    candidates: list[dict[str, Any]] = []
-    for raw in blocks:
-        try:
-            payload = json.loads(raw)
-        except (TypeError, ValueError):
-            continue
-        if isinstance(payload, dict) and isinstance(payload.get("scene"), dict):
-            candidates.append(payload)
-    if not candidates:
-        return None
-    # If a model echoes the structural example plus its own scene, the real
-    # lesson is the one with the most layers.
-    return max(
-        candidates,
-        key=lambda item: len(item["scene"].get("layers") or []),
-    )
-
-
-_CLEYA_SPEC_CACHE: str | None = None
-
-
-def _cleya_spec() -> str:
-    """Load the Cleya lesson contract. This prompt belongs only to the video
-    sub-agent, never to the main agent."""
-    global _CLEYA_SPEC_CACHE
-    if _CLEYA_SPEC_CACHE is None:
-        try:
-            _CLEYA_SPEC_CACHE = (Path(__file__).with_name("cleya_prompt.txt")
-                                 .read_text(encoding="utf-8").strip())
-        except OSError:
-            _CLEYA_SPEC_CACHE = ""
-    return _CLEYA_SPEC_CACHE
-
-
-def _subagent_instructions() -> str:
-    """The video sub-agent's system prompt: the Cleya scene contract. It
-    contains no tool instructions — the sub-agent has no tools and only
-    returns one JSON block."""
-    return _cleya_spec()
-
-
-def _video_workspace() -> Path:
-    root = Path(os.environ.get("DT_WORKSPACE_DIR", "./data/workspace")).resolve()
-    vdir = root / "videos"
-    vdir.mkdir(parents=True, exist_ok=True)
-    return vdir
-
-
-def _files_root() -> Path:
-    """Directory served by the frontend's /files/<path> route."""
-    return Path(__file__).resolve().parents[2] / "data" / "files"
-
-
-def _slug_for(title: str) -> str:
-    s = re.sub(r"[^a-z0-9]+", "-", (title or "video").lower()).strip("-") or "video"
-    return f"{s}-{uuid.uuid4().hex[:6]}"
-
-
-def _cleya_bin() -> str | None:
-    """Locate the Cleya CLI without assuming the backend's PATH."""
-    found = shutil.which("cleya")
-    if found:
-        return found
-    local = Path.home() / ".local" / "bin" / "cleya"
-    return str(local) if local.exists() else None
-
-
-def _json_from_output(text: str) -> dict[str, Any] | None:
-    """Cleya prints one JSON document; tolerate a stray banner or log line."""
-    text = (text or "").strip()
-    if not text:
-        return None
-    try:
-        value = json.loads(text)
-        return value if isinstance(value, dict) else None
-    except ValueError:
-        pass
-    start, end = text.find("{"), text.rfind("}")
-    if start >= 0 and end > start:
-        try:
-            value = json.loads(text[start:end + 1])
-            return value if isinstance(value, dict) else None
-        except ValueError:
-            return None
-    return None
-
-
-async def _run_cleya(args: list[str], timeout: float) -> tuple[dict[str, Any] | None, str]:
-    """Run the Cleya CLI with a PATH that finds its FFmpeg/ffprobe."""
-    cleya = _cleya_bin()
-    if cleya is None:
-        return None, ("Cleya CLI is not installed. Expected `cleya` in PATH or "
-                      "~/.local/bin/cleya.")
-    env = os.environ.copy()
-    local_bin = str(Path.home() / ".local" / "bin")
-    env["PATH"] = local_bin + os.pathsep + env.get("PATH", "")
-    env.setdefault("CLEYA_RENDER_WORKERS", "4")
-    try:
-        proc = await asyncio.create_subprocess_exec(
-            cleya, *args,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-            env=env,
-        )
-    except OSError as exc:
-        return None, f"Could not start Cleya: {exc}"
-    try:
-        out, err = await asyncio.wait_for(proc.communicate(), timeout=timeout)
-    except asyncio.TimeoutError:
-        proc.kill()
-        await proc.wait()
-        return None, f"Cleya timed out after {int(timeout)}s."
-    stdout = (out or b"").decode("utf-8", "replace")
-    stderr = (err or b"").decode("utf-8", "replace")
-    payload = _json_from_output(stdout)
-    if payload is None:
-        detail = (stderr or stdout).strip().splitlines()
-        detail_text = detail[-1] if detail else "no output"
-        return None, f"Cleya returned no JSON: {detail_text[:500]}"
-    return payload, stderr.strip()
-
-
-def _validate_lesson_payload(payload: dict[str, Any]) -> str | None:
-    """Cheap structural checks before asking Cleya's own validator."""
-    if not isinstance(payload.get("title"), str) or not payload["title"].strip():
-        return "The JSON is missing a non-empty `title`."
-    narration = payload.get("narration")
-    if not isinstance(narration, list) or not narration:
-        return "The JSON is missing a non-empty `narration` array."
-    scene = payload.get("scene")
-    if not isinstance(scene, dict):
-        return "The JSON is missing a `scene` object."
-    size = scene.get("size")
-    if not (isinstance(size, list) and len(size) == 2
-            and all(isinstance(v, (int, float)) for v in size)):
-        return "scene.size must be [1280, 720]."
-    if [int(size[0]), int(size[1])] != [1280, 720]:
-        return "scene.size must be [1280, 720] for this tool."
-    duration = scene.get("duration")
-    if not isinstance(duration, (int, float)) or not 20 <= float(duration) <= 120:
-        return "scene.duration must be a number between 20 and 120 seconds."
-    layers = scene.get("layers")
-    if not isinstance(layers, list) or not layers:
-        return "scene.layers must be a non-empty array."
-    if len(layers) > 80:
-        return "scene.layers is too large (max 80)."
-    seen: set[str] = set()
-    for index, layer in enumerate(layers):
-        if not isinstance(layer, dict):
-            return f"scene.layers[{index}] must be an object."
-        layer_id = layer.get("id")
-        layer_type = layer.get("type")
-        if not isinstance(layer_id, str) or not layer_id:
-            return f"scene.layers[{index}] is missing a string `id`."
-        if layer_id in seen:
-            return f"Duplicate layer id {layer_id!r}."
-        seen.add(layer_id)
-        if layer_type not in _VIDEO_LAYER_TYPES:
-            return (f"scene.layers[{index}] has unsupported type {layer_type!r}; "
-                    f"use one of {sorted(_VIDEO_LAYER_TYPES)}.")
-        if layer_type == "text" and not isinstance(layer.get("text"), str):
-            return f"scene.layers[{index}] (text) is missing `text`."
-        if layer_type == "svg" and not isinstance(layer.get("svg"), str):
-            return f"scene.layers[{index}] (svg) is missing `svg` markup."
-    return None
-
-
-def _scaffold_video(slug: str, scene: dict[str, Any], payload: dict[str, Any],
-                    title: str, mp4_path: Path) -> Path:
-    """Publish the rendered lesson and its source. Returns the served dir."""
-    served_dir = _files_root() / "videos" / slug
-    served_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(mp4_path, served_dir / "lesson.mp4")
-    scene_json = json.dumps(scene, ensure_ascii=False, indent=2)
-    meta_json = json.dumps(payload, ensure_ascii=False, indent=2)
-    (served_dir / "scene.json").write_text(scene_json, encoding="utf-8")
-    (served_dir / "meta.json").write_text(meta_json, encoding="utf-8")
-    # Keep an editable copy in the agent workspace so `workspace` can inspect
-    # or re-render it later.
-    proj = _video_workspace() / slug
-    (proj / "src").mkdir(parents=True, exist_ok=True)
-    shutil.copy2(mp4_path, proj / "src" / "lesson.mp4")
-    (proj / "src" / "scene.json").write_text(scene_json, encoding="utf-8")
-    (proj / "src" / "meta.json").write_text(meta_json, encoding="utf-8")
-    if title:
-        (proj / "title.txt").write_text(title, encoding="utf-8")
-    return served_dir
+_VIDEO_LESSON_MARKER = "VIDEO_LESSON_RESULT:"
 
 
 @tool(mutating=True, tool_icon="🎬")
 async def video(query: str, title: str = "") -> str:
-    """Turn a natural-language request into a rendered video lesson.
+    """Turn a natural-language request into an animated video lesson.
 
-    The main agent only passes what the learner asked for. A dedicated Cleya
-    sub-agent writes a declarative scene (JSON); this tool validates it with
-    Cleya's own checker, renders it headlessly to MP4 with Chrome + FFmpeg,
-    and publishes the file under /files for the chat's video preview.
+    A dedicated writer sub-agent writes a Remotion (React) scene; the backend
+    compiles it, checks sample frames and narration timing, and publishes a
+    self-contained player page under /files.
 
     :param query: The learner's request in plain language, e.g. "explain how
       photosynthesis works in a one-minute animation".
-    :param title: Optional short title (used for the file slug and card).
+    :param title: Optional short title (used for the lesson card and file slug).
     """
-    from vtx.agent.dispatcher import get_context
-    from vtx.agent.tools.task import SubagentSpec, resolve_subagent_runner
+    from .video_lesson import create_lesson
 
-    ctx = get_context()
-    if ctx is None:
-        return "Video sub-agent unavailable: the dispatcher context is not initialized."
-
-    instructions = _subagent_instructions()
-    if not instructions:
-        return "Video author unavailable: cleya_prompt.txt could not be loaded."
-
-    spec = SubagentSpec(
-        name="video-lesson-writer",
-        description="Writes a Cleya lesson scene for the learner's question",
-        instructions=instructions,
-        instructions_mode="replace",
-        # No tools: the sub-agent only writes one JSON block. An allow-list
-        # naming no real tool filters out the inherited tool set.
-        tools_allow=["__none__"],
-        tools_deny=[],
-        max_turns=2,
-    )
-    label = (title or query or "Video lesson").strip()[:48]
-    slug = _slug_for(title or query)
-    proj = _video_workspace() / slug
-    src_dir = proj / "src"
-    src_dir.mkdir(parents=True, exist_ok=True)
-    scene_path = src_dir / "scene.json"
-
-    base_prompt = (
-        "Write a Cleya video lesson for this learner request:\n\n"
-        + query.strip()
-        + "\n\nReturn only one fenced json block with title, summary, narration, "
-          "and scene."
-    )
-    feedback = ""
-    payload: dict[str, Any] | None = None
-    for _attempt in range(2):
-        prompt = base_prompt
-        if feedback:
-            prompt += ("\n\nThe previous JSON was rejected:\n" + feedback[:2000]
-                       + "\nFix exactly these issues and return the complete JSON again.")
-        try:
-            result = await resolve_subagent_runner()(
-                parent_ctx=ctx,
-                spec=spec,
-                prompt=prompt,
-                cancel_event=None,
-                model_override=None,
-                progress_callback=ctx.progress_callback,
-                tool_call_id=f"video_{uuid.uuid4().hex[:12]}",
-                label=label,
-            )
-        except Exception as exc:  # noqa: BLE001
-            return f"Video sub-agent failed: {exc}"
-        if result.error and not result.final_text:
-            return f"Video sub-agent failed: {result.error}"
-        candidate = _parse_lesson(result.final_text or "")
-        if candidate is None:
-            feedback = ("The reply did not contain one valid ```json block with a "
-                        "`scene` object. Return only the JSON block.")
-            continue
-        error = _validate_lesson_payload(candidate)
-        if error:
-            feedback = error
-            continue
-        payload = candidate
-        scene_path.write_text(json.dumps(candidate["scene"], ensure_ascii=False,
-                                         indent=2), encoding="utf-8")
-        check, _stderr = await _run_cleya(
-            ["render", "--scene", str(scene_path), "--check"],
-            _CLEYA_CHECK_TIMEOUT,
-        )
-        if check is None:
-            feedback = "Cleya's checker could not read the scene (invalid JSON shape)."
-            payload = None
-            continue
-        if not check.get("success"):
-            feedback = str(check.get("error") or "Cleya rejected the scene.")
-            payload = None
-            continue
-        break
-
-    if payload is None:
-        return f"Video scene invalid: {feedback or 'the sub-agent did not produce a valid scene.'}"
-
-    out_path = proj / "lesson.mp4"
-    async with _VIDEO_RENDER_LOCK:
-        render, stderr = await _run_cleya(
-            ["render", "--scene", str(scene_path),
-             "--fps", "24", "--width", "1280", "--height", "720",
-             "--output", str(out_path), "--overwrite"],
-            _CLEYA_RENDER_TIMEOUT,
-        )
-    if render is None or not render.get("success"):
-        detail = ""
-        if render is not None:
-            detail = str(render.get("error") or render.get("suggestion") or "")
-        if not detail:
-            lines = stderr.splitlines()
-            detail = lines[-1] if lines else "render failed"
-        return f"Video render failed: {detail[:600]}"
-    if not out_path.exists() or out_path.stat().st_size == 0:
-        return "Video render failed: Cleya reported success but wrote no MP4."
-
-    lesson_title = str(payload.get("title") or title or "").strip()
-    served_dir = _scaffold_video(slug, payload["scene"], payload, lesson_title, out_path)
-    rel = (served_dir / "lesson.mp4").relative_to(_files_root()).as_posix()
-    # The runtime turns this marker into an artifact; `.mp4` selects the
-    # chat's native video preview. Format:
-    # VIDEO_ARTIFACT:<rel>|<title>|<readable text>
-    return (f"{_VIDEO_ARTIFACT_PREFIX}{rel}|{lesson_title}|"
-            f"Video lesson ready: /files/{rel}")
+    try:
+        lesson = await create_lesson(query, title)
+    except RuntimeError as exc:
+        # Runtime errors already carry a user-facing "Video ... failed:" prefix.
+        return str(exc)
+    except Exception as exc:  # noqa: BLE001
+        return f"Video render failed: {exc}"
+    return _VIDEO_LESSON_MARKER + json.dumps(lesson, ensure_ascii=False, separators=(",", ":"))
 
 
 # ---------------------------------------------------------------------------
