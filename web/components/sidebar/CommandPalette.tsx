@@ -58,7 +58,6 @@ export function CommandPalette({
 }) {
   
   const router = useRouter()
-  const zh = "en".startsWith('zh')
   const available = useCapabilityFilter()
   const { sources } = useLearningIndex(open)
   const { data: partnerData } = usePartnerNavigation(open)
@@ -97,7 +96,7 @@ export function CommandPalette({
             .filter(row => row.href !== '/agents' || navVisibleUnderPolicy(row.href, allowedSurfaces))
             .map(row => ({
               id: `resource:${row.key}`,
-              label: zh ? row.title.zh : (row.title.en),
+              label: row.title,
               detail,
               icon: glyph(row.icon),
               run: go(row.href),
@@ -177,7 +176,7 @@ export function CommandPalette({
       { title: "Learning", items: pick(learning, q ? 6 : 0) },
       { title: "Partners", items: pick(partners, q ? 6 : 0) },
     ].filter(group => group.items.length > 0)
-  }, [query, categories, allowedSurfaces, available, zh, sessions, sources, partnerData, onSelectSession, onNewChat, router.push])
+  }, [query, categories, allowedSurfaces, available, sessions, sources, partnerData, onSelectSession, onNewChat, router.push])
 
   const flat = groups.flatMap(group => group.items)
   const current = Math.min(activeIndex, Math.max(0, flat.length - 1))

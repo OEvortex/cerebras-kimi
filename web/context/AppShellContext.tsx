@@ -29,21 +29,16 @@ import {
   DEFAULT_CODE_BLOCK_WRAP_LONG_LINES,
   LANGUAGE_EVENT,
   LANGUAGE_STORAGE_KEY,
-  hasStoredLanguage,
-  hasStoredResponseLanguage,
   SIDEBAR_COLLAPSED_EVENT,
   SIDEBAR_COLLAPSED_STORAGE_KEY,
   normalizeCodeBlockShowLineNumbers,
   normalizeCodeBlockTheme,
   normalizeCodeBlockWrapLongLines,
   normalizeLanguage,
-  resolveResponseLanguage,
   readStoredActiveSessionId,
   readStoredCodeBlockShowLineNumbers,
   readStoredCodeBlockTheme,
   readStoredCodeBlockWrapLongLines,
-  readStoredLanguage,
-  writeStoredResponseLanguage,
   readStoredSidebarCollapsed,
   writeStoredActiveSessionId,
   writeStoredCodeBlockShowLineNumbers,
@@ -186,84 +181,10 @@ export function AppShellProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // The saved languages live in the backend's ui settings, but only the
-    // settings route ever read them, so every other page started in English
-    // until the user changed it again in this browser. Adopt them once, and
-    // only when this browser has made no choice of its own — a local selection
-    // is the more specific signal and must win.
-    //
-    // One fetch carries both fields: the interface locale and the
-    // reader-facing output language are stored together and are gated by the
-    // same "has this browser chosen yet?" question, so splitting them into two
-    // bootstraps would only give them a chance to disagree.
-    const controller = new AbortController();
-    let cancelled = false;
-    let fallbackTimer: ReturnType<typeof setTimeout> | undefined;
-    void (async () => {
-      // Both keys are checked, not just the interface one. They were split
-      // after the interface language shipped, so a browser from before the
-      // split has `deeptutor-language` and no `deeptutor-response-language` —
-      // and returning here on the first alone locked it out of ever adopting
-      // the account's model output language.
-      const hadLanguageAtStart = hasStoredLanguage();
-      if (hadLanguageAtStart && !cancelled) {
-        const storedLanguage = readStoredLanguage();
-        writeStoredLanguage(storedLanguage);
-        setLanguageState(storedLanguage);
-      }
-      if (hadLanguageAtStart && hasStoredResponseLanguage()) {
-        if (!cancelled) {
-          setLanguageReady(true);
-        }
-        return;
-      }
-      fallbackTimer = setTimeout(() => {
-        controller.abort();
-        if (!cancelled) setLanguageReady(true);
-      }, 1_500);
-      try {
-        const response = await apiFetch(apiUrl("/api/settings/ui"), {
-          signal: controller.signal,
-          skipAuthRedirect: true,
-        });
-        if (!response.ok) return;
-        const payload = (await response.json()) as {
-          language?: unknown;
-          response_language?: unknown;
-        };
-        if (typeof payload.language !== "string") return;
-        const nextLanguage = normalizeLanguage(payload.language);
-        // Only what this browser is actually missing: a stored interface
-        // language is this user's own choice and the server must not overwrite
-        // it just because the response key was absent.
-        const hadLanguage = hasStoredLanguage();
-        if (!hadLanguage) writeStoredLanguage(nextLanguage);
-        if (!hasStoredResponseLanguage()) {
-          // A backend that predates the split sends no response_language;
-          // resolveResponseLanguage inherits the interface locale, matching
-          // what the server does for a legacy interface.json.
-          writeStoredResponseLanguage(
-            resolveResponseLanguage(
-              typeof payload.response_language === "string"
-                ? payload.response_language
-                : null,
-              nextLanguage,
-            ),
-          );
-        }
-        if (!cancelled && !hadLanguage) setLanguageState(nextLanguage);
-      } catch {
-        // Offline or unauthenticated: keep the local default.
-      } finally {
-        if (fallbackTimer) clearTimeout(fallbackTimer);
-        if (!cancelled) setLanguageReady(true);
-      }
-    })();
-    return () => {
-      cancelled = true;
-      if (fallbackTimer) clearTimeout(fallbackTimer);
-      controller.abort();
-    };
+    // English is the only interface language. Keep the state aligned with the
+    // SSR default and mark it ready without consulting a server preference.
+    setLanguageState("en");
+    setLanguageReady(true);
   }, []);
 
   useEffect(() => {

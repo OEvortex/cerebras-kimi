@@ -1,8 +1,6 @@
 /**
- * Let each block of rendered Markdown take its reading direction from its own
- * text (``dir="auto"``), so an Arabic paragraph sits right-aligned beside an
- * English one in the same reply. Code, math and diagrams are not blocks of
- * prose and are explicitly isolated left-to-right, including inside RTL prose.
+ * All rendered content is English, so every block reads left-to-right. Code,
+ * math and diagrams are explicitly tagged left-to-right as well.
  */
 
 type HastNode = {
@@ -39,7 +37,7 @@ function mark(node: HastNode): void {
     }
     // Raw HTML in a reply may already say which way it reads; leave it be.
     if (TEXT_BLOCKS.has(node.tagName) && node.properties?.dir === undefined) {
-      node.properties = { ...node.properties, dir: "auto" };
+      node.properties = { ...node.properties, dir: "ltr" };
     }
   }
   node.children?.forEach(mark);

@@ -21,15 +21,9 @@ import {
 
 const REMOTE_HERMES_KIND = "hermes_remote";
 
-type Lang = { zh: string; en: string };
-
 const backendLabel = agentKindLabel;
 
 export default function ConnectedAgents() {
-  
-  const zh = "en"?.toLowerCase().startsWith("zh");
-  const tr = useCallback((l: Lang) => (zh ? l.zh : (l.en)), [zh]);
-
   const [backends, setBackends] = useState<SubagentBackendInfo[]>([]);
   const [connections, setConnections] = useState<SubagentConnection[]>([]);
   const [loading, setLoading] = useState(true);
@@ -162,7 +156,6 @@ export default function ConnectedAgents() {
         <ConnectModal
           backends={available}
           existingNames={connections.map((c) => c.name)}
-          tr={tr}
           onClose={() => setModalOpen(false)}
           onConnected={() => {
             setModalOpen(false);
@@ -177,13 +170,11 @@ export default function ConnectedAgents() {
 function ConnectModal({
   backends,
   existingNames,
-  tr,
   onClose,
   onConnected,
 }: {
   backends: SubagentBackendInfo[];
   existingNames: string[];
-  tr: (l: Lang) => string;
   onClose: () => void;
   onConnected: () => void;
 }) {
@@ -226,7 +217,7 @@ function ConnectModal({
     } finally {
       setSubmitting(false);
     }
-  }, [name, kind, cwd, isRemote, existingNames, onConnected, tr]);
+  }, [name, kind, cwd, isRemote, existingNames, onConnected]);
 
   return (
     <div

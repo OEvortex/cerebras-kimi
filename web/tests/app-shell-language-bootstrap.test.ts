@@ -3,9 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   LANGUAGE_STORAGE_KEY,
-  RESPONSE_LANGUAGE_STORAGE_KEY,
   hasStoredLanguage,
-  hasStoredResponseLanguage,
   readStoredLanguage,
 } from "../context/app-shell-storage";
 
@@ -28,29 +26,12 @@ function withLocalStorage(entries: Record<string, string>, run: () => void) {
 }
 
 test("an absent choice is distinguishable from an explicit English one", () => {
-  // readStoredLanguage normalizes both to "en", so the bootstrap cannot use it
-  // to decide whether the server-side preference may be adopted.
   withLocalStorage({}, () => {
     assert.equal(hasStoredLanguage(), false);
     assert.equal(readStoredLanguage(), "en");
   });
 
   withLocalStorage({ [LANGUAGE_STORAGE_KEY]: "en" }, () => {
-    assert.equal(hasStoredLanguage(), true);
-    assert.equal(readStoredLanguage(), "en");
-  });
-});
-
-test("a stored choice in a removed locale still counts as an explicit choice and normalizes to English", () => {
-  withLocalStorage({ [LANGUAGE_STORAGE_KEY]: "zh" }, () => {
-    assert.equal(hasStoredLanguage(), true);
-    assert.equal(readStoredLanguage(), "en");
-  });
-  withLocalStorage({ [LANGUAGE_STORAGE_KEY]: "fr" }, () => {
-    assert.equal(hasStoredLanguage(), true);
-    assert.equal(readStoredLanguage(), "en");
-  });
-  withLocalStorage({ [LANGUAGE_STORAGE_KEY]: "uk" }, () => {
     assert.equal(hasStoredLanguage(), true);
     assert.equal(readStoredLanguage(), "en");
   });
@@ -72,25 +53,4 @@ test("server-side rendering reports no stored choice instead of throwing", () =>
   } finally {
     (globalThis as { window?: unknown }).window = original;
   }
-});
-
-test("a browser with only the interface key can still adopt the response language", () => {
-  // The two keys were split after the interface language shipped. Gating the
-  // bootstrap on hasStoredLanguage alone meant a browser from before the split
-  // returned early forever and never picked up the account's model output
-  // language — one of the ways "I set Chinese" and "it answers in English"
-  // stayed true at the same time.
-  withLocalStorage({ [LANGUAGE_STORAGE_KEY]: "zh" }, () => {
-    assert.equal(hasStoredLanguage(), true);
-    assert.equal(hasStoredResponseLanguage(), false);
-  });
-  withLocalStorage(
-    {
-      [LANGUAGE_STORAGE_KEY]: "zh",
-      [RESPONSE_LANGUAGE_STORAGE_KEY]: "en",
-    },
-    () => {
-      assert.equal(hasStoredResponseLanguage(), true);
-    },
-  );
 });

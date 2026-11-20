@@ -143,25 +143,11 @@ const SOURCE_FIELDS: SourceField[] = [
 //: Every field starts out loading; each clears as its own request settles.
 const INITIAL_LIBRARY: SourceLibrary = { ...EMPTY_LIBRARY, loadingKinds: [...SOURCE_FIELDS] }
 
-type Translate = (cn: string, en: string, vars?: Record<string, string | number>) => string
-
-/**
- * Chinese keeps its inline text; every other language looks the English text up
- * in its catalog. Callers used to pass i18next's `t` here, which read the
- * Chinese text as the key and showed English even in Chinese.
- */
-export function catalogTranslate(
-  zh: boolean
-): Translate {
-  return (cn, en, vars) =>
-    zh ? cn.replace(/\{\{(\w+)\}\}/g, (_, name: string) => String(vars?.[name] ?? '')) : (en)
+function questionCandidate(row: Record<string, unknown>): SourceCandidate {
+  return { key: JSON.stringify([row.content_workspace_id ?? '', 'question_bank', row.id]), kind: 'question_bank', sourceId: String(row.id), label: String(row.question || 'Untitled'), detail: '', excerpt: String(row.question || ''), content_workspace_id: String(row.content_workspace_id ?? ''), content_workspace_name: String(row.content_workspace_name ?? ''), available: row.available !== false && !row.unreadable }
 }
 
-function questionCandidate(row: Record<string, unknown>, tr: Translate): SourceCandidate {
-  return { key: JSON.stringify([row.content_workspace_id ?? '', 'question_bank', row.id]), kind: 'question_bank', sourceId: String(row.id), label: String(row.question || tr('Untitled', 'Untitled')), detail: '', excerpt: String(row.question || ''), content_workspace_id: String(row.content_workspace_id ?? ''), content_workspace_name: String(row.content_workspace_name ?? ''), available: row.available !== false && !row.unreadable }
-}
-
-export function useTopicSourceLibrary(tr: Translate) {
+export function useTopicSourceLibrary() {
   const [library, setLibrary] = useState<SourceLibrary>(INITIAL_LIBRARY)
   const [loading, setLoading] = useState(true)
   const [questionPage, setQuestionPage] = useState({ query: '', offset: 0, total: 0, loading: false })
@@ -174,7 +160,7 @@ export function useTopicSourceLibrary(tr: Translate) {
       const params = new URLSearchParams({ search: query, offset: String(offset), limit: '50' })
       const value = await sourceRequest<{ items: Record<string, unknown>[]; total: number }>(`/api/dashboard/source-library/practice?${params}`)
       if (epoch !== questionEpoch.current) return
-      const rows = value.items.map(row => questionCandidate(row, tr))
+      const rows = value.items.map(row => questionCandidate(row))
       setQuestionSeen(previous => ({ ...previous, ...Object.fromEntries(rows.map(row => [row.key, row])) }))
       setLibrary(previous => ({ ...previous, loadingKinds: (previous.loadingKinds ?? []).filter(kind => kind !== 'questionSets'), questionSets: offset ? [...previous.questionSets, ...rows.filter(row => !previous.questionSets.some(old => old.key === row.key))] : rows, failures: previous.failures.filter(value => value !== 'practice') }))
       setQuestionPage({ query, offset: offset + rows.length, total: value.total, loading: false })

@@ -14,17 +14,16 @@ import { navVisibleUnderPolicy } from './nav-entries'
 function Shelf({ groups, titled }: { groups: DashboardGroup[]; titled: boolean }) {
   
   const available = useCapabilityFilter()
-  const zh = "en".startsWith('zh')
   return visibleGroups(groups, available).map(group => {
     const rows = group.items.map(row => (
-      <NavigationRow key={row.key} href={row.href} label={zh ? row.title.zh : (row.title.en)} icon={row.icon} />
+      <NavigationRow key={row.key} href={row.href} label={row.title} icon={row.icon} />
     ))
     return titled ? (
-      <Section key={group.label.en} title={zh ? group.label.zh : (group.label.en)}>
+      <Section key={group.label} title={group.label}>
         {rows}
       </Section>
     ) : (
-      <div key={group.label.en} className="dt-navigation-section">
+      <div key={group.label} className="dt-navigation-section">
         {rows}
       </div>
     )

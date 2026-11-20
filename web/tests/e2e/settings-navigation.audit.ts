@@ -7,7 +7,7 @@ async function mockSettings(
   options: {
     savedDraft?: boolean;
     restricted?: boolean;
-    language?: "en" | "zh";
+    language?: "en";
     theme?: "light" | "dark";
   } = {},
 ) {
@@ -359,28 +359,26 @@ test.describe("Independent settings", () => {
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
   });
 
-  test("mobile navigation and Chinese settings do not overflow", async ({
+  test("mobile navigation and settings do not overflow", async ({
     page,
   }) => {
-    await mockSettings(page, { language: "zh" });
+    await mockSettings(page, { language: "en" });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/settings/general", { waitUntil: "domcontentloaded" });
     await expect(
-      page.getByRole("heading", { name: "常规", exact: true }),
+      page.getByRole("heading", { name: "General", exact: true }),
     ).toBeVisible();
     await page.screenshot({ path: "test-results/settings-general-mobile.png" });
-    await page.getByRole("button", { name: "设置分区" }).click();
+    await page.getByRole("button", { name: "Settings sections" }).click();
     await page
       .getByRole("dialog")
-      .getByRole("link", { name: "语言模型", exact: true })
+      .getByRole("link", { name: "Language models", exact: true })
       .click();
     await expect(page).toHaveURL(/\/settings\/llm(?:\?|$)/);
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await page.getByRole("button", { name: /existing-model/ }).click();
     await expect(
-      page
-        .getByLabel("Model ID", { exact: true })
-        .or(page.getByLabel("模型 ID", { exact: true })),
+      page.getByLabel("Model ID", { exact: true }),
     ).toBeVisible();
     expect(
       await page.evaluate(
@@ -416,11 +414,11 @@ test.describe("Independent settings", () => {
   test("desktop general layout has one sidebar and no catalog writes", async ({
     page,
   }) => {
-    const state = await mockSettings(page, { language: "zh" });
+    const state = await mockSettings(page, { language: "en" });
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto("/settings/general", { waitUntil: "domcontentloaded" });
     await expect(
-      page.getByRole("heading", { name: "常规", exact: true }),
+      page.getByRole("heading", { name: "General", exact: true }),
     ).toBeVisible();
     await expect(page.locator("aside")).toHaveCount(1);
     await page.screenshot({
@@ -573,20 +571,20 @@ test("a delayed probe cannot attach results to changed credentials or another pr
 });
 
 test("dark tablet settings keep provider hierarchy and keyboard access", async ({ page }) => {
-  await mockSettings(page, { theme: "dark", language: "zh" });
+  await mockSettings(page, { theme: "dark", language: "en" });
   await page.addInitScript(() => localStorage.setItem("deeptutor-theme", "dark"));
   await page.setViewportSize({ width: 900, height: 1100 });
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.goto("/settings/connections", { waitUntil: "domcontentloaded" });
   await expect(page.locator("html")).toHaveClass(/dark/);
-  const provider = page.getByRole("button", { name: /My existing provider.*模型/ });
+  const provider = page.getByRole("button", { name: /My existing provider.*models/ });
   await expect(provider).toHaveAttribute("aria-pressed", "false");
   await provider.focus();
   await page.keyboard.press("Enter");
   await expect(provider).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByRole("heading", { name: "My existing provider", exact: true })).toBeVisible();
-  const other = page.getByRole("button", { name: /Other provider.*模型/ });
+  const other = page.getByRole("button", { name: /Other provider.*models/ });
   await other.focus();
   await page.keyboard.press("Enter");
   await expect(other).toHaveAttribute("aria-pressed", "true");

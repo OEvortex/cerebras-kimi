@@ -251,8 +251,8 @@ test('persistUiSettingsPatch sends a full ui patch verbatim — no field rewriti
   const { calls, fetcher } = recordingFetcher()
   const patch: Partial<UiSettings> = {
     theme: 'glass',
-    language: 'zh',
-    response_language: 'zh',
+    language: 'en',
+    response_language: 'en',
     code_block_theme: 'oneDark',
     code_block_show_line_numbers: false,
     code_block_wrap_long_lines: true,
@@ -465,9 +465,9 @@ test('TOUR_STEPS walk the settings navigator in order with complete steps', () =
 test('RESPONSE_LANGUAGE_OPTIONS covers the supported response languages exactly once each', () => {
   const options = settingsContext.RESPONSE_LANGUAGE_OPTIONS
 
-  assert.equal(option_label(options, "tr"), "Türkçe")
-  assert.equal(option_label(options, "hi"), "हिन्दी")
+  assert.equal(option_label(options, "en"), "English")
   const values = options.map(option => option.value)
+  assert.deepEqual(values, ["en"])
   assert.equal(new Set(values).size, values.length, 'no duplicated codes')
   for (const value of values) {
     assert.ok(isResponseLanguage(value), `${value} must be a valid ResponseLanguage`)

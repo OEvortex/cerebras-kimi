@@ -761,10 +761,9 @@ function repairChineseEmphasisLine(line: string): string {
     );
 }
 
-// Japanese and Korean set punctuation flush against the next word just as
-// CJK languages do, so a closing marker after a bracket
-// fails CommonMark's flanking rule in all three, not only in Chinese.
-const CJK_EMPHASIS_LANGUAGES = ["zh", "ja", "ko"];
+// Content is English-only; the CJK emphasis repair never applies. The helpers
+// below remain as no-ops so callers need no special-casing.
+const CJK_EMPHASIS_LANGUAGES: string[] = [];
 
 function needsCjkEmphasisRepair(language: string | undefined): boolean {
   const code = language?.toLowerCase() ?? "";

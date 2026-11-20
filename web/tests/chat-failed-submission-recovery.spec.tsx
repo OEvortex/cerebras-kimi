@@ -228,7 +228,7 @@ function Harness() {
         });
         setPersonaSelection("other-persona");
         setLLMSelection({ model_id: "other-model", profile_id: "other-profile" });
-        void setReplyLanguageOverride("zh");
+        void setReplyLanguageOverride("en");
       }}>Change live settings</button>
       <button onClick={() => {
         configureSession({ workspaceMode: "immersive_reading", workspaceId: "ws-reading" });
@@ -915,7 +915,7 @@ it("edits a saved question with the live model and reply language (#2106)", asyn
   // …but the model and reply language are the ones picked after it was saved.
   expect(sent).toMatchObject({
     llm_selection: { model_id: "other-model", profile_id: "other-profile" },
-    language: "zh",
+    language: "en",
   });
   // The session already carries its language as a server-side preference, so
   // only the resolved answer language travels with the turn.
@@ -1856,7 +1856,7 @@ it("resends a saved failed turn with the model and reply language selected now",
   render(<ChatStateAdapterProvider><Harness /></ChatStateAdapterProvider>);
   await act(async () => { fireEvent.click(screen.getByText("Load")); });
   // The server echoes the persisted reply-language preference.
-  (fixture.session.preferences as Record<string, unknown>).reply_language_override = "zh";
+  (fixture.session.preferences as Record<string, unknown>).reply_language_override = "en";
   await act(async () => { fireEvent.click(screen.getByText("Change live settings")); });
   await act(async () => { fireEvent.click(screen.getByText("Resend")); });
   expect(fixture.sent.at(-1)).toMatchObject({
@@ -1865,7 +1865,7 @@ it("resends a saved failed turn with the model and reply language selected now",
     overrides: {
       replay_snapshot: true,
       llm_selection: { model_id: "other-model", profile_id: "other-profile" },
-      language: "zh",
+      language: "en",
     },
   });
 });

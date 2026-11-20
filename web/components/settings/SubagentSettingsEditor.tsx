@@ -25,8 +25,6 @@ import {
   type SubagentBackendOptions,
 } from "@/lib/subagents-api";
 
-type Lang = { zh: string; en: string };
-
 /** Empty model/effort means "let the selected runtime decide". */
 const CUSTOM = "__custom__";
 
@@ -200,94 +198,61 @@ const DISPLAY_NAMES: Record<string, string> = {
 
 // Per-kind flavor for the system-prompt section: how the instruction reaches
 // the agent (a real flag, a native prompt field, or a first-message prefix).
-const SYSTEM_PROMPT_HINT: Record<string, Lang> = {
-  grok: {
-    zh: "Additional teaching or delegation instructions are passed through Grok CLI's rules option.",
-    en: "Additional teaching or delegation instructions are passed through Grok CLI's rules option.",
-  },
-  claude_code: {
-    zh: "Appended to the agent's system prompt (--append-system-prompt).",
-    en: "Appended to the agent's system prompt (--append-system-prompt).",
-  },
-  kimi: {
-    zh: "Kimi CLI has no system-prompt flag — the instruction is prefixed to each new session's first message.",
-    en: "Kimi CLI has no system-prompt flag — the instruction is prefixed to each new session's first message.",
-  },
-  opencode: {
-    zh: "Injected into each new session via the server API's system field.",
-    en: "Injected into each new session via the server API's system field.",
-  },
-  mimo: {
-    zh: "Injected into each new session via the server API's system field.",
-    en: "Injected into each new session via the server API's system field.",
-  },
-  hermes: {
-    zh: "Hermes has no system-prompt flag — the instruction is prefixed to each new session's first message.",
-    en: "Hermes has no system-prompt flag — the instruction is prefixed to each new session's first message.",
-  },
-  hermes_remote: {
-    zh: "Sent through the Hermes gateway API's instructions field for a fresh or expired session.",
-    en: "Sent through the Hermes gateway API's instructions field for a fresh or expired session.",
-  },
-  openclaw: {
-    zh: "The instruction is prefixed to the first message for each new OpenClaw session key.",
-    en: "The instruction is prefixed to the first message for each new OpenClaw session key.",
-  },
-  deepseek_harness: {
-    zh: "The instruction is prefixed to the first message in each new DeepSeek Harness session.",
-    en: "The instruction is prefixed to the first message in each new DeepSeek Harness session.",
-  },
+const SYSTEM_PROMPT_HINT: Record<string, string> = {
+  grok: "Additional teaching or delegation instructions are passed through Grok CLI's rules option.",
+  claude_code: "Appended to the agent's system prompt (--append-system-prompt).",
+  kimi: "Kimi CLI has no system-prompt flag — the instruction is prefixed to each new session's first message.",
+  opencode: "Injected into each new session via the server API's system field.",
+  mimo: "Injected into each new session via the server API's system field.",
+  hermes: "Hermes has no system-prompt flag — the instruction is prefixed to each new session's first message.",
+  hermes_remote: "Sent through the Hermes gateway API's instructions field for a fresh or expired session.",
+  openclaw: "The instruction is prefixed to the first message for each new OpenClaw session key.",
+  deepseek_harness: "The instruction is prefixed to the first message in each new DeepSeek Harness session.",
 };
 
-const PERMISSION_MODES: { value: string; label: Lang }[] = [
+const PERMISSION_MODES: { value: string; label: string }[] = [
   {
     value: "bypassPermissions",
-    label: {
-      zh: "Bypass permissions · autonomous (recommended)",
-      en: "Bypass permissions · autonomous (recommended)",
-    },
+    label: "Bypass permissions · autonomous (recommended)",
   },
   {
     value: "acceptEdits",
-    label: { zh: "Accept edits automatically", en: "Accept edits automatically" },
+    label: "Accept edits automatically",
   },
   {
     value: "default",
-    label: { zh: "Default · may wait for prompts", en: "Default · may wait for prompts" },
+    label: "Default · may wait for prompts",
   },
   {
     value: "plan",
-    label: { zh: "Plan mode · read-only", en: "Plan mode · read-only" },
+    label: "Plan mode · read-only",
   },
 ];
 
-const GROK_PERMISSION_MODES: { value: string; label: Lang }[] = [
+const GROK_PERMISSION_MODES: { value: string; label: string }[] = [
   {
     value: "dontAsk",
-    label: {
-      zh: "Don't ask · deny approval requests (default)",
-      en: "Don't ask · deny approval requests (default)",
-    },
+    label: "Don't ask · deny approval requests (default)",
   },
   {
     value: "plan",
-    label: { zh: "Plan (compatibility mode)", en: "Plan (compatibility mode)" },
+    label: "Plan (compatibility mode)",
   },
   {
     value: "default",
-    label: { zh: "Default permissions", en: "Default permissions" },
+    label: "Default permissions",
   },
   {
     value: "acceptEdits",
-    label: { zh: "Accept edits automatically", en: "Accept edits automatically" },
+    label: "Accept edits automatically",
   },
   {
     value: "auto",
-    label: { zh: "Automatically evaluate permissions", en: "Automatically evaluate permissions" },
+    label: "Automatically evaluate permissions",
   },
   {
     value: "bypassPermissions",
-    label: { zh: "Bypass permissions", en: "Bypass permissions" },
+    label: "Bypass permissions",
   },
 ];
 
@@ -297,37 +262,33 @@ function defaultsForKind(kind: string): typeof DEFAULTS {
     : DEFAULTS;
 }
 
-const SANDBOXES: { value: string; label: Lang }[] = [
-  { value: "read-only", label: { zh: "Read-only", en: "Read-only" } },
+const SANDBOXES: { value: string; label: string }[] = [
+  { value: "read-only", label: "Read-only" },
   {
     value: "workspace-write",
-    label: { zh: "Workspace write (recommended)", en: "Workspace write (recommended)" },
+    label: "Workspace write (recommended)",
   },
-  { value: "danger-full-access", label: { zh: "Full access", en: "Full access" } },
+  { value: "danger-full-access", label: "Full access" },
   {
     value: "bypass",
-    label: { zh: "Bypass sandbox & approvals", en: "Bypass sandbox & approvals" },
+    label: "Bypass sandbox & approvals",
   },
 ];
 
-const APPROVALS: { value: string; label: Lang }[] = [
+const APPROVALS: { value: string; label: string }[] = [
   {
     value: "never",
-    label: { zh: "Never ask (recommended)", en: "Never ask (recommended)" },
+    label: "Never ask (recommended)",
   },
-  { value: "on-failure", label: { zh: "On failure", en: "On failure" } },
-  { value: "on-request", label: { zh: "On request", en: "On request" } },
+  { value: "on-failure", label: "On failure" },
+  { value: "on-request", label: "On request" },
   {
     value: "untrusted",
-    label: { zh: "Untrusted commands", en: "Untrusted commands" },
+    label: "Untrusted commands",
   },
 ];
 
 export function SubagentSettingsEditor({ kind }: { kind: string }) {
-  
-  const zh = "en"?.toLowerCase().startsWith("zh");
-  const tr = useCallback((l: Lang) => (zh ? l.zh : (l.en)), [zh]);
-
   const [options, setOptions] = useState<SubagentBackendOptions | null>(null);
   const [liveConfig, setLiveConfig] = useState<SubagentBackendConfig>({
     ...defaultsForKind(kind),
@@ -711,9 +672,7 @@ export function SubagentSettingsEditor({ kind }: { kind: string }) {
           {features.systemPrompt && (
             <SettingSection
               title={"System prompt"}
-              description={`${tr(
-                SYSTEM_PROMPT_HINT[kind] ?? SYSTEM_PROMPT_HINT.claude_code,
-              )} ${"Blank uses DeepTutor's default delegate instruction."}`}
+              description={`${SYSTEM_PROMPT_HINT[kind] ?? SYSTEM_PROMPT_HINT.claude_code} ${"Blank uses DeepTutor's default delegate instruction."}`}
             >
               <div className="py-4">
                 <textarea
@@ -758,7 +717,7 @@ export function SubagentSettingsEditor({ kind }: { kind: string }) {
                   >
                     {permissionModes.map((o) => (
                       <option key={o.value} value={o.value}>
-                        {tr(o.label)}
+                        {o.label}
                       </option>
                     ))}
                   </select>
@@ -807,7 +766,7 @@ export function SubagentSettingsEditor({ kind }: { kind: string }) {
                     >
                       {SANDBOXES.map((o) => (
                         <option key={o.value} value={o.value}>
-                          {tr(o.label)}
+                          {o.label}
                         </option>
                       ))}
                     </select>
@@ -825,7 +784,7 @@ export function SubagentSettingsEditor({ kind }: { kind: string }) {
                     >
                       {APPROVALS.map((o) => (
                         <option key={o.value} value={o.value}>
-                          {tr(o.label)}
+                          {o.label}
                         </option>
                       ))}
                     </select>

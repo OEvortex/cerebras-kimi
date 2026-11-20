@@ -1,20 +1,10 @@
 import { render, screen } from "@testing-library/react";
-import { afterEach, expect, it, vi } from "vitest";
+import { expect, it, vi } from "vitest";
 
 import { LearnerProfileCard } from "@/components/space/learning/LearnerProfileCard";
 import { ModeSwitch } from "@/components/space/learning/ModeSwitch";
-import {
-  NEXT_CTA_LABELS,
-  NEXT_LABELS,
-  TEACH_FIRST_PROFILE_LABEL,
-} from "@/components/space/learning/next-step-copy";
+import { TEACH_FIRST_PROFILE_LABEL } from "@/components/space/learning/next-step-copy";
 import type { LearnerProfile } from "@/lib/learning-api";
-
-const locale = vi.hoisted(() => ({ language: "zh-CN" }));
-
-afterEach(() => {
-  locale.language = "zh-CN";
-});
 
 const emptyProfile: LearnerProfile = {
   prior_knowledge: "",
@@ -25,13 +15,6 @@ const emptyProfile: LearnerProfile = {
   updated_at: 1,
 };
 
-it("gives the teach action explicit Chinese and English next steps", () => {
-  expect(NEXT_LABELS.teach.zh).toContain("先讲解");
-  expect(NEXT_LABELS.teach.en).toContain("Learn this knowledge point");
-  expect(NEXT_CTA_LABELS.teach.zh).toContain("开始学习");
-  expect(NEXT_CTA_LABELS.teach.en).toContain("Learn this knowledge point");
-});
-
 it("shows a profile whose only preference is teach first", () => {
   render(
     <LearnerProfileCard
@@ -39,12 +22,11 @@ it("shows a profile whose only preference is teach first", () => {
     />,
   );
 
-  expect(screen.getByText(TEACH_FIRST_PROFILE_LABEL.zh)).toBeInTheDocument();
+  expect(screen.getByText(TEACH_FIRST_PROFILE_LABEL)).toBeInTheDocument();
   expect(screen.queryByText(/has not asked about you yet/)).not.toBeInTheDocument();
 });
 
 it("shows the teaching sequence alongside a free text preference", () => {
-  locale.language = "en";
   render(
     <LearnerProfileCard
       profile={{
@@ -56,7 +38,7 @@ it("shows the teaching sequence alongside a free text preference", () => {
   );
 
   expect(
-    screen.getByText(`Use diagrams · ${TEACH_FIRST_PROFILE_LABEL.en}`),
+    screen.getByText(`Use diagrams · ${TEACH_FIRST_PROFILE_LABEL}`),
   ).toBeInTheDocument();
 });
 

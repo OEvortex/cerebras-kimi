@@ -155,7 +155,7 @@ it('omits unknown display values after a failed load', async () => {
   failLoad = true
   await mount()
   await act(async () => {
-    await settings.updateLanguage('zh')
+    await settings.updateLanguage('en')
     await settings.applyCatalog()
   })
   const payload = JSON.parse(uiWrites()[0][1].body)
@@ -164,7 +164,7 @@ it('omits unknown display values after a failed load', async () => {
   expect(live.content_font_scale).toBe(110)
 })
 it('applies legacy UI drafts without materializing display defaults', async () => {
-  parked = { extensions: { ui: { theme: 'snow', language: 'zh' } } }
+  parked = { extensions: { ui: { theme: 'snow', language: 'en' } } }
   await mount()
   expect(settings.contentFontScale).toBe(110)
   await act(async () => {
@@ -452,7 +452,7 @@ it('keeps loaded unrelated drafts across a boundary without another full setting
       payload: { path: '/alice-draft' },
       save: async () => {},
     })
-    await settings.updateLanguage('zh')
+    await settings.updateLanguage('en')
     await settings.updateContentFontScale(150)
   })
   expect(fullReads()).toBe(1)
@@ -461,7 +461,7 @@ it('keeps loaded unrelated drafts across a boundary without another full setting
   await waitFor(() => expect(settings.contentFontScale).toBe(90))
   expect(fullReads()).toBe(1)
   expect(settings.pendingExtensionPayload('workspace')).toEqual({ path: '/alice-draft' })
-  expect(settings.language).toBe('zh')
+  expect(settings.language).toBe('en')
   expect(settings.pendingExtensionPayload('ui')).not.toHaveProperty('content_font_scale')
   expect(settings.pendingExtensionPayload('ui')).not.toHaveProperty('content_line_spacing')
 })

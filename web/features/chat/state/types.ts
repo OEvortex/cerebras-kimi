@@ -124,8 +124,6 @@ export interface ChatState {
   isStreaming: boolean;
   currentStage: string;
   language: string;
-  /** Explicit conversation choice; null follows the account reply language. */
-  replyLanguageOverride: string | null;
   /** Edit-branching: keyed by stringified parent_message_id (or "null" for the root). */
   selectedBranches: Record<string, number>;
   /** True when the last turn ended in a failure (not a user cancel). */
@@ -192,7 +190,6 @@ export interface MessageRequestSnapshot {
   capability?: string | null;
   workspaceMode?: WorkspaceMode | null;
   workspaceId?: string | null;
-  replyLanguageOverride?: string | null;
   enabledTools: string[];
   knowledgeBases: string[];
   language: string;
@@ -287,7 +284,6 @@ export interface SessionSnapshot {
   answerBy?: string | null;
   resourceSelection?: ResourceSelection;
   language?: string;
-  replyLanguageOverride?: string | null;
   selectedBranches?: Record<string, number>;
 }
 
@@ -310,7 +306,6 @@ export type Action =
   | { type: "SET_RESOURCE_SELECTION"; selection: ResourceSelection }
   | { type: "SET_CREATE_TARGET"; createTarget: string | null }
   | { type: "SET_LANGUAGE"; lang: string }
-  | { type: "SET_REPLY_LANGUAGE_OVERRIDE"; key: string; language: string | null }
   | {
       type: "ADD_USER_MSG";
       key: string;
@@ -432,7 +427,6 @@ export interface ChatContextValue {
   setResourceSelection: (selection: ResourceSelection) => void;
   setCreateTarget: (createTarget: string | null) => void;
   setLanguage: (lang: string) => void;
-  setReplyLanguageOverride: (language: string | null) => Promise<void>;
   sendMessage: (
     content: string,
     attachments?: OutgoingAttachment[],

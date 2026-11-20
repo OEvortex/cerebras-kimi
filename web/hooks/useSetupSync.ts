@@ -3,11 +3,8 @@
 import { useEffect, useRef } from "react";
 
 import { apiFetch, apiUrl } from "@/shared/api/client";
-import { normalizeLanguage } from "@/context/languages";
 import {
-  resolveResponseLanguage,
   writeStoredLanguage,
-  writeStoredResponseLanguage,
   type AppLanguage,
 } from "@/context/app-shell-storage";
 import { setTheme, type ThemePreference } from "@/lib/theme";
@@ -77,23 +74,11 @@ export function useSetupSync(
         const res = await apiFetch(apiUrl("/api/settings/ui"));
         if (!res.ok || !mountedRef.current || requestRevision !== requestRevisionRef.current) return;
         const payload = (await res.json()) as {
-          language?: unknown;
-          response_language?: unknown;
           theme?: unknown;
         };
         if (!mountedRef.current || requestRevision !== requestRevisionRef.current) return;
-        if (typeof payload.language === "string") {
-          const language = normalizeLanguage(payload.language);
-          writeStoredLanguage(language);
-          writeStoredResponseLanguage(
-            resolveResponseLanguage(
-              typeof payload.response_language === "string"
-                ? payload.response_language
-                : null,
-              language,
-            ),
-          );
-        }
+        // English is the only interface language.
+        writeStoredLanguage("en");
         const theme = asTheme(payload.theme);
         if (theme) setTheme(theme);
       } catch {

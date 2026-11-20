@@ -208,7 +208,7 @@ const MasteryHandoff = memo(function MasteryHandoff({
                   </span>
                 ) : data.session_updated_at > 0 ? (
                   <span className="shrink-0">
-                    {formatRelative(data.session_updated_at, zh)}
+                    {formatRelative(data.session_updated_at)}
                   </span>
                 ) : null}
               </span>

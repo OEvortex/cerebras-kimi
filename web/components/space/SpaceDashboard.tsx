@@ -1,7 +1,7 @@
 "use client";
 
 import { PageHeader, PAGE_SECTION_TITLE_CLASS, pageGridClass } from '@/components/layout/FeaturePage'
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "@/shared/router/link";
 
 import { useUiLayoutLabel } from "@/features/ui-layout/tokens";
@@ -16,7 +16,6 @@ import {
   visibleGroups,
   type DashboardGroup,
   type DashboardItem,
-  type Lang,
   type DashKey,
 } from "@/components/space/dashboard-groups";
 
@@ -48,8 +47,6 @@ export default function SpaceDashboard({
 } = {}) {
   
   const spaceLabel = useUiLayoutLabel("space");
-  const zh = "en"?.toLowerCase().startsWith("zh");
-  const tr = useCallback((l: Lang) => (zh ? l.zh : (l.en)), [zh]);
 
   const [counts, setCounts] = useState<Partial<Record<DashKey, number>>>({});
 
@@ -89,9 +86,9 @@ export default function SpaceDashboard({
 
       <div className="space-y-9">
         {groups.map(group => (
-          <section key={group.label.en}>
+          <section key={group.label}>
             <h2 className={`mb-3 ${PAGE_SECTION_TITLE_CLASS}`}>
-              {tr(group.label)}
+              {group.label}
             </h2>
             <div className={pageGridClass(2)}>
               {group.items.map(item => (
@@ -100,7 +97,6 @@ export default function SpaceDashboard({
                   item={item}
                   count={counts[item.key]}
                   onNavigate={onNavigate}
-                  tr={tr}
                 />
               ))}
             </div>
@@ -114,13 +110,11 @@ export default function SpaceDashboard({
 function DashboardCard({
   item,
   count,
-  tr,
   onNavigate,
 }: {
   item: DashboardItem;
   count: number | undefined;
   onNavigate?: (href: string) => void;
-  tr: (l: Lang) => string;
 }) {
   const Icon = item.icon;
   const loaded = count !== undefined;
@@ -147,7 +141,7 @@ function DashboardCard({
         </span>
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-[14.5px] font-medium leading-tight tracking-tight text-[var(--foreground)]">
-            {tr(item.title)}
+            {item.title}
           </h3>
           {item.unit ? (
             <div className="mt-1 flex items-baseline gap-1.5">
@@ -157,7 +151,7 @@ function DashboardCard({
                     {formatted}
                   </span>
                   <span className="text-[12px] text-[var(--muted-foreground)]">
-                    {tr(item.unit)}
+                    {item.unit}
                   </span>
                 </>
               ) : (
@@ -172,7 +166,7 @@ function DashboardCard({
         />
       </div>
       <p className="mt-3 text-[12.5px] leading-relaxed text-[var(--muted-foreground)]">
-        {tr(item.blurb)}
+        {item.blurb}
       </p>
       {item.credit ? (
         <span className="mt-2.5 inline-flex items-center gap-1 self-start text-[11px] leading-none text-[var(--muted-foreground)] opacity-60">

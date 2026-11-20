@@ -1,4 +1,3 @@
-import { readStoredResponseLanguage } from "@/context/app-shell-storage";
 import type { StreamEvent } from "@/features/chat/model/protocol";
 import { settleMessageTrace, traceSettleAction } from "@/features/chat/trace/memory";
 import { hasPendingAskUserInMessages } from "@/lib/ask-user-state";
