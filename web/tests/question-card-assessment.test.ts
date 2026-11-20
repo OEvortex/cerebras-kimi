@@ -8,10 +8,6 @@ const card = readFileSync(
   path.resolve(process.cwd(), "components/space/question-bank/QuestionCard.tsx"),
   "utf8",
 );
-const english = readFileSync(
-  path.resolve(process.cwd(), "locales/en/app.json"),
-  "utf8",
-);
 
 test("question cards distinguish partial and ungraded results", () => {
   for (const is_correct of [true, false]) {
@@ -24,18 +20,17 @@ test("question cards distinguish partial and ungraded results", () => {
   assert.match(card, /ASSESSMENT_TYPE_LABELS/);
   assert.match(card, /Focus Check/);
   assert.match(card, /source === "immersive_reading"/);
-  assert.match(english, /"Partially Correct": "Partially Correct"/);
-  assert.match(english, /"Not Graded": "Not Graded"/);
-  assert.match(english, /"Focus Check": "Focus Check"/);
+  assert.match(card, /"Partially Correct"/);
+  assert.match(card, /"Not Graded"/);
+  assert.match(card, /"Focus Check"/);
 });
 
 test("choice cards mark the pick and reference from letter or option text", () => {
   assert.match(card, /optionIsAnswer/);
   assert.match(card, /from "@\/lib\/question-bank-answers"/);
-  assert.match(card, /t\("Your pick"\)/);
+  assert.match(card, /"Your pick"/);
   assert.doesNotMatch(
     card,
     /entry\.user_answer\?\.toUpperCase\(\) === key\.toUpperCase\(\)/,
   );
-  assert.match(english, /"Your pick": "Your pick"/);
 });

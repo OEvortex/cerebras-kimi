@@ -29,11 +29,6 @@ test("ChatWorkspace wires resend props to ChatMessageList", () => {
   assert.match(workspace, /onResendLastTurn=\{handleResendMessage\}/);
 });
 
-test("Resend translation exists in English", () => {
-  const en = JSON.parse(source("locales/en/app.json"));
-  assert.equal(en.Resend, "Resend");
-});
-
 test("failed submissions stay visibly unsent and recoverable (#1594)", () => {
   const adapter = source("features/chat/ChatStateAdapter.tsx");
   assert.match(adapter, /storeFailedSubmission/);
@@ -47,6 +42,5 @@ test("failed submissions stay visibly unsent and recoverable (#1594)", () => {
   const workspace = source("features/chat/components/ChatWorkspace.tsx");
   assert.match(workspace, /state\.submissionFailed/);
   assert.match(workspace, /data-submission-error="true"/);
-  const en = JSON.parse(source("locales/en/app.json"));
-  assert.equal(en["Not sent"], "Not sent");
+  assert.match(list, /"Not sent"/);
 });

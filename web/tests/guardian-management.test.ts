@@ -135,23 +135,3 @@ test("learner and guardian sections follow the resolved account type", () => {
   assert.equal(isSettingsCategoryVisible(guardian, guardianAccount), true);
   assert.equal(isSettingsCategoryVisible(agents, guardianAccount), false);
 });
-
-test("guardian management copy is localized", () => {
-  const en = JSON.parse(readWebFile("locales", "en", "app.json")) as Record<
-    string,
-    string
-  >;
-  for (const key of [
-    "Guardian management",
-    "Approved materials",
-    "Manage restrictions",
-    "Revoke guardian access",
-    "Save materials",
-    "Learning restrictions",
-    "Guardian relationships",
-    "Reset learner credentials",
-    "This changes the learner password and revokes every learner device credential.",
-  ]) {
-    assert.ok(en[key], `missing English key: ${key}`);
-  }
-});

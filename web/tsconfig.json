@@ -41,8 +41,6 @@
     "features/**/*.tsx",
     "hooks/**/*.ts",
     "hooks/**/*.tsx",
-    "i18n/**/*.ts",
-    "i18n/**/*.tsx",
     "lib/**/*.ts",
     "lib/**/*.tsx",
     "shared/**/*.ts",

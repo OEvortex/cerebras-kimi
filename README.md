@@ -76,7 +76,7 @@ mode, AGENTS.md/skills and git context are replaced by the tutor prompt in
 - **`paper_search`** — arXiv paper search
 - **`knowledge_base_search`** — `search|files|read` over uploaded KBs (BM25 + citations)
 - **`memory`** — `read|write` durable learner facts (stored in `data/deeptutor.sqlite3`)
-- **`notes`** — `write|list|search` markdown notebook (stored in `data/deeptutor.sqlite3`)
+- **`notes`** — `write|list|search` notebook pages (stored in `data/deeptutor.sqlite3`)
 - **`learning`** — `status|update|journal|weak` progress tracking
 - **`mastery`** — Guided Learning loop `topics|start|status|quiz|grade|note|leave`
 - **`quiz`** — `generate|grade`

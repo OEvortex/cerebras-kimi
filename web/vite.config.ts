@@ -76,53 +76,10 @@ const APP_VERSION = (() => {
   return "";
 })();
 
-/**
- * Mirrors scripts/compact-locale-loader.cjs for Vite builds: stores identity
- * English locale keys once in the bundle instead of repeating key+value pairs.
- */
-function compactLocalePlugin(): Plugin {
-  const targetPattern = /locales[/\\]en[/\\]app\.json$/;
-  const virtualPrefix = "\0deeptutor-compact-locale:";
-  return {
-    name: "deeptutor-compact-locale",
-    enforce: "pre",
-    async resolveId(source, importer, options) {
-      const resolved = await this.resolve(source, importer, {
-        ...options,
-        skipSelf: true,
-      });
-      if (!resolved) return null;
-      const cleanId = resolved.id.split("?")[0];
-      if (!targetPattern.test(cleanId)) return null;
-      return `${virtualPrefix}${cleanId}.js`;
-    },
-    load(id) {
-      if (!id.startsWith(virtualPrefix)) return null;
-      const filePath = id.slice(virtualPrefix.length).replace(/\.js$/, "");
-      const source = fs.readFileSync(filePath, "utf8");
-      const identities: string[] = [];
-      const translations: [string, unknown][] = [];
-      for (const [key, value] of Object.entries(
-        JSON.parse(source) as Record<string, unknown>,
-      )) {
-        if (key === value) identities.push(key);
-        else translations.push([key, value]);
-      }
-      return `export default Object.fromEntries([
-  ...${JSON.stringify(identities)}.map((key) => [key, key]),
-  ...${JSON.stringify(translations)},
-]);`;
-    },
-  };
-}
-
 const BACKEND_ORIGIN = `http://127.0.0.1:${BACKEND_PORT}`;
 
 export default defineConfig({
-  plugins: [
-    compactLocalePlugin(),
-    react(),
-  ],
+  plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "."),

@@ -51,7 +51,6 @@ const sourceDirs = [
   "contracts",
   "features",
   "hooks",
-  "i18n",
   "lib",
   "shared",
   "src",

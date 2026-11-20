@@ -15,9 +15,6 @@ const authRouter = readFileSync(
   path.resolve(process.cwd(), "..", "deeptutor", "api", "routers", "auth.py"),
   "utf8",
 );
-const en = JSON.parse(
-  readFileSync(path.resolve(process.cwd(), "locales/en/app.json"), "utf8"),
-) as Record<string, string>;
 
 test("admin API exposes row-oriented user import and batch deletion", () => {
   assert.match(adminApi, /apiUrl\("\/api\/auth\/users\/import"\)/);
@@ -40,21 +37,4 @@ test("batch import cannot provision administrators", () => {
   assert.match(authRouter, /fieldnames != expected/);
   assert.match(authRouter, /if role != "user":/);
   assert.match(authRouter, /Only non-admin users can be provisioned/);
-});
-
-test("batch user copy is present in the English locale", () => {
-  const keys = [
-    "Import users",
-    "CSV file",
-    "{{count}} users selected",
-    "Delete selected",
-    "Delete users",
-    "{{created}} created, {{failed}} failed",
-    "Failed to import users",
-    "Failed to delete users",
-  ];
-  for (const key of keys) {
-    assert.ok(key in en, `missing English key: ${key}`);
-    assert.notEqual(en[key], "");
-  }
 });
