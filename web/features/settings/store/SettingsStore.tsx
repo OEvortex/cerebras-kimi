@@ -35,6 +35,7 @@ import {
   writeStoredResponseLanguage,
 } from "@/context/app-shell-storage";
 import { useAppShell } from "@/context/AppShellContext";
+import { englishLabel } from "@/lib/english-labels";
 import { apiFetch, apiUrl } from "@/shared/api/client";
 import { applyExtensionPayload } from "@/lib/settings-extensions";
 import {
@@ -787,6 +788,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     },
     [providers.embedding],
   );
+
+  const t = useCallback((key: string) => englishLabel(key), []) as unknown as Parameters<typeof useDiagnostics>[0]["t"];
 
   const diagnostics = useDiagnostics({ catalogEditable, draft, t });
 

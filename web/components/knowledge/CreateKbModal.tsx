@@ -731,7 +731,6 @@ export default function CreateKbModal({
                   probing={serverProbing}
                   probe={serverProbe}
                   onTest={handleTestServer}
-                  t={t}
                 />
               ) : isWeKnora ? (
                 <WeKnoraFields
@@ -745,7 +744,6 @@ export default function CreateKbModal({
                   probing={weKnoraProbing}
                   probe={weKnoraProbe}
                   onTest={handleTestWeKnora}
-                  t={t}
                 />
               ) : null
             }
@@ -773,7 +771,6 @@ export default function CreateKbModal({
                 />
               ) : null
             }
-            t={t}
           />
         )}
 
@@ -799,7 +796,6 @@ function ModeToggle({
   mode: Mode;
   onChange: (mode: Mode) => void;
   disabled: boolean;
-  t: TFn;
 }) {
   const options: {
     id: Mode;
@@ -896,7 +892,6 @@ function NewModeFields({
   indexingModelField?: ReactNode;
   /** When set, replaces the upload step (e.g. a server connection form). */
   connectionForm?: ReactNode;
-  t: TFn;
 }) {
   const readinessReason = providers.find(
     (item) => item.id === provider,
@@ -1120,7 +1115,6 @@ function LightRagServerFields({
   probing,
   probe,
   onTest,
-  t,
 }: {
   serverUrl: string;
   setServerUrl: (value: string) => void;
@@ -1132,7 +1126,6 @@ function LightRagServerFields({
   probing: boolean;
   probe: LightRagServerProbe | null;
   onTest: () => void;
-  t: TFn;
 }) {
   return (
     <div className="space-y-3">
@@ -1206,7 +1199,6 @@ function ServerProbeVerdict({
   probe,
 }: {
   probe: LightRagServerProbe;
-  t: TFn;
 }) {
   if (!probe.ok) {
     return (
@@ -1248,7 +1240,6 @@ function WeKnoraFields({
   probing,
   probe,
   onTest,
-  t,
 }: {
   serverUrl: string;
   setServerUrl: (value: string) => void;
@@ -1260,7 +1251,6 @@ function WeKnoraFields({
   probing: boolean;
   probe: WeKnoraProbe | null;
   onTest: () => void;
-  t: TFn;
 }) {
   const testDisabled =
     submitting ||
@@ -1338,7 +1328,7 @@ function WeKnoraFields({
   );
 }
 
-function WeKnoraProbeVerdict({ probe }: { probe: WeKnoraProbe; t: TFn }) {
+function WeKnoraProbeVerdict({ probe }: { probe: WeKnoraProbe }) {
   if (!probe.ok) {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
@@ -1380,7 +1370,6 @@ function LinkModeFields({
   probe,
   onProbe,
   connectionForm,
-  t,
 }: {
   providers: RagProviderSummary[];
   linkSource: string;
@@ -1395,7 +1384,6 @@ function LinkModeFields({
   probe: LinkedFolderProbe | null;
   onProbe: () => void;
   connectionForm?: ReactNode;
-  t: TFn;
 }) {
   return (
     <>
@@ -1558,7 +1546,7 @@ function LinkModeFields({
   );
 }
 
-function ProbeVerdict({ probe }: { probe: LinkedFolderProbe; t: TFn }) {
+function ProbeVerdict({ probe }: { probe: LinkedFolderProbe }) {
   if (!probe.ok) {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">

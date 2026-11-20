@@ -4,6 +4,7 @@ import { PageBarSlot } from "@/components/layout/PageChrome";
 import { PageContainer, PAGE_DESCRIPTION_CLASS } from '@/components/layout/FeaturePage'
 import { scopedUrl } from "@/lib/workspace-scope";
 import { MASTERY_HOME, masterySessionRoute as existingMasterySessionRoute, masterySessionsRoute } from "@/lib/learning-routes";
+import { englishLabel } from "@/lib/english-labels";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "@/shared/router/link";
@@ -370,7 +371,7 @@ export default function MasteryTopicPage() {
 
   const startReview = (objectiveId: string, knowledgePointName: string) => {
     setPendingPrompt(
-      masteryOpeningMessage("review", t as Translate, {
+      masteryOpeningMessage("review", englishLabel as Translate, {
         dueTitles: [knowledgePointName],
       }),
       MASTERY_OPENING_SCOPE,
@@ -567,7 +568,7 @@ export default function MasteryTopicPage() {
               onClick={() => {
                 if (topic.next.action === "review") {
                   setPendingPrompt(
-                    masteryOpeningMessage("review", t as Translate, {
+                    masteryOpeningMessage("review", englishLabel as Translate, {
                       dueTitles: topic.next.knowledge_point_name
                         ? [topic.next.knowledge_point_name]
                         : [],
@@ -614,7 +615,7 @@ export default function MasteryTopicPage() {
               <Link
                 onClick={() =>
                   setPendingPrompt(
-                    masteryOpeningMessage("outline", t),
+                    masteryOpeningMessage("outline", englishLabel as Translate),
                     MASTERY_OPENING_SCOPE,
                   )
                 }

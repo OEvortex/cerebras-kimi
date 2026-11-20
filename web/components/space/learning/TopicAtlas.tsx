@@ -1,6 +1,7 @@
 'use client'
 
 import { pageGridClass } from '@/components/layout/FeaturePage'
+import { englishLabel } from '@/lib/english-labels'
 import {
   LearningShell,
   LearningEmptyState,
@@ -83,7 +84,7 @@ export function TopicAtlas({
               // study one the dashboard's own button opens.
               onClick={() =>
                 setPendingPrompt(
-                  masteryOpeningMessage('review', t, {
+                  masteryOpeningMessage('review', (key: string) => englishLabel(key), {
                     dueTitles: firstDueTopic.reviews
                       .filter(review => review.due)
                       .slice(0, 5)

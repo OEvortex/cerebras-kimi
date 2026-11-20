@@ -1,6 +1,7 @@
 "use client";
 
 import { memo } from "react";
+import { englishLabel } from "@/lib/english-labels";
 
 import type {
   DeepResearchFormConfig,
@@ -93,7 +94,7 @@ export default memo(function ResearchConfigPanel({
     next: DeepResearchFormConfig[K],
   ) => onChange({ ...value, [key]: next });
 
-  const rawSummary = summarizeResearchConfig(value, t);
+  const rawSummary = summarizeResearchConfig(value, (key: string) => englishLabel(key));
   const summary =
     rawSummary === "Incomplete settings" ? undefined : rawSummary;
 

@@ -1,6 +1,7 @@
 'use client'
 
 import Image from '@/shared/router/image'
+import { englishLabel } from '@/lib/english-labels'
 
 import {
   ArrowDown,
@@ -34,7 +35,7 @@ export default function NoteBlockPreview({
     <div className="dt-note-preview-section">
       <div className={`dt-note-preview-heading level-${level}`}>
         {toggle && <ChevronDown size={15} />}
-        {englishLabel(`Heading ${level}`, `Heading ${level}`})
+        {englishLabel(`Heading ${level}`, `Heading ${level}`)}
       </div>
       <p className={toggle ? 'dt-note-preview-toggle-body' : ''}>
         {"Give this section a clear place in your notes."}

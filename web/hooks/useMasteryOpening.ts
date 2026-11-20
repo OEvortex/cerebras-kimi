@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import { consumePendingPrompt } from "@/lib/pending-prompt";
+import { englishLabel } from "@/lib/english-labels";
 import {
   MASTERY_OPENING_SCOPE,
   masteryOpeningMessage,
@@ -37,7 +38,7 @@ export function useMasteryOpening({
     if (isStreaming || openingSentRef.current === pathId) return;
     const opening =
       consumePendingPrompt(MASTERY_OPENING_SCOPE).trim() ||
-      masteryOpeningMessage(sessionMode, t);
+      masteryOpeningMessage(sessionMode, (key: string) => englishLabel(key));
     // Study mode has no automatic opening. Latch only after submitting.
     if (opening && submit(opening)) openingSentRef.current = pathId;
   }, [hasMessages, pathId, sessionError, sessionLoading, sessionMode, isStreaming, submit, topicReady]);

@@ -3,6 +3,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import Tooltip from "@/shared/ui/Tooltip";
+import { englishLabel } from "@/lib/english-labels";
 import {
   summarizeVisualizeConfig,
   type VisualizeFormConfig,
@@ -274,7 +275,7 @@ export default memo(function VisualizeConfigPanel({
   return (
     <CollapsibleConfigSection
       collapsed={collapsed}
-      summary={summarizeVisualizeConfig(value, t)}
+      summary={summarizeVisualizeConfig(value, (key: string) => englishLabel(key))}
       onToggleCollapsed={onToggleCollapsed ?? (() => undefined)}
       bodyClassName="flex flex-wrap items-end gap-x-3 gap-y-2 px-3.5 pb-2.5"
     >

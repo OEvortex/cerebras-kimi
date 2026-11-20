@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import MarkdownRenderer from "@/components/common/MarkdownRenderer";
+import { englishLabel } from "@/lib/english-labels";
 import type { StreamEvent } from "@/features/chat/model/protocol";
 import {
   ActivityDetailGrid,
@@ -442,7 +443,7 @@ function TraceRowItem({
   const role = getTraceRole(callEvents);
   const group = getTraceGroup(callEvents);
   const kind = getTraceCallKind(callEvents);
-  const header = getTraceHeader(callEvents, nested, t);
+  const header = getTraceHeader(callEvents, nested, (key: string) => englishLabel(key));
 
   if (kind === "llm_final_response") return null;
   const expandable = hasExpandableContent(callEvents, group, role);
@@ -618,7 +619,7 @@ function TraceRowItem({
           group={group}
           role={role}
           kind={kind}
-          
+          t={englishLabel}
         />
       )}
     </ActivityRow>

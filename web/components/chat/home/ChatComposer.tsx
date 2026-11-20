@@ -1,5 +1,7 @@
 "use client";
 
+import { englishLabel } from "@/lib/english-labels";
+
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Paperclip } from "lucide-react";
 
@@ -345,7 +347,7 @@ export default memo(function ChatComposer({
 
   // One selection summary for files, references, and conversation resources.
   const contextTreeItems = buildContextTreeItems({
-    t,
+    t: englishLabel,
     attachments,
     selectedKnowledgeBases,
     knowledgeBases,
@@ -378,7 +380,7 @@ export default memo(function ChatComposer({
     answerMode,
     partnerLinks,
   } = buildTrayConfig({
-    t,
+    t: englishLabel,
     capabilityLabel,
     modeInTray,
     activeCap,
@@ -446,7 +448,7 @@ export default memo(function ChatComposer({
       : sendLabel;
 
   const resourceItems = buildKnowledgeResourceItems({
-    t,
+    t: englishLabel,
     knowledgeBases,
     selectedKnowledgeBases,
     onToggleKB,

@@ -382,7 +382,7 @@ function MemorySection({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ language: "en" || "en" }),
+          body: JSON.stringify({ language: "en" }),
         },
       );
       const reader = res.body?.getReader();
@@ -504,7 +504,6 @@ function MemorySection({
           focusRef={l1FocusRef}
           onClearFocus={() => setL1FocusRef(null)}
           onToast={setToast}
-          t={t}
         />
       )}
 
@@ -571,7 +570,6 @@ interface TabStripProps {
   onChange: (tab: Tab) => void;
   l2Count: number;
   l3Count: number;
-  t: (key: string, opts?: Record<string, unknown>) => string;
 }
 
 function TabStrip({ tab, onChange, l2Count, l3Count }: TabStripProps) {
@@ -642,7 +640,6 @@ export interface L1ViewProps {
   focusRef: string | null;
   onClearFocus: () => void;
   onToast: (msg: string) => void;
-  t: (key: string, opts?: Record<string, unknown>) => string;
   // When true, the surface pill bar is hidden — the parent renders its own
   // surface picker (e.g. a left rail in the workbench layout).
   compact?: boolean;
@@ -654,7 +651,6 @@ export function L1View({
   focusRef,
   onClearFocus,
   onToast,
-  t,
   compact = false,
 }: L1ViewProps) {
   const [mode, setMode] = useState<L1Mode>("snapshot");
@@ -880,7 +876,6 @@ export function L1View({
           pendingByEntity={pendingByEntity}
           focusRef={focusRef}
           onClearFocus={onClearFocus}
-          t={t}
         />
       )}
 
@@ -931,7 +926,6 @@ interface ModeStripProps {
   mode: L1Mode;
   setMode: (m: L1Mode) => void;
   surface: Surface;
-  t: (key: string, opts?: Record<string, unknown>) => string;
 }
 
 function ModeStrip({ mode, setMode, surface }: ModeStripProps) {
@@ -973,7 +967,6 @@ interface SnapshotListProps {
   pendingByEntity: Map<string, ChangeEntryDTO["kind"]>;
   focusRef: string | null;
   onClearFocus: () => void;
-  t: (key: string, opts?: Record<string, unknown>) => string;
 }
 
 function SnapshotList({
@@ -983,7 +976,6 @@ function SnapshotList({
   pendingByEntity,
   focusRef,
   onClearFocus,
-  t,
 }: SnapshotListProps) {
   const entities = snapshot?.entities ?? [];
   return (
@@ -1024,7 +1016,6 @@ function SnapshotList({
               ent={ent}
               focused={focusRef === `${surface}:${ent.id}`}
               pendingKind={pendingByEntity.get(ent.id) ?? null}
-              t={t}
             />
           ))}
         </ol>
@@ -1040,10 +1031,9 @@ interface EntityRowProps {
   ent: Entity;
   focused: boolean;
   pendingKind: ChangeEntryDTO["kind"] | null;
-  t: (key: string, opts?: Record<string, unknown>) => string;
 }
 
-function EntityRow({ surface, ent, focused, pendingKind, t }: EntityRowProps) {
+function EntityRow({ surface, ent, focused, pendingKind }: EntityRowProps) {
   const url = entityDeepLinkUrl(surface, ent);
   const ref = `${surface}:${ent.id}`;
   const meta = SURFACE_META[surface];
@@ -1115,7 +1105,6 @@ function PendingBadge({
   kind,
 }: {
   kind: ChangeEntryDTO["kind"];
-  t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
   const map = {
     added: {
@@ -1151,7 +1140,6 @@ interface ChangesListProps {
   loading: boolean;
   changes: ChangeEntryDTO[];
   pending: ChangeEntryDTO[];
-  t: (key: string, opts?: Record<string, unknown>) => string;
 }
 
 function ChangesList({ loading, changes, pending }: ChangesListProps) {
@@ -1236,7 +1224,6 @@ function ChangeGlyph({ kind }: { kind: ChangeEntryDTO["kind"] }) {
 interface KbQueriesListProps {
   loading: boolean;
   queries: KbQueryDTO[];
-  t: (key: string, opts?: Record<string, unknown>) => string;
 }
 
 function KbQueriesList({ loading, queries }: KbQueriesListProps) {
@@ -1341,7 +1328,6 @@ interface DocPaneProps {
   onSave: () => void;
   onUpdate: () => void;
   onEntityLinkClick: (e: React.MouseEvent<HTMLDivElement>) => void;
-  t: (key: string, opts?: Record<string, unknown>) => string;
 }
 
 function DocPane({
@@ -1437,7 +1423,6 @@ function DocPane({
 interface StreamPanelProps {
   stages: StreamStage[];
   onDismiss: () => void;
-  t: (key: string, opts?: Record<string, unknown>) => string;
 }
 
 function StreamPanel({ stages, onDismiss }: StreamPanelProps) {

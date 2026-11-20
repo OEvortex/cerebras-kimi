@@ -6,6 +6,7 @@ import { ArrowUpRight, Check, Loader2, RefreshCcw } from "lucide-react";
 
 
 import ProviderIcon from "@/components/common/ProviderIcon";
+import { englishLabel } from "@/lib/english-labels";
 import { settingsAnchorHref } from "@/features/settings/navigation/settings-nav";
 import {
   currentDiagnosticsResult,
@@ -179,7 +180,7 @@ export default function SettingsReadinessPanel({
         key: row.id,
         severity,
         label: (row.label),
-        detail: detailText(t, row.detail_code),
+        detail: detailText(row.detail_code),
         href: row.href,
       });
     }
@@ -205,7 +206,7 @@ export default function SettingsReadinessPanel({
         key: `${notice.code}:${notice.row_id}`,
         severity: "suggestion",
         label: row ? (row.label) : englishLabel(`readiness.section.${notice.section}`, `readiness.section.${notice.section}`),
-        detail: detailText(t, notice.code),
+        detail: detailText(notice.code),
         href: row?.href ?? null,
       });
     }
@@ -332,8 +333,8 @@ export default function SettingsReadinessPanel({
   );
 }
 
-function detailText(t: (key: string) => string, code: string): string {
-  return EXPLAINED_DETAIL_CODES.has(code) ? englishLabel(`readiness.detail.${code}`, `readiness.detail.${code}` : "");
+function detailText(code: string): string {
+  return EXPLAINED_DETAIL_CODES.has(code) ? englishLabel(`readiness.detail.${code}`, `readiness.detail.${code}`) : "";
 }
 
 function ReadinessGroup({
@@ -352,7 +353,7 @@ function ReadinessGroup({
     <div className="pt-4">
       <div className="flex items-baseline justify-between gap-3 pb-1">
         <h3 className="text-[12px] font-medium text-[var(--muted-foreground)]">
-          {englishLabel(`readiness.section.${section}`, `readiness.section.${section}`})
+          {englishLabel(`readiness.section.${section}`, `readiness.section.${section}`)}
         </h3>
         {ready > 0 && (
           <span className="text-[11px] text-[var(--muted-foreground)] opacity-70">
@@ -386,7 +387,7 @@ function ReadinessGroup({
 function ReadinessRow({ row }: { row: PanelRow }) {
   
   const severity = readinessRowSeverity(row);
-  const detail = row.state === "enabled_verified" ? "" : detailText(t, row.detail_code);
+  const detail = row.state === "enabled_verified" ? "" : detailText(row.detail_code);
   const label = (row.label);
 
   return (
@@ -424,7 +425,7 @@ function ReadinessRow({ row }: { row: PanelRow }) {
             severity ? SEVERITY_TONES[severity] : STATE_TONES[row.state]
           }`}
         >
-          {englishLabel(`readiness.state.${row.state}`, `readiness.state.${row.state}`})
+          {englishLabel(`readiness.state.${row.state}`, `readiness.state.${row.state}`)}
         </span>
       </span>
     </li>

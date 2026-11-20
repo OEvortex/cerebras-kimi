@@ -431,7 +431,7 @@ export default function MemoryWorkbench({
                 className="h-[60vh] w-full resize-none rounded-md border border-[var(--border)] bg-[var(--background)] p-3 font-mono text-[12.5px] outline-none focus:border-[var(--primary)]"
               />
             ) : view === "lines" ? (
-              <LineNumberedView lines={lines} t={t} />
+              <LineNumberedView lines={lines} />
             ) : content.trim().length > 0 ? (
               // The wrapper hides the default footnote backref arrow
               // (``data-footnote-backref``). Without this the rendered
@@ -481,7 +481,6 @@ function Breadcrumb({
 }: {
   layer: Layer;
   label: string;
-  t: (k: string) => string;
 }) {
   return (
     <div className="flex items-center gap-2 text-[12.5px]">
@@ -513,7 +512,6 @@ function LayerSwitcher({
   current,
 }: {
   current: Layer;
-  t: (k: string) => string;
 }) {
   // L1 page is a single workbench (no per-key route); L2/L3 hubs land
   // on /memory/l2 and /memory/l3 which list the surfaces / slots.
@@ -563,7 +561,6 @@ function ViewSwitch({
 }: {
   view: ViewMode;
   setView: (v: ViewMode) => void;
-  t: (k: string) => string;
 }) {
   const items: { key: ViewMode; label: string; icon: LucideIcon }[] = [
     { key: "plain", label: "Rendered", icon: FileText },
@@ -593,10 +590,8 @@ function ViewSwitch({
 
 function LineNumberedView({
   lines,
-  t,
 }: {
   lines: LineRowDTO[];
-  t: (k: string) => string;
 }) {
   if (lines.length === 0) return <EmptyState  />;
   const width = Math.max(2, String(lines[lines.length - 1].number).length);

@@ -17,6 +17,7 @@ import {
   MASTERY_OPENING_SCOPE,
 } from '@/lib/mastery-mode'
 import { setPendingPrompt } from '@/lib/pending-prompt'
+import { englishLabel } from '@/lib/english-labels'
 import {
   learningTodos,
   recentLearningActivity,
@@ -124,7 +125,7 @@ export function ClassicLearningDashboard() {
                     subtitle={`${topic.reviews.filter(review => review.due).length} reviews due`}
                     onClick={() =>
                       setPendingPrompt(
-                        masteryOpeningMessage('review', t, {
+                        masteryOpeningMessage('review', (key: string) => englishLabel(key), {
                           dueTitles: topic.reviews
                             .filter(review => review.due)
                             .slice(0, 5)

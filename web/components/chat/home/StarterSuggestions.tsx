@@ -18,6 +18,7 @@ import { CornerDownLeft, Loader2, RefreshCw } from "lucide-react";
 import { activeWorkspaceId, scopedUrl } from "@/lib/workspace-scope";
 import { usePageCustomization } from "@/context/PageCustomizationContext";
 import { starterPrompts, type StarterGroup } from "@/lib/page-customization";
+import { englishLabel } from "@/lib/english-labels";
 import { apiFetch, apiUrl } from "@/shared/api/client";
 
 interface Suggestion {
@@ -265,7 +266,7 @@ export default function StarterSuggestions({
       </>
     );
   }
-  const guides = GUIDES.filter(entry => starterPrompts(chat, entry.id, t).length > 0);
+  const guides = GUIDES.filter(entry => starterPrompts(chat, entry.id, englishLabel as never).length > 0);
   const guide = guides.find((entry) => entry.id === open);
 
   return (
@@ -301,16 +302,16 @@ export default function StarterSuggestions({
                 />
               )}
               <entry.icon />
-              <span>{englishLabel(`starters.${entry.id}`, `starters.${entry.id}`}</span>)
+              <span>{englishLabel(`starters.${entry.id}`, `starters.${entry.id}`)}</span>
             </button>
           ))}
         </div>
         {guide && (
-          <div id={panelId} role="group" aria-label={englishLabel(`starters.${guide.id}`, `starters.${guide.id}`} className="dt-starter-card">)
+          <div id={panelId} role="group" aria-label={englishLabel(`starters.${guide.id}`, `starters.${guide.id}`)} className="dt-starter-card">
             {/* Keyed so switching ways swaps the rows in place: the card stays,
                 only its content changes. */}
             <div key={guide.id} className="dt-starter-card-body">
-              {starterPrompts(chat, guide.id, t).map(({ label, prompt }, n) => {
+              {starterPrompts(chat, guide.id, englishLabel as never).map(({ label, prompt }, n) => {
                 return (
                   // The whole request shows on hover: what the box will hold.
                   <Tooltip key={n} label={prompt} side="top" as="div" className="dt-starter-item" delay={500}>

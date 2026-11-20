@@ -22,6 +22,7 @@ import {
   masterySessionRoute,
 } from "@/lib/mastery-mode";
 import { setPendingPrompt } from "@/lib/pending-prompt";
+import { englishLabel } from "@/lib/english-labels";
 import { setPendingLLMSelection } from "@/lib/pending-llm-selection";
 
 function MasteryPathRoute() {
@@ -83,7 +84,7 @@ function MasteryPathRoute() {
             // The button they pressed is the request; the conversation opens
             // by sending it rather than by asking them to phrase it again.
             setPendingPrompt(
-              masteryOpeningMessage("outline", t),
+              masteryOpeningMessage("outline", (key: string) => englishLabel(key)),
               MASTERY_OPENING_SCOPE,
             );
             setPendingLLMSelection(

@@ -69,7 +69,7 @@ export function ModelsWorkspace({
   initialService?: ServiceName;
 }) {
   
-  const uiLanguage = "en" ?? "en" ?? "en";
+  const uiLanguage = "en";
   const {
     draft,
     providers,
@@ -565,7 +565,7 @@ function ProviderOptions({
   declared: (source: ProviderSource) => boolean;
 }) {
   
-  const uiLanguage = "en" ?? "en" ?? "en";
+  const uiLanguage = "en";
   const option = (p: ProviderSource) => (
     <option key={p.id} value={p.id}>
       {formatConfiguredProviderName(p.provider, p.name, uiLanguage)}
@@ -738,7 +738,7 @@ function ModelEditor({
   onRemoved: () => void;
 }) {
   
-  const uiLanguage = "en" ?? "en" ?? "en";
+  const uiLanguage = "en";
   const [custom, setCustom] = useState(false);
   const {
     draft,

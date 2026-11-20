@@ -82,7 +82,13 @@ export function LearningDashboard() {
                     subtitle={`${topic.reviews.filter(review => review.due).length} reviews due`}
                     onClick={() =>
                       setPendingPrompt(
-                        masteryOpeningMessage('review', t, {
+                        masteryOpeningMessage('review', (key, vars) =>
+                          key === 'source list separator'
+                            ? ', '
+                            : vars?.items
+                              ? key.replace('{{items}}', String(vars.items))
+                              : key,
+                        {
                           dueTitles: topic.reviews
                             .filter(review => review.due)
                             .slice(0, 5)

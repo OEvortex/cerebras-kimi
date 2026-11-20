@@ -17,6 +17,7 @@ import {
 import type { CapabilityDef } from '@/features/capabilities/presentation'
 import { useCapabilityLabel } from '@/features/ui-layout/tokens'
 import { LEARNING_SURFACES } from '@/components/learning/surfaces'
+import { englishLabel } from '@/lib/english-labels'
 
 const inputClass =
   'w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none transition-shadow focus:border-ring focus:ring-2 focus:ring-ring/15'
@@ -83,7 +84,7 @@ export default function PageCustomizeDialog({
   const [group, setGroup] = useState<StarterGroup>('explain')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(false)
-  const prompts = starterPrompts(draft.chat, group, t)
+  const prompts = starterPrompts(draft.chat, group, englishLabel as never)
   const invalid = Object.values(draft.chat.starters).some(rows =>
     rows?.some(row => !row.label.trim() || !row.prompt.trim())
   )
@@ -184,7 +185,7 @@ export default function PageCustomizeDialog({
                     onClick={() => setTab(item)}
                     className={`flex-1 rounded-lg px-3 py-2 text-sm transition-colors ${tab === item ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                   >
-                    {englishLabel(`customize.${item}`, `customize.${item}`})
+                    {englishLabel(`customize.${item}`, `customize.${item}`)}
                   </button>
                 ))}
               </div>
@@ -197,7 +198,7 @@ export default function PageCustomizeDialog({
                   ).map(key => (
                     <ChoiceRow
                       key={key}
-                      label={englishLabel(`customize.control.${key}`, `customize.control.${key}`})
+                      label={englishLabel(`customize.control.${key}`, `customize.control.${key}`)}
                       checked={draft.chat.controls[key] ?? true}
                       onChange={() =>
                         setDraft(previous => ({
@@ -230,7 +231,7 @@ export default function PageCustomizeDialog({
                         onClick={() => setGroup(key)}
                         className={`rounded-full px-3 py-1.5 text-xs transition-colors ${group === key ? 'bg-primary text-primary-foreground' : 'bg-muted/60 text-muted-foreground hover:bg-muted'}`}
                       >
-                        {englishLabel(`starters.${key}`, `starters.${key}`})
+                        {englishLabel(`starters.${key}`, `starters.${key}`)}
                       </button>
                     ))}
                   </div>

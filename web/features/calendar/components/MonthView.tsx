@@ -286,8 +286,7 @@ function MonthWeek({
   onTaskDrop: (event: DragEvent<HTMLElement>, day: DateKey) => void
   moreLabel: (count: number) => string
 }) {
-  const { i18n: weekI18n } = useTranslation()
-  const weekLocale = weekI18n.language
+  const weekLocale = 'en'
   const keys = week.map(dateKey)
   const first = keys[0]
   const last = keys[6]

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { normalizeLanguage } from "@/i18n/languages";
+import { englishLabel } from "@/lib/english-labels";
 import { formatDate } from "@/lib/datetime";
 
 import { Toggle } from "@/components/settings/Toggle";
@@ -382,7 +383,7 @@ export default function AboutSettingsPage() {
               ) : (
                 <CircleAlert className="h-3.5 w-3.5" />
               )}
-              {englishLabel(`updateJob.${job.status}`, `updateJob.${job.status}`})
+              {englishLabel(`updateJob.${job.status}`, `updateJob.${job.status}`)}
             </div>
             {job.error && (
               <p className="mt-2 text-[12px] text-red-600 dark:text-red-400">

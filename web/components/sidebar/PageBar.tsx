@@ -8,14 +8,15 @@ import { useCapabilityFilter } from '@/features/capabilities/useCapabilityCatalo
 import { usePageSlotRef } from '@/components/layout/PageChrome'
 import { FeatureCrumb } from '@/components/layout/LocationCrumbs'
 import { locatePage, pageSections } from './page-sections'
+import { englishLabel } from '@/lib/english-labels'
 
 function useShelves() {
   
   const { learningPolicy } = useAuthStatus()
   const isAvailable = useCapabilityFilter()
   return pageSections({
-    t,
-    zh: ("en" ?? '').startsWith('zh'),
+    t: (key: string) => englishLabel(key),
+    zh: false,
     allowedSurfaces: learningPolicy?.allowedSurfaces ?? null,
     isAvailable,
   })
