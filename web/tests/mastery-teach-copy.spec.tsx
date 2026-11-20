@@ -11,12 +11,6 @@ import {
 import type { LearnerProfile } from "@/lib/learning-api";
 
 const locale = vi.hoisted(() => ({ language: "zh-CN" }));
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({
-    t: (value: string) => value,
-    i18n: { language: locale.language },
-  }),
-}));
 
 afterEach(() => {
   locale.language = "zh-CN";

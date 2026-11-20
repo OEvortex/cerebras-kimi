@@ -3,14 +3,12 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, it, vi } from 'vitest'
 import { SourcesStep } from '@/components/space/learning/TopicWizardSteps'
 import type { SourceCandidate, SourceLibrary } from '@/hooks/useTopicSourceLibrary'
-import { initI18n } from '@/i18n/init'
 
 vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({}),
   usePathname: () => '/learning/books',
 }))
-initI18n('en')
 const source = (workspace: string, label: string): SourceCandidate => ({
   key: `${workspace}:book:1`,
   kind: 'book',

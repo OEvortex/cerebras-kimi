@@ -13,7 +13,6 @@ const fixture = vi.hoisted(() => ({
   disconnect: vi.fn(),
   getSession: vi.fn(),
 }));
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock("@/context/AppShellContext", () => ({ useAppShell: () => ({ language: "en" }) }));
 vi.mock("@/lib/attachment-limits", () => ({ useAttachmentLimits: () => ({}) }));
 vi.mock("@/components/common/AssistantResponse", () => ({

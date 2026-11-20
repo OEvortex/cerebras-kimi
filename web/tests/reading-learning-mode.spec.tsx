@@ -13,9 +13,6 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
   useSearchParams: () => new URLSearchParams(),
 }))
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (value: string) => value }),
-}))
 vi.mock('@/features/chat/ChatStateAdapter', () => ({
   useChatStateAdapter: () => ({
     state: { isStreaming: false, sessionId: null },

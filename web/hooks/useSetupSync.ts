@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 
 import { apiFetch, apiUrl } from "@/shared/api/client";
-import { normalizeLanguage } from "@/i18n/languages";
+import { normalizeLanguage } from "@/context/languages";
 import {
   resolveResponseLanguage,
   writeStoredLanguage,

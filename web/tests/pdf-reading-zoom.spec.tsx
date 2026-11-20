@@ -48,11 +48,6 @@ vi.mock('@/lib/pdfjs-loader', () => ({
   }),
 }))
 
-vi.mock('react-i18next', () => {
-  const t = (key: string) => key
-  return { useTranslation: () => ({ t }) }
-})
-
 const GAP = 16
 const ROOT_TOP = 80
 let containerWidth: number

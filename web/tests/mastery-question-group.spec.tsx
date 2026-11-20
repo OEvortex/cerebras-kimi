@@ -5,7 +5,6 @@ import { describe, expect, it, vi } from "vitest";
 import { MasteryQuestionCard } from "@/components/chat/home/MasteryQuestionCard";
 import { ChatMessageList } from "@/features/chat/messages";
 import type { StreamEvent } from "@/features/chat/model/protocol";
-import { initI18n } from "@/i18n/init";
 import type { UserReplyPayload } from "@/hooks/use-card-submission";
 import {
   collectMasteryGrades,
@@ -13,7 +12,6 @@ import {
   extractMasteryQuestion,
 } from "@/lib/mastery-question";
 
-initI18n("en");
 
 const leaf = (id: string) => ({
   question_id: id,

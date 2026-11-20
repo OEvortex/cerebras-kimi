@@ -20,9 +20,6 @@ const fixture = vi.hoisted(() => ({
   modelId: "",
   save: vi.fn(),
 }));
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}));
 vi.mock("@/hooks/useAuthStatus", () => ({
   useAuthStatus: () => ({
     statusAvailable: true,

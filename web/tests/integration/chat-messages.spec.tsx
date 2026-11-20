@@ -4,9 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { ChatMessageList } from '@/features/chat/messages'
 import type { StreamEvent } from '@/features/chat/model/protocol'
 import type { SessionSummary } from '@/lib/session-api'
-import { initI18n } from '@/i18n/init'
 
-initI18n('en')
 
 describe('chat message feature', () => {
   it('shows a persisted worker loss beside the saved mastery answer with Retry', async () => {

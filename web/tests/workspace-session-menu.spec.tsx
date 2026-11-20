@@ -4,7 +4,6 @@ import OrganizedSessionList from '@/components/sessions/OrganizedSessionList'
 import type { SessionSummary } from '@/lib/session-api'
 import type { ChatWorkspaceRegistration } from '@/lib/workspaces-api'
 
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key, i18n: { language: 'en' } }) }))
 afterEach(cleanup)
 const workspace: ChatWorkspaceRegistration = { workspace_id: 'algebra', display_name: 'Algebra', kind: 'workspace', status: 'ready', archived: false, follows_root: true, path: '/algebra', error: '', created_at: '' }
 const session: SessionSummary = { id: 'chat-1', session_id: 'chat-1', title: 'Learning algebra', created_at: 1, updated_at: 1, message_count: 1, last_message: '', preferences: { workspace_id: 'algebra' } }

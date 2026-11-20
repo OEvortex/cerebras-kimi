@@ -4,7 +4,6 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import KbIndexingRun from "@/components/knowledge/KbIndexingRun";
 import { apiFetch } from "@/shared/api/client";
 
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock("@/shared/api/client", () => ({ apiFetch: vi.fn() }));
 const run = { task_id: "owned", state: "running", phase: "embedding", started_at: 1, last_activity_at: 2,
   last_progress_at: 2, phase_current: 1, phase_total: 1, cancel_requested: false,

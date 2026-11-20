@@ -16,9 +16,6 @@ const mock = vi.hoisted(() => ({
   removeMark: vi.fn(),
 }));
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}));
 
 vi.mock("@/lib/reading-api", () => ({
   getReadingPosition: mock.getPosition,

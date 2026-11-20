@@ -7,9 +7,7 @@ import {
   ChatStateAdapterProvider,
   useChatStateAdapter,
 } from "@/features/chat/ChatStateAdapter";
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 
 const transport = vi.hoisted(() => {
   type MockEvent = Record<string, unknown>;

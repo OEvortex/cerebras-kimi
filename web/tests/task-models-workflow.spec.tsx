@@ -14,12 +14,6 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/features/settings/store/SettingsStore", () => ({
   useSettings: () => mocks.settings,
 }));
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({
-    t: (s: string, args?: Record<string, unknown>) =>
-      s.replace(/{{(\w+)}}/g, (_, name) => String(args?.[name] ?? name)),
-  }),
-}));
 
 function fixture(): Catalog {
   const services = Object.fromEntries(

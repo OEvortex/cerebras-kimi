@@ -1,4 +1,4 @@
-import type { AppLanguage } from "@/i18n/languages";
+import type { AppLanguage } from "@/context/languages";
 
 export type ToolAvailabilityLanguage = AppLanguage;
 

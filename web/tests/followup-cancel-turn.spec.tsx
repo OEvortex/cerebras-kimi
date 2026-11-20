@@ -8,9 +8,6 @@ import {
   type QuizFollowupController,
 } from "@/context/QuizFollowupContext";
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}));
 
 vi.mock("@/lib/notebook-api", () => ({ updateNotebookEntry: vi.fn() }));
 

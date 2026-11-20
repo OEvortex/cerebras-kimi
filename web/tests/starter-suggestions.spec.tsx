@@ -4,7 +4,6 @@ import StarterSuggestions from '@/components/chat/home/StarterSuggestions'
 
 const fetcher = vi.hoisted(() => vi.fn())
 vi.mock('@/shared/api/client', () => ({ apiFetch: fetcher, apiUrl: (path: string) => path }))
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
 const response = (payload: object) => ({ ok: true, json: async () => payload })
 beforeEach(() => fetcher.mockReset())
 afterEach(() => vi.useRealTimers())

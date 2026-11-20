@@ -13,7 +13,6 @@ const translations = vi.hoisted(() => ({
   t: vi.fn((key: string) => key === "Failed to link this follow-up chat to its notebook entry."
     ? "无法关联笔记条目" : key),
 }));
-vi.mock("react-i18next", () => ({ useTranslation: () => translations }));
 
 const clientInstances = vi.hoisted(
   () =>

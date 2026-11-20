@@ -2,7 +2,6 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ReadingExtensionBar } from "@/components/reading/ReadingExtensionBar";
-import { initI18n } from "@/i18n/init";
 import { fetchAuthStatus } from "@/lib/auth";
 import { getOwnLearnerProfile } from "@/lib/profile-api";
 import { listReadingExtensions, runReadingExtension } from "@/lib/reading-api";
@@ -19,7 +18,6 @@ vi.mock("@/lib/reading-api", () => ({
   submitReadingQuizAnswers: vi.fn(),
 }));
 
-initI18n("en");
 
 const extensions = [
   {

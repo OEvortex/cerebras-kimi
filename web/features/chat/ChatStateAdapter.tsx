@@ -78,7 +78,6 @@ import {
   decideIdleTurnRecovery,
   resolveLoadedRunStatus,
 } from "@/lib/chat-idle-recovery";
-import i18n from "i18next";
 import { normalizeBookReferences } from "@/lib/book-references";
 import { normalizeWorkspaceMode } from "@/lib/workspace-mode";
 import { normalizeReadingReferences } from "@/lib/reading-references";

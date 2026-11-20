@@ -5,9 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 import { ChatMessageList } from "@/features/chat/messages";
 import type { StreamEvent } from "@/features/chat/model/protocol";
 import { compactTracePreview } from "@/features/chat/trace/memory";
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 
 const intro = "Let me clarify your learning goal.\n\n";
 const followup = "I will check your current topics.\n\n";

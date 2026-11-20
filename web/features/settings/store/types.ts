@@ -1,5 +1,5 @@
-import type { AppLanguage } from "@/i18n/init";
-import type { ResponseLanguage } from "@/i18n/languages";
+import type { AppLanguage } from "@/context/languages";
+import type { ResponseLanguage } from "@/context/languages";
 import type { LearningDisplay } from "@/lib/learning-display";
 import type {
   Catalog,

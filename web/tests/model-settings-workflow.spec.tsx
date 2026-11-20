@@ -21,12 +21,6 @@ vi.mock("@/shared/api/client", () => ({
   apiFetch: (...args: unknown[]) => mocks.fetch(...args),
   apiUrl: (url: string) => url,
 }));
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({
-    t: (key: string, args?: any) =>
-      key.replace(/{{(\w+)}}/g, (_, name) => String(args?.[name] ?? name)),
-  }),
-}));
 function fixture(): Catalog {
   const profiles = ["one", "two"].map((id) => ({
     id,

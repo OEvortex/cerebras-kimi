@@ -10,9 +10,6 @@ import { afterEach, expect, it, vi } from "vitest";
 import { Wand2 } from "lucide-react";
 import ComposerResources from "@/components/chat/home/ComposerResources";
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}));
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();

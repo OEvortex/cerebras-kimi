@@ -7,7 +7,6 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/settings/appearance',
   useRouter: () => ({ push: mocks.push }),
 }))
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
 vi.mock('@/features/settings/store/SettingsStore', () => ({
   useSettings: () => ({
     hasUnsavedChanges: true,

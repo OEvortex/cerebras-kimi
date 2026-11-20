@@ -3,9 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import type { StreamEvent } from "@/features/chat/model/protocol";
 import { StreamingStatus } from "@/features/chat/trace";
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 
 describe("chat activity status", () => {
   it("keeps answer streaming inside the existing exploration surface", () => {

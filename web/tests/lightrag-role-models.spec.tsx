@@ -16,9 +16,6 @@ import type {
 } from "@/features/knowledge/model/types";
 import type { LLMOption } from "@/lib/llm-options";
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (value: string) => value }),
-}));
 const textModel = { profile_id: "text", model_id: "small" };
 const visionModel = { profile_id: "vision", model_id: "large" };
 const options: LLMOption[] = [

@@ -4,10 +4,8 @@ import { describe, expect, it } from "vitest";
 import { AskUserOptions } from "@/components/chat/home/AskUserOptions";
 import { MasteryQuestionCard } from "@/components/chat/home/MasteryQuestionCard";
 import MarkdownRenderer from "@/components/common/MarkdownRenderer";
-import { initI18n } from "@/i18n/init";
 import type { MasteryQuestion } from "@/lib/mastery-question";
 
-initI18n("zh");
 
 /**
  * The cards a learner answers on are written by the same tutor that writes the

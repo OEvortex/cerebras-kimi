@@ -3,8 +3,6 @@ import { expect, it, vi } from "vitest";
 import { Wand2 } from "lucide-react";
 import { ComposerLead, type LeadToken } from "@/components/chat/home/ComposerLead";
 
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
-
 it("renders a token's prefix in its own span, ahead of the label", () => {
   const token: LeadToken = {
     key: "create:skill",

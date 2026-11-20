@@ -4,7 +4,6 @@ import { expect, it, vi } from "vitest";
 import ReasoningEffortSelector from "@/components/chat/home/ReasoningEffortSelector";
 import type { LLMOption } from "@/lib/llm-options";
 
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 
 const base = {
   profile_name: "Alt",

@@ -5,13 +5,6 @@ import { OutputFileActions } from '@/components/files/OutputFileActions'
 
 const mocks = vi.hoisted(() => ({ fetch: vi.fn() }))
 vi.mock('@/shared/api/client', () => ({ apiFetch: (...args: unknown[]) => mocks.fetch(...args) }))
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (s: string, values?: Record<string, unknown>) =>
-      s.replace(/\{\{(\w+)\}\}/g, (_, key: string) => String(values?.[key] ?? '')),
-  }),
-}))
-
 const url = `/files/workspace-items/ws_${'a'.repeat(32)}/wsi_${'b'.repeat(32)}`
 const preview = {
   file_path: '/workspace/outputs/movie.mp4',

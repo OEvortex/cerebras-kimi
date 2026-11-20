@@ -10,7 +10,6 @@ const mocks = vi.hoisted(() => ({
   router: { push: vi.fn() }, t: (key: string) => key,
 }));
 vi.mock("next/navigation", () => ({useRouter: () => mocks.router}));
-vi.mock("react-i18next", () => ({useTranslation: () => ({t: mocks.t})}));
 vi.mock("@/context/ReadingContext", () => ({useReading: () => mocks.reading}));
 vi.mock("@/features/chat/ChatStateAdapter", () => ({useChatStateAdapter: () => mocks}));
 vi.mock("@/lib/reading-turn-state", () => ({setReadingWorkspace: vi.fn()}));

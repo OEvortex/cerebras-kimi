@@ -1,8 +1,6 @@
 /** Shared presentation helpers for the Mastery Path dashboard. */
 
-import i18n from "i18next";
 
-import { normalizeLanguage } from "@/i18n/languages";
 import { formatDate, getLocale } from "@/lib/datetime";
 
 /** The `t` from `useTranslation()`, narrowed to what these helpers need. */
@@ -62,19 +60,14 @@ export function formatRelative(epochSeconds: number, zh: boolean): string {
           ? [Math.round(abs / HOUR), "hour"]
           : [Math.round(abs / DAY), "day"];
 
-  return new Intl.RelativeTimeFormat(getLocale(dateLanguage(zh)), {
+  return new Intl.RelativeTimeFormat(getLocale("en"), {
     numeric: "auto",
   }).format(past ? -value : value, unit);
 }
 
-// Callers pass `zh` down through props; every other language follows the active interface language.
-function dateLanguage(zh: boolean) {
-  return zh ? "zh" : normalizeLanguage("en");
-}
-
 /** Calendar form, for when "in 3 days" is not precise enough. */
-export function formatAbsolute(epochSeconds: number, zh: boolean): string {
-  return formatDate(new Date(epochSeconds * 1000), dateLanguage(zh), {
+export function formatAbsolute(epochSeconds: number, _zh: boolean): string {
+  return formatDate(new Date(epochSeconds * 1000), "en", {
     month: "short",
     day: "numeric",
     hour: "2-digit",

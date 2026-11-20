@@ -18,9 +18,7 @@ _INDEX_KEY = "notes/index"
 
 
 def _legacy_dir():
-    root = get_settings().data_dir / "notes"
-    root.mkdir(parents=True, exist_ok=True)
-    return root
+    return get_settings().data_dir / "notes"
 
 
 def _load_index() -> dict[str, str]:

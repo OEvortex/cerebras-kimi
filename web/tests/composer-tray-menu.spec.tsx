@@ -4,8 +4,6 @@ import { TrayList, TrayMenu, TrayOption } from '@/components/chat/home/ComposerT
 import { ComposerTray } from '@/components/chat/home/ComposerTray'
 import { CHAT_CAPABILITIES } from '@/features/capabilities/presentation'
 
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
-
 function renderMenu() {
   const select = vi.fn()
   render(

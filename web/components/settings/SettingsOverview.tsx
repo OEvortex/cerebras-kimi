@@ -4,7 +4,6 @@ import Link from "@/shared/router/link";
 import { useCallback, type SetStateAction } from "react";
 import { ArrowRight } from "lucide-react";
 
-import { APP_LANGUAGES, isAppLanguage, type AppLanguage } from "@/i18n/init";
 import AgentSetupHelp from "@/components/settings/AgentSetupHelp";
 import {
   SettingRow,
@@ -24,39 +23,9 @@ const UI_LAYOUT_LABELS: Record<UiLayout, string> = {
   modern: "Modern",
 };
 
-function LanguageSelect({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (next: AppLanguage) => void;
-}) {
-  
-  return (
-    <select
-      aria-label={label}
-      className={`${selectClass} min-w-[200px]`}
-      value={value}
-      onChange={(event) => {
-        const next = event.currentTarget.value;
-        if (isAppLanguage(next)) onChange(next);
-      }}
-    >
-      {APP_LANGUAGES.map(({ code, labelKey }) => (
-        <option key={code} value={code} className={selectOptionClass}>
-          {(labelKey)}
-        </option>
-      ))}
-    </select>
-  );
-}
-
 export default function SettingsOverview() {
   
-  const { language, responseLanguage, updateLanguage, updateResponseLanguage } =
-    useUiSettings();
+  const { responseLanguage, updateResponseLanguage } = useUiSettings();
   const { catalogEditable } = useSettings();
   const uiLayout = useUiLayout();
   const setLiveUiLayout = useCallback(
@@ -76,17 +45,6 @@ export default function SettingsOverview() {
         description={"Make DeepTutor feel at home. Apply your preferences using the bar below."}
       />
       <SettingSection title={"Language"}>
-        <SettingRow
-          title={"Interface language"}
-          description={"Controls navigation, settings, and status text only."}
-          control={
-            <LanguageSelect
-              label={"Interface language"}
-              value={language}
-              onChange={updateLanguage}
-            />
-          }
-        />
         <SettingRow
           title={"Model output language"}
           description={"Sets the default language for chat and capability responses."}

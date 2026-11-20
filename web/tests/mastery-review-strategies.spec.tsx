@@ -4,16 +4,6 @@ import { describe, expect, it, vi } from 'vitest'
 import { ReviewTrail } from '@/components/space/learning/ReviewTrail'
 import type { ReviewStrategy, TopicReview } from '@/lib/learning-api'
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string, opts?: Record<string, unknown>) =>
-      opts
-        ? key.replace(/\{\{(\w+)\}\}/g, (_, name: string) => String(opts[name]))
-        : key,
-    i18n: { language: 'en' },
-  }),
-}))
-
 const preset: ReviewStrategy = {
   template_id: 'preset-exam-cramming',
   name: 'Exam Cramming',

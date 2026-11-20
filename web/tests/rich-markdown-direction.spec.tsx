@@ -2,7 +2,6 @@ import { render, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import RichMarkdownRenderer from "@/components/common/RichMarkdownRenderer";
 
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 
 describe("Rich Markdown reading direction", () => {
   it("marks prose blocks in a reply that also holds math", async () => {

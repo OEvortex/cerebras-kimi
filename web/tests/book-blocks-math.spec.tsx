@@ -6,7 +6,6 @@ import FlashCardsBlock from "@/app/(workspace)/learning/books/components/blocks/
 import SectionBlock from "@/app/(workspace)/learning/books/components/blocks/SectionBlock";
 import type { Block } from "@/lib/book-types";
 
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 
 function block(type: string, payload: Record<string, unknown>): Block {
   return { id: "blk-1", type, payload } as unknown as Block;

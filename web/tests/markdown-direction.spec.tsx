@@ -2,7 +2,6 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import SimpleMarkdownRenderer from "@/components/common/SimpleMarkdownRenderer";
 
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 
 describe("Markdown reading direction", () => {
   it("lets each paragraph take the direction of its own text", () => {

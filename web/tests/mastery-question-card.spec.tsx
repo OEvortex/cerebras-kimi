@@ -3,10 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import { MasteryQuestionCard } from "@/components/chat/home/MasteryQuestionCard";
-import { initI18n } from "@/i18n/init";
 import type { MasteryQuestion } from "@/lib/mastery-question";
 
-initI18n("en");
 
 const question = (overrides: Partial<MasteryQuestion> = {}): MasteryQuestion => ({
   questionId: "q-free",

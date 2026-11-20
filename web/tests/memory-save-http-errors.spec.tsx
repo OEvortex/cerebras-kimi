@@ -3,7 +3,6 @@ import { afterEach, expect, it, vi } from "vitest";
 import MemoryWorkbench from "@/components/memory/MemoryWorkbench";
 import { apiFetch } from "@/shared/api/client";
 
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn() }) }));
 vi.mock("next/link", () => ({ default: ({ children }: { children: React.ReactNode }) => <span>{children}</span> }));
 vi.mock("next/dynamic", () => ({ default: () => ({ content }: { content: string }) => <div>{content}</div> }));

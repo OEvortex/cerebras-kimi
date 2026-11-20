@@ -1,9 +1,7 @@
 import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 import { UserMessage } from '@/features/chat/messages/ChatMessageList'
-import { initI18n } from '@/i18n/init'
 
-initI18n('en')
 vi.mock('@/lib/partners-api', () => ({ getPartner: async () => ({ name: 'Frank' }) }))
 vi.mock('@/lib/partner-groups-api', () => ({ getPartnerGroup: async () => ({ name: 'Study group' }) }))
 vi.mock('@/hooks/useConnectedAgentKinds', () => ({ useConnectedAgentKinds: () => ({ Codex: 'codex' }) }))

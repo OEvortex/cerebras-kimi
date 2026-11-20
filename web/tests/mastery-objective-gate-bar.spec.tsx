@@ -2,10 +2,8 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { ObjectiveDetail } from "@/components/space/learning/ObjectiveDetail";
-import { initI18n } from "@/i18n/init";
 import type { ObjectiveReport } from "@/lib/learning-api";
 
-initI18n("en");
 
 function report(overrides: Partial<ObjectiveReport> = {}): ObjectiveReport {
   return {

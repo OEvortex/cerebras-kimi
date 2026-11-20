@@ -5,7 +5,6 @@ import { PlayAudioButton } from "@/features/chat/messages/ChatMessageList";
 import { useVoicePlaybackRate } from "@/hooks/useVoicePlaybackRate";
 import { apiFetch } from "@/shared/api/client";
 import { notify } from "@/lib/notifications";
-import { initI18n } from "@/i18n/init";
 import { browserStorage } from "@/shared/storage";
 
 const autoplay = vi.hoisted(() => ({ enabled: false }));
@@ -18,7 +17,6 @@ vi.mock("@/hooks/useVoiceAutoplay", () => ({
   useVoiceAutoplay: () => ({ autoplayEnabled: autoplay.enabled }),
 }));
 vi.mock("@/lib/notifications", () => ({ notify: vi.fn() }));
-initI18n("en");
 const instances: FakeAudio[] = [];
 class FakeAudio {
   src = "";

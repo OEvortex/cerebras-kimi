@@ -4,14 +4,12 @@ import { ExtensionResult, type QuizHelpContext } from "@/components/reading/Read
 import { ReadingActionCards } from "@/components/reading/workspace/ReadingActionCards";
 import { ReadingActionsProvider } from "@/components/reading/ReadingActionsProvider";
 import { ReadingActionsContext, useReadingActions } from "@/components/reading/reading-actions-context";
-import { initI18n } from "@/i18n/init";
 import { listReadingExtensions, runReadingExtension, submitReadingQuizAnswers, type ReadingExtensionResult } from "@/lib/reading-api";
 
 vi.mock("@/lib/auth", () => ({ fetchAuthStatus: vi.fn().mockResolvedValue({}) }));
 vi.mock("@/lib/reading-api", () => ({
   listReadingExtensions: vi.fn(), runReadingExtension: vi.fn(), submitReadingQuizAnswers: vi.fn(),
 }));
-initI18n("en");
 const context: QuizHelpContext = {
   locator: 4, selection: "verified phrase",
   actions: [{

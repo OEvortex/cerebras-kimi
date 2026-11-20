@@ -2,9 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { ChatMessageList } from '@/features/chat/messages'
-import { initI18n } from '@/i18n/init'
 
-initI18n('en')
 
 // The #1410 shape: editing an early message forks the transcript and the
 // visible path follows the newest sibling, so the pre-edit history is

@@ -2,9 +2,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, expect, it } from "vitest";
 import { GuardianReadingReport } from "@/features/multi-user/components/GuardianReadingReport";
 import type { GuardianReadingSummary } from "@/lib/guardian-api";
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 afterEach(cleanup);
 const report = (): GuardianReadingSummary => ({
   reading_status: "available", quiz_status: "available", limit: 50,

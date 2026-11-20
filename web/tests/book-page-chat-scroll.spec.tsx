@@ -9,9 +9,6 @@ const fixture = vi.hoisted(() => ({
   getSession: vi.fn(),
 }))
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}))
 vi.mock('@/context/AppShellContext', () => ({
   useAppShell: () => ({ language: 'en' }),
 }))

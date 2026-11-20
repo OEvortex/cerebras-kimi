@@ -3,7 +3,6 @@ import { expect, it, vi } from "vitest";
 import { AddMaterialsDialog } from "@/components/reading/library/AddMaterialsDialog";
 
 const fixture = vi.hoisted(() => ({ list: vi.fn(), add: vi.fn(), t: (key: string) => key }));
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: fixture.t }) }));
 vi.mock("@/components/watching/WatchingBrowser", () => ({ WatchingBrowser: () => null }));
 vi.mock("@/lib/reading-workspace-api", async (original) => ({
   ...await original<object>(), listReadingLibraryMaterials: fixture.list,

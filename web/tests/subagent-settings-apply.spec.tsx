@@ -17,9 +17,6 @@ vi.mock("@/shared/api/client", () => ({
 }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 const t = (key: string) => key;
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t, i18n: { language: "en" } }),
-}));
 vi.mock("@/lib/theme", async () => {
   const actual = await vi.importActual<typeof import("@/lib/theme")>("@/lib/theme");
   return {

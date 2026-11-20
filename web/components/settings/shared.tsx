@@ -5,7 +5,7 @@ import type {
   CatalogProfile,
   ServiceName,
 } from "@/features/settings/store/SettingsStore";
-import type { AppLanguage } from "@/i18n/init";
+import type { AppLanguage } from "@/context/languages";
 import { getLocale } from "@/lib/datetime";
 
 // Tailwind 3 silently drops `<color>-[var(--token)]/NN`: our tokens are hex

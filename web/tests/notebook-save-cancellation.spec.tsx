@@ -3,7 +3,6 @@ import { afterEach, expect, it, vi } from "vitest";
 import SaveToNotebookModal from "@/components/notebook/SaveToNotebookModal";
 import { apiFetch } from "@/shared/api/client";
 
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock("@/components/common/PickerShell", () => ({ default: ({ open, children }: { open: boolean; children: React.ReactNode }) => open ? <div>{children}</div> : null }));
 vi.mock("@/components/common/PickerHeader", () => ({ default: () => null }));
 vi.mock("@/lib/notebook-api", () => ({ listNotebooks: async () => [{ id: "notes", name: "My notes", record_count: 0 }], createNotebook: vi.fn() }));

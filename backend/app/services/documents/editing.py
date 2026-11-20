@@ -1,8 +1,8 @@
 """Prompts and operation history for Co-Writer AI edits.
 
 Three entry points share one shape: take draft text, ask the configured model
-for a replacement, return clean Markdown. Every operation is appended to a
-small history file so the UI can show what the AI changed.
+for a replacement, return clean Markdown. Every operation is appended to the
+shared ``kv`` state so the UI can show what the AI changed.
 """
 
 from __future__ import annotations

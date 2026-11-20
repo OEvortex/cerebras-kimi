@@ -18,7 +18,7 @@ import {
   Trash2,
 } from "lucide-react";
 
-import { normalizeLanguage } from "@/i18n/languages";
+import { normalizeLanguage } from "@/context/languages";
 import { formatDate } from "@/lib/datetime";
 
 import BrandIcon, { TrademarkNote } from "@/components/common/BrandIcon";

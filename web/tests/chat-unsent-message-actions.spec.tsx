@@ -3,7 +3,6 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
 
 import { ChatMessageList } from "@/features/chat/messages";
-import { initI18n } from "@/i18n/init";
 
 const supported = vi.hoisted(() => vi.fn(async () => true));
 vi.mock("@/lib/session-api", async importOriginal => ({
@@ -12,7 +11,6 @@ vi.mock("@/lib/session-api", async importOriginal => ({
 }));
 beforeEach(() => supported.mockResolvedValue(true));
 
-initI18n("en");
 
 const messages = [
   { id: 1, role: "assistant" as const, content: "Earlier response", parentMessageId: null },

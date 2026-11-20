@@ -8,10 +8,6 @@ import type { OutlineRow, UnitReference } from '@/lib/reading-api'
 import type { ReaderHeading } from '@/lib/reading-outline'
 import type { ReadingLibraryMaterial, ReadingWorkspaceTab } from '@/lib/reading-workspace-api'
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (value: string) => value }),
-}))
-
 const baseMaterial = {
   content_id: 'content',
   render_mode: 'text',

@@ -4,7 +4,6 @@ import { WorkspaceNavigation } from "@/components/workspaces/WorkspaceNavigation
 import MotionProvider from "@/components/common/MotionProvider";
 import ToastViewport from "@/components/common/ToastViewport";
 import { AppShellProvider } from "@/context/AppShellContext";
-import { I18nClientBridge } from "@/i18n/I18nClientBridge";
 
 import AdminLayout from "@/app/(admin)/layout";
 import AuthLayout from "@/app/(auth)/layout";
@@ -27,9 +26,7 @@ export function RootShell() {
       <SettingsReturnTracker />
       <WorkspaceNavigation />
       <MotionProvider>
-        <I18nClientBridge>
-          <Outlet />
-        </I18nClientBridge>
+        <Outlet />
       </MotionProvider>
       <ToastViewport />
     </AppShellProvider>

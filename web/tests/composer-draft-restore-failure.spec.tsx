@@ -21,9 +21,6 @@ vi.mock("@/lib/workspace-drafts", () => ({
   saveWorkspaceDraft: drafts.save,
 }));
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}));
 
 const activeCap: CapabilityDef = {
   value: "",

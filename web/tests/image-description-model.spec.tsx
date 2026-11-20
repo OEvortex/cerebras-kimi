@@ -10,8 +10,6 @@ vi.mock('@/shared/api/client', () => ({
   apiUrl: (value: string) => value,
   apiFetch: (...args: unknown[]) => mocks.fetch(...args),
 }))
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
-
 beforeEach(() => {
   mocks.options.mockResolvedValue({
     options: [

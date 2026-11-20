@@ -2,11 +2,9 @@ import { render } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { ChatMessageList } from '@/features/chat/messages'
 import type { MessageRequestSnapshot } from '@/features/chat/ChatStateAdapter'
-import { initI18n } from '@/i18n/init'
 
 type ChatMessageItem = Parameters<typeof ChatMessageList>[0]['messages'][number]
 
-initI18n('en')
 
 const snapshot = (language: string): MessageRequestSnapshot => ({
   content: 'question',

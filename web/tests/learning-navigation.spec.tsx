@@ -3,7 +3,6 @@ import { beforeEach, expect, it, vi } from 'vitest'
 import { LearningNavigation } from '@/components/sidebar/LearningNavigation'
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/learning', useSearchParams: () => new URLSearchParams() }))
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key, i18n: { language: 'en' } }) }))
 vi.mock('@/components/learning/LearningCreateMenu', () => ({ LearningCreateMenu: () => <button>Create learning</button> }))
 vi.mock('@/components/layout/AppShell', () => ({ useSidebarDrawer: () => null }))
 const mastery = vi.hoisted(() => ({ topics: [] as unknown[] }))

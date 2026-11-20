@@ -242,7 +242,7 @@ export default function ProfilePage() {
         ? null
         : fallback.color;
   const isAdmin = profile?.role === "admin";
-  const lang: Language = "en"?.startsWith("zh") ? "zh" : "en";
+  const lang: Language = "en";
   const joinedDate = profile?.created_at ? new Date(profile.created_at) : null;
   const joined =
     joinedDate && !Number.isNaN(joinedDate.getTime())

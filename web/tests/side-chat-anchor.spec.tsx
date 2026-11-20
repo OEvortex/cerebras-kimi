@@ -12,7 +12,6 @@ import {
   type QuizFollowupController,
   type QuizFollowupTabContext,
 } from "@/context/QuizFollowupContext";
-import { initI18n } from "@/i18n/init";
 import { buildSessionActivity } from "@/lib/session-activity";
 import type { SessionSummary } from "@/lib/session-api";
 
@@ -47,7 +46,6 @@ vi.mock("@/lib/session-api", async (importOriginal) => ({
   getSession: api.getSession,
 }));
 
-initI18n("en");
 
 afterEach(() => {
   cleanup();

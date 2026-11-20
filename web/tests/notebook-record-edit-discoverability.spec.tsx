@@ -4,9 +4,6 @@ import { expect, it, vi } from "vitest";
 import NotebookRecordRow from "@/components/notebook/NotebookRecordRow";
 import type { NotebookRecordItem } from "@/lib/notebook-api";
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}));
 vi.mock("@/components/common/MarkdownRenderer", () => ({ default: () => null }));
 
 const record: NotebookRecordItem = {

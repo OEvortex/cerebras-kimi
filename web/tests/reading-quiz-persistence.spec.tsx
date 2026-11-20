@@ -1,7 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 import { ReadingExtensionBar } from "@/components/reading/ReadingExtensionBar";
-import { initI18n } from "@/i18n/init";
 import {
   listReadingExtensions,
   runReadingExtension,
@@ -12,7 +11,6 @@ vi.mock("@/lib/reading-api", () => ({
   runReadingExtension: vi.fn(),
   submitReadingQuizAnswers: vi.fn(),
 }));
-initI18n("en");
 beforeEach(() => {
   vi.mocked(listReadingExtensions).mockResolvedValue([
     {

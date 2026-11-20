@@ -2,7 +2,6 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 import SpaceQuestionsPage from "@/app/(utility)/space/questions/page";
 import PracticeRoutePage from "@/app/(workspace)/learning/practice/page";
-import { initI18n } from "@/i18n/init";
 import * as api from "@/lib/practice-api";
 
 const replace = vi.fn();
@@ -31,7 +30,6 @@ vi.mock("@/lib/practice-api", async original => ({
   getPracticeQuestion: vi.fn(),
   getPracticeAnalytics: vi.fn(),
 }));
-initI18n("en");
 beforeEach(() => {
   vi.clearAllMocks();
   vi.stubGlobal(

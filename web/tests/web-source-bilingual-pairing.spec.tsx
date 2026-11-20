@@ -4,9 +4,6 @@ import { afterEach, expect, it, vi } from "vitest";
 import KbWebSourcesSection from "@/components/knowledge/KbWebSourcesSection";
 import * as sourcesApi from "@/features/knowledge/api/sources";
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}));
 
 afterEach(cleanup);
 

@@ -5,7 +5,7 @@ import { useStagedSettings } from "@/features/settings/store/useStagedSettings";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Loader2, RefreshCw, XCircle } from "lucide-react";
 
-import { normalizeLanguage } from "@/i18n/languages";
+import { normalizeLanguage } from "@/context/languages";
 import { formatDate } from "@/lib/datetime";
 
 import {

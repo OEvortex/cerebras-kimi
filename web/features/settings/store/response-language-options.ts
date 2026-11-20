@@ -1,4 +1,4 @@
-import type { ResponseLanguage } from "@/i18n/languages";
+import type { ResponseLanguage } from "@/context/languages";
 
 export type ResponseLanguageOption = {
   value: ResponseLanguage;

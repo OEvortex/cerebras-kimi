@@ -2,10 +2,8 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, expect, it, vi } from "vitest";
 
 import MessageThreadMarker from "@/features/chat/messages/MessageThreadMarker";
-import { initI18n } from "@/i18n/init";
 import type { SessionSummary } from "@/lib/session-api";
 
-initI18n("en");
 
 afterEach(cleanup);
 

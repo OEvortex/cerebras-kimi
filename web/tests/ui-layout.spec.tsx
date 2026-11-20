@@ -5,7 +5,6 @@ import { useCapabilityLabel, useUiLayoutLabel } from '@/features/ui-layout/token
 import { applyExtensionPayload } from '@/lib/settings-extensions'
 import { UI_LAYOUT_STORAGE_KEY, writeStoredUiLayout } from '@/lib/ui-layout'
 
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
 vi.mock('@/features/ui-layout/classic/ClassicSidebarShell', () => ({ ClassicSidebarShell: () => <nav>classic sidebar</nav> }))
 vi.mock('@/components/sidebar/SidebarShell', () => ({ SidebarShell: () => <nav>modern sidebar</nav> }))
 

@@ -3,7 +3,6 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
 import QuestionCard from "@/components/space/question-bank/QuestionCard";
 import { PracticeInsights } from "@/components/learning/practice/PracticeInsights";
-import { initI18n } from "@/i18n/init";
 import type { NotebookEntry } from "@/lib/notebook-api";
 import * as api from "@/lib/practice-api";
 import { practiceMarkdown } from "@/lib/practice-content";
@@ -23,7 +22,6 @@ vi.mock("next/dynamic", () => ({
     () =>
     ({ content }: { content: string }) => <div>{content}</div>,
 }));
-initI18n("en");
 const report: api.PracticeAnalytics = {
   timezone: "UTC",
   days: 7,

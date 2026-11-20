@@ -8,9 +8,7 @@ import {
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 
 const api = vi.hoisted(() => ({
   runReadingExtension: vi.fn(

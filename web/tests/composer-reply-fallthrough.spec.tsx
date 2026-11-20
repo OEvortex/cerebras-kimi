@@ -2,9 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 
 /**
  * The composer under test only ever calls back into these two functions, so

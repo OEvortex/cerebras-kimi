@@ -7,9 +7,7 @@ import type {
   AskUserCardData,
   AskUserQuestion,
 } from "@/components/chat/home/AskUserOptions";
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 
 function question(
   id: string,

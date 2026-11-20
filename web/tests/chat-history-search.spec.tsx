@@ -9,9 +9,6 @@ const fixture = vi.hoisted(() => ({
   calls: [] as Array<{ query: string; signal?: AbortSignal }>,
 }));
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));

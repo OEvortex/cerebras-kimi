@@ -1,13 +1,11 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { initI18n } from '@/i18n/init'
 import type { ChatState, MessageItem } from '@/features/chat/ChatStateAdapter'
 import type { StreamEvent } from '@/features/chat/model/protocol'
 import { updateSessionOrganization } from '@/lib/session-api'
 import type { SessionSummary } from '@/lib/session-api'
 
-initI18n('en')
 
 /**
  * Smoke coverage for the chat home surface (DT-21 top-15 gap #2).

@@ -22,7 +22,6 @@ const sockets = vi.hoisted(() => ({
   }>,
 }));
 
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: translate }) }));
 vi.mock("@/lib/partners-api", () => ({
   getPartnerHistoryPage: api.historyPage,
   getPartnerSessions: api.sessions,

@@ -75,8 +75,6 @@ vi.mock('framer-motion', async () => {
   }
 })
 const t = (key: string) => ({ Home: '主页', Settings: '设置', Memory: '记忆' })[key] || key
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t, i18n: { language: 'en' } }) }))
-
 beforeEach(() => {
   vi.clearAllMocks()
   mock.books.mockResolvedValue({

@@ -3,9 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { AskUserOptions } from "@/components/chat/home/AskUserOptions";
 import type { AskUserCardData } from "@/components/chat/home/AskUserOptions";
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 
 const card = (overrides: Partial<AskUserCardData> = {}): AskUserCardData => ({
   payload: {

@@ -3,9 +3,6 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
 import { RegistryModelIdField } from "@/components/settings/RegistryControls";
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (s: string) => s }),
-}));
 
 /**
  * A provider that lists a lot of models. The bug this field replaced was

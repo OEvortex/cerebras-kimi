@@ -5,9 +5,6 @@ import { copyText } from "@/lib/clipboard";
 import en from "@/locales/en/app.json";
 
 let locale: Record<string, string> = en;
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => locale[key] ?? key }),
-}));
 vi.mock("@/lib/clipboard", () => ({ copyText: vi.fn() }));
 
 beforeEach(() => {

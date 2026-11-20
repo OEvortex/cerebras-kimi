@@ -8,7 +8,6 @@ import SessionViewerPanel, {
   type SessionViewerPanelProps,
 } from "@/components/chat/home/SessionViewerPanel";
 import { QuizFollowupProvider } from "@/context/QuizFollowupContext";
-import { initI18n } from "@/i18n/init";
 import { buildSessionActivity } from "@/lib/session-activity";
 
 // Responder names come from the shared rosters; these tests name them directly.
@@ -35,7 +34,6 @@ vi.mock("@/lib/session-api", async (importOriginal) => ({
   getSession: api.getSession,
 }));
 
-initI18n("en");
 beforeEach(() => { localStorage.clear(); updateRecoveryPrincipal({ enabled: false, authenticated: false }); });
 
 afterEach(() => {

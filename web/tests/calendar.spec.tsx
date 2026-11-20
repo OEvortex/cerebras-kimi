@@ -12,7 +12,6 @@ import type { Occurrence } from '@/features/calendar/transport/api'
 const language = { language: 'en' }
 const translate = (key: string, values?: Record<string, unknown>) =>
   key.replace(/{{(\w+)}}/g, (_, k) => String(values?.[k] ?? k))
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: translate, i18n: language }) }))
 vi.mock('@/hooks/useAuthStatus', () => ({
   useAuthStatus: () => ({
     loading: false,

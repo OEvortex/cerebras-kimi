@@ -10,12 +10,6 @@ vi.mock('@/lib/workspaces-api', async importOriginal => ({
   ...(await importOriginal<object>()),
   getWorkspaceResources: fixture.catalog,
 }))
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string, values?: Record<string, string>) =>
-      key.replace('{{resource}}', values?.resource ?? ''),
-  }),
-}))
 afterEach(cleanup)
 
 function Picker({ initial = inheritedWorkspaceResources() }: { initial?: WorkspaceResources }) {

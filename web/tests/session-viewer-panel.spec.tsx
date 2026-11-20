@@ -2,10 +2,8 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
 
 import SessionViewerPanel from "@/components/chat/home/SessionViewerPanel";
-import { initI18n } from "@/i18n/init";
 import { buildSessionActivity } from "@/lib/session-activity";
 
-initI18n("en");
 
 it("keeps an explicit return to the conversation inside the Activity view", async () => {
   const onClose = vi.fn();

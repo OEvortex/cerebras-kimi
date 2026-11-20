@@ -2,7 +2,6 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, expect, it, vi } from "vitest";
 import { PracticeSession } from "@/components/learning/practice/PracticeSession";
 import { PracticeImport } from "@/components/learning/practice/PracticeImport";
-import { initI18n } from "@/i18n/init";
 import * as api from "@/lib/practice-api";
 
 vi.mock("next/dynamic", () => ({
@@ -19,7 +18,6 @@ vi.mock("@/lib/practice-api", async importOriginal => ({
   commitPracticeImport: vi.fn(),
   downloadPracticeTemplate: vi.fn(),
 }));
-initI18n("en");
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(api.getPracticeQuestion).mockResolvedValue({

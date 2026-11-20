@@ -6,9 +6,7 @@ import {
   TurnCoordinationSettings,
 } from "@/features/runtime-status";
 import type { RuntimeStatusSnapshot } from "@/features/runtime-status/model";
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 
 const snapshot: RuntimeStatusSnapshot = {
   health: "healthy",

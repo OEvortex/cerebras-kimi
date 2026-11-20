@@ -14,9 +14,6 @@ const autoScroll = vi.hoisted(() => ({
   handleScroll: () => {},
   scrollToBottom: () => {},
 }))
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: translate, i18n: { language: 'en' } }),
-}))
 vi.mock('@/features/chat/trace', () => ({
   AssistantActivity: () => null,
   getTraceMeta: (event: StreamEvent) => event.metadata || {},

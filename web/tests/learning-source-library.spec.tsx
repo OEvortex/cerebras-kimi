@@ -1,7 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { expect, it, vi } from 'vitest'
 import { catalogTranslate, hydrateTopicSource, useTopicSourceLibrary } from '@/hooks/useTopicSourceLibrary'
-import { ensureLanguage, initI18n } from '@/i18n/init'
 import { apiFetch } from '@/shared/api/client'
 
 vi.mock('@/shared/api/client', () => ({ apiUrl: (path: string) => path, apiFetch: vi.fn() }))
@@ -64,8 +63,6 @@ it('reads the current workspace indexes and pins file expansion and book hydrati
 })
 
 it('reads fallback labels from the English catalog', async () => {
-  const i18n = initI18n('en')
-  await ensureLanguage('en')
   const t = i18n.getFixedT('en')
   const translate = catalogTranslate(t, false)
 

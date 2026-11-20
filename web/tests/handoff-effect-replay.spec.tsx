@@ -8,7 +8,6 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: runtime.replace }),
   useSearchParams: () => new URLSearchParams("code=example-code&next=%2Fprofile"),
 }));
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (value: string) => value }) }));
 
 describe("automatic handoff sign-in", () => {
   it.each([false, true])("completes a code sign-in with strict mode %s", async strict => {

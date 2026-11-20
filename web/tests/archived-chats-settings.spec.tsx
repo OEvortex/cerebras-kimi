@@ -13,9 +13,6 @@ const fixture = vi.hoisted(() => ({
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: fixture.push }),
 }));
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: translate, i18n: { language: "en" } }),
-}));
 function translate(key: string) {
   return key;
 }

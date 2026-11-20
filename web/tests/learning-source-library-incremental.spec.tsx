@@ -3,7 +3,6 @@ import { expect, it, vi } from 'vitest'
 import { useTopicSourceLibrary } from '@/hooks/useTopicSourceLibrary'
 import type { SourceCandidate, SourceLibrary } from '@/hooks/useTopicSourceLibrary'
 import { SourcesStep } from '@/components/space/learning/TopicWizardSteps'
-import { initI18n } from '@/i18n/init'
 import { apiFetch } from '@/shared/api/client'
 
 vi.mock('@/shared/api/client', () => ({ apiUrl: (path: string) => path, apiFetch: vi.fn() }))
@@ -18,7 +17,6 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/learning/books',
 }))
 
-initI18n('en')
 const translate = (cn: string, en: string) => en
 
 // One small, ready KB; every other kind empty. `practice` is whatever the test

@@ -14,7 +14,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-import { normalizeLanguage } from "@/i18n/languages";
+import { normalizeLanguage } from "@/context/languages";
 import { formatDate } from "@/lib/datetime";
 
 import { Toggle } from "@/components/settings/Toggle";

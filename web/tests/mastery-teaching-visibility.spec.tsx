@@ -3,7 +3,6 @@ import { describe, expect, it, vi } from "vitest";
 
 import { AssistantMessage } from "@/features/chat/messages/ChatMessageList";
 import type { StreamEvent } from "@/features/chat/model/protocol";
-import { initI18n } from "@/i18n/init";
 
 vi.mock("@/hooks/useVoiceAutoplay", () => ({
   useVoiceAutoplay: () => ({ autoplayEnabled: false }),
@@ -14,7 +13,6 @@ vi.mock("@/components/activity", async (original) => ({
   ...(await original<typeof import("@/components/activity")>()),
   ActivityFold: ({ open, children }: { open: boolean; children: React.ReactNode }) => <div hidden={!open}>{children}</div>,
 }));
-initI18n("en");
 
 const lesson = "A filter lets some particles through and retains others. Its selectivity depends on particle size.";
 const transition = "Apply that principle to a new example.";

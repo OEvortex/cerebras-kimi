@@ -5,7 +5,6 @@ import AppShell from '@/components/layout/AppShell'
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/learning' }))
 vi.mock('next/image', () => ({ default: () => null }))
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
 vi.mock('@/hooks/useDevice', () => ({ useDevice: () => ({ isMobile: false }) }))
 
 it('keeps the application navigation visible while a feature module loads', async () => {

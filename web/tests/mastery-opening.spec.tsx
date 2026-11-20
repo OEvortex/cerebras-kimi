@@ -13,9 +13,7 @@ import {
   setPendingLLMSelection,
 } from "@/lib/pending-llm-selection";
 import { MASTERY_OPENING_SCOPE } from "@/lib/mastery-mode";
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 const mocks = vi.hoisted(() => ({
   refresh: vi.fn(),
   revision: 0,

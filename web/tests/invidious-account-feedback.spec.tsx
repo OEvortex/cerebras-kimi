@@ -9,7 +9,6 @@ vi.mock("next/navigation", () => ({
   useParams: () => ({}),
 }));
 const t = (key: string) => key;
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t }) }));
 describe("Invidious callback feedback", () => {
   it("shows actionable failure and lets the learner dismiss it", () => {
     route.result = "authorization_expired";

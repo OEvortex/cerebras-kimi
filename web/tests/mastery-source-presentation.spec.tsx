@@ -5,7 +5,6 @@ import { MasterySourcePresentation } from "@/components/chat/home/MasterySourceP
 
 const apiFetch = vi.hoisted(() => vi.fn());
 vi.mock("@/shared/api/client", () => ({ apiFetch, apiUrl: (url: string) => url }));
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 
 const preview = "/api/knowledge-bases/course/source-page?document=lecture.pdf&page=7&digest=abc";
 function event(sources: unknown[]): StreamEvent {

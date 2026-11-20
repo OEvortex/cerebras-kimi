@@ -4,7 +4,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import KbVisualCoverage from "@/components/knowledge/KbVisualCoverage";
 import { apiFetch } from "@/shared/api/client";
 
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock("@/shared/api/client", () => ({ apiFetch: vi.fn(), apiUrl: (path: string) => path }));
 vi.mock("@/features/knowledge/api/files", () => ({ knowledgeBaseFilePath: (kb: string, name: string) => `/api/knowledge-bases/${kb}/files/${name}` }));
 

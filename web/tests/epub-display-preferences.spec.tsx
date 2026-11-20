@@ -1,9 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 
 const fixture = vi.hoisted(() => {
   const rendition = {

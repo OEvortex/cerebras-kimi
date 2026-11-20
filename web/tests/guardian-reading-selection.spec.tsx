@@ -2,7 +2,6 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import GuardianSettingsPage from "@/features/settings/sections/GuardianSettingsSection";
 import { getGuardianReport, listGuardianRelationships, type GuardianReport } from "@/lib/guardian-api";
-import { initI18n } from "@/i18n/init";
 vi.mock("@/lib/guardian-api", () => ({
   getGuardianReport: vi.fn(), listGuardianRelationships: vi.fn(), getGuardianMaterials: vi.fn(),
   getGuardianRestrictions: vi.fn(), resetLearnerCredentials: vi.fn(), revokeMyGuardianRelationship: vi.fn(),
@@ -10,7 +9,6 @@ vi.mock("@/lib/guardian-api", () => ({
 vi.mock("@/features/settings/store/useStagedSettings", () => ({
   useStagedSettings: <T,>(_key: string, live: T, setLive: (value: T) => void) => [live, setLive],
 }));
-initI18n("en");
 afterEach(cleanup);
 beforeEach(() => {
   vi.clearAllMocks();

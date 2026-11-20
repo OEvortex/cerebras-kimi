@@ -1,13 +1,11 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, expect, it, vi } from 'vitest'
 import { MessageSquare, Microscope } from 'lucide-react'
-import { initI18n } from '@/i18n/init'
 import PageCustomizeDialog from '@/components/customization/PageCustomizeDialog'
 import { DEFAULT_PAGE_CUSTOMIZATION, type PageCustomization } from '@/lib/page-customization'
 import StarterSuggestions from '@/components/chat/home/StarterSuggestions'
 import NewLearningPage from '@/components/learning/NewLearningPage'
 
-initI18n('en')
 const harness = vi.hoisted(() => ({
   save: vi.fn(),
   value: null as PageCustomization | null,

@@ -4,7 +4,6 @@ import NoteTopBar from '@/features/notes/components/NoteTopBar'
 import { pageHasFlashcards } from '@/features/notes/model/flashcards'
 import type { NoteBlock, NotePage } from '@/lib/notes-api'
 
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
 vi.mock('next/link', () => ({
   default: ({ href, children, ...props }: { href: string; children: React.ReactNode }) => (
     <a href={href} {...props}>

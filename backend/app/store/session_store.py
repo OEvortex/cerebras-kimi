@@ -161,7 +161,6 @@ class SessionStore:
     def __init__(self, settings: Settings) -> None:
         self._settings = settings
         self._settings.data_dir.mkdir(parents=True, exist_ok=True)
-        self._settings.sessions_dir.mkdir(parents=True, exist_ok=True)
         self._db_path = settings.sessions_db
         self._fts = True
         self._last_total = 0

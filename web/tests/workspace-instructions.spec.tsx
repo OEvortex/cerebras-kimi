@@ -14,7 +14,6 @@ vi.mock('@/components/workspaces/WorkspaceResourcePicker', () => ({
 vi.mock('@/components/workspaces/SystemWorkspaceSnapshot', () => ({
   SystemWorkspaceSnapshot: () => null,
 }))
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
 afterEach(cleanup)
 beforeEach(() => {
   vi.clearAllMocks()

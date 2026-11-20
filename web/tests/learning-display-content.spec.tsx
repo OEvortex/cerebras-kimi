@@ -12,11 +12,9 @@ import { LearningText } from '@/components/common/LearningText'
 import SimpleMarkdownRenderer from '@/components/common/SimpleMarkdownRenderer'
 import RichMarkdownRenderer from '@/components/common/RichMarkdownRenderer'
 import { MasteryQuestionCard } from '@/components/chat/home/MasteryQuestionCard'
-import { initI18n } from '@/i18n/init'
 vi.mock('next/dynamic', () => ({
   default: () => (props: MarkdownRendererProps) => <SimpleMarkdownRenderer {...props} />,
 }))
-initI18n('en')
 it.each([SimpleMarkdownRenderer, RichMarkdownRenderer])(
   'opts in each markdown renderer without scaling traces or reader defaults',
   Renderer => {

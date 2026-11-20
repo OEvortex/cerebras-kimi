@@ -16,9 +16,6 @@ vi.mock("@/shared/api/client", () => ({
 }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 const t = (key: string) => key;
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t, i18n: { language: "en" } }),
-}));
 vi.mock("@/context/AppShellContext", () => ({
   useAppShell: () => ({
     codeBlockTheme: "github",

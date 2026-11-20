@@ -9,9 +9,6 @@ const fixture = vi.hoisted(() => ({
   list: vi.fn(),
 }));
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: fixture.t }),
-}));
 
 vi.mock("@/features/knowledge/api/folders", () => ({
   listLinkedFolders: fixture.list,

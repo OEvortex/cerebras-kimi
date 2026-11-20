@@ -4,9 +4,6 @@ import { afterEach, expect, it, vi } from "vitest";
 import ChatSessionMenu from "@/features/chat/components/ChatSessionMenu";
 import type { ChatWorkspaceRegistration } from "@/lib/workspaces-api";
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key, i18n: { language: "en" } }),
-}));
 
 const api = vi.hoisted(() => ({
   updateSessionOrganization: vi.fn(),

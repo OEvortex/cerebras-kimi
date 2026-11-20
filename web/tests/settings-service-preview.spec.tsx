@@ -7,7 +7,6 @@ import type { Catalog } from '@/lib/model-catalog-types'
 const mock = vi.hoisted(() => ({ draft: {} as Catalog, fetch: vi.fn() }))
 vi.mock('@/features/settings/store/SettingsStore', () => ({ useSettings: () => ({ draft: mock.draft }) }))
 vi.mock('@/shared/api/client', () => ({ apiUrl: (s: string) => s, apiFetch: (...args: unknown[]) => mock.fetch(...args) }))
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (s: string) => s }) }))
 const profile = { id: 'p', name: 'Provider', binding: 'minimax', api_version: '', api_key: 'secret', base_url: 'https://example.test', models: [{ id: 'm', name: 'Model', model: 'test-model', voice: 'saved' }] }
 function stream(events: object[]) {
   return { ok: true, body: new ReadableStream({ start(c) { for (const event of events) c.enqueue(new TextEncoder().encode(JSON.stringify(event) + '\n')); c.close() } }) }

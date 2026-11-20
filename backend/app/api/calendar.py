@@ -2,7 +2,7 @@
 
 Mounted at ``/api/calendar``. The wire contract follows RFC 5545: all-day
 events carry plain dates with an exclusive end, timed events carry UTC
-instants. Everything lives in one SQLite file under ``data/calendar``.
+instants. Everything lives in the shared ``data/deeptutor.sqlite3`` database.
 """
 
 from __future__ import annotations

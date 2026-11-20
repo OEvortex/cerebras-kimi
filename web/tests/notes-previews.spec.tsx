@@ -4,7 +4,6 @@ import NoteBlockPreview from '@/features/notes/components/NoteBlockPreview'
 import NoteMath from '@/features/notes/components/NoteMath'
 import { blockPreviewKinds } from '@/features/notes/model/block-previews'
 
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
 afterEach(cleanup)
 
 describe('notebook format previews', () => {

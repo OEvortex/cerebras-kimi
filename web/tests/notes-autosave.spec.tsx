@@ -12,7 +12,6 @@ import {
 } from '@/lib/notes-api'
 import type { NotePage, NoteSuggestion } from '@/lib/notes-api'
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }))
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
 vi.mock('@/hooks/useAuthStatus', () => ({
   useAuthStatus: () => ({ statusAvailable: true, loading: false, enabled: false }),
 }))

@@ -1,17 +1,15 @@
 "use client";
 
-import type { ResponseLanguage } from "@/i18n/languages";
-
-import { browserStorage } from "@/shared/storage";
-import { activeWorkspaceId } from "@/lib/workspace-scope";
 import {
   normalizeLanguage as normalizeAppLanguage,
   type AppLanguage,
-} from "@/i18n/languages";
+  type ResponseLanguage,
+} from "@/context/languages";
 
-export type { AppLanguage } from "@/i18n/languages";
+import { browserStorage } from "@/shared/storage";
+import { activeWorkspaceId } from "@/lib/workspace-scope";
 
-export type { ResponseLanguage } from "@/i18n/languages";
+export type { AppLanguage, ResponseLanguage } from "@/context/languages";
 
 const SUPPORTED_RESPONSE_LANGUAGE_CODES: readonly ResponseLanguage[] = [
   "en",

@@ -1,9 +1,7 @@
 import { act, render } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 
 /**
  * Smoke coverage for the state pool `StandaloneComposer` owns behind the

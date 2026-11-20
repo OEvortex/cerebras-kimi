@@ -36,10 +36,6 @@ vi.mock("@/lib/pdfjs-loader", () => ({
   }),
 }));
 
-vi.mock("react-i18next", () => {
-  const t = (key: string) => key;
-  return { useTranslation: () => ({ t }) };
-});
 
 /**
  * jsdom ships no canvas backend, and the shared setup makes `getContext`

@@ -7,9 +7,6 @@ import {
   type KnowledgeBase,
 } from "@/lib/knowledge-helpers";
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}));
 vi.mock("@/components/knowledge/KbFilesTab", () => ({
   default: () => <div>File browser</div>,
 }));

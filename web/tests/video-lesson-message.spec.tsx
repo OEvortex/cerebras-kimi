@@ -4,9 +4,7 @@ import { ChatStateAdapterProvider, useChatStateAdapter } from "@/features/chat/C
 import { AssistantMessage } from "@/features/chat/messages/ChatMessageList";
 import type { StreamEvent } from "@/features/chat/model/protocol";
 import { compactTracePreview } from "@/features/chat/trace/memory";
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 const transport = vi.hoisted(() => ({ emit: undefined as undefined | ((e: StreamEvent) => void) }));
 vi.mock("@/features/chat/transport/UnifiedTurnClient", () => ({
   UnifiedTurnClient: class {

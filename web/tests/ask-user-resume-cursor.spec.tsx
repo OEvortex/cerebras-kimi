@@ -11,9 +11,7 @@ import {
   ChatStateAdapterProvider,
   useChatStateAdapter,
 } from "@/features/chat/ChatStateAdapter";
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 
 // Keep the real adapter and both transport layers: the bug only appears
 // when submitting an answer copies the session cursor back into the socket.

@@ -38,12 +38,6 @@ vi.mock("@/shared/api/client", () => ({
   apiUrl: (s: string) => s,
   apiFetch: (...args: unknown[]) => mocks.fetch(...args),
 }));
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({
-    t: (s: string, args?: Record<string, unknown>) =>
-      s.replace(/{{(\w+)}}/g, (_, name) => String(args?.[name] ?? name)),
-  }),
-}));
 // The embedding editor mounts the knowledge-base usage panel, which fetches.
 vi.mock("@/features/knowledge/api/engines", async (importOriginal) => ({
   ...(await importOriginal<object>()),

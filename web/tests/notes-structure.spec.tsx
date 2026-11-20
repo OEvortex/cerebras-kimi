@@ -5,7 +5,6 @@ import { pageDescendants } from '@/features/notes/model/page-tree'
 import { moveNoteBlock } from '@/features/notes/model/move-block'
 import type { NoteBlock, NoteSummary } from '@/lib/notes-api'
 
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string, vars?: {page: string}) => key.replace('{{page}}', vars?.page || '') }) }))
 const block = (id: string, children: NoteBlock[] = []): NoteBlock => ({ id, type: 'paragraph', props: {}, content: [{type: 'text', text: id, styles: {}}], children })
 const pages = [
   {id: 'root', title: 'Root', parent_id: null},

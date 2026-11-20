@@ -3,9 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { ChatMessageList } from '@/features/chat/messages'
 import type { StreamEvent } from '@/features/chat/model/protocol'
 import { compactTracePreview } from '@/features/chat/trace/memory'
-import { initI18n } from '@/i18n/init'
 
-initI18n('en')
 
 const preamble = 'I will check the course material.\n\n'
 const teaching = 'Reducers accumulate values instead of overwriting history.'

@@ -25,7 +25,6 @@ const fixtures = vi.hoisted(() => ({
   llmOptions: vi.fn(),
   t: (key: string) => key,
 }));
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: fixtures.t }) }));
 vi.mock("@/features/knowledge/api/engines", () => ({
   getEngineModelOptions: fixtures.models,
   getEmbeddingUsage: fixtures.usage,

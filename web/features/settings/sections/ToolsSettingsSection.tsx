@@ -78,20 +78,9 @@ const CAPABILITY_LABELS: Record<string, { zh: string; en: string }> = {
 export default function ToolsSettingsPage() {
   
   const { language, draftRevision } = useSettings();
-  const hintLanguage = language === "zh" ? "en" : "en";
   const localizedHints = useCallback((tool: BuiltinTool): ToolHints => {
-    const hints = tool.hints[language] ?? tool.hints[hintLanguage] ?? tool.hints.en;
-    if (language === "en" || language === "zh" || tool.hints[language]) return hints;
-    const translate = (text: string) => text ? (text) : text;
-    return { ...hints,
-      short_description: translate(hints.short_description),
-      when_to_use: translate(hints.when_to_use),
-      input_format: translate(hints.input_format),
-      guideline: translate(hints.guideline),
-      note: translate(hints.note),
-      aliases: hints.aliases.map(alias => ({ ...alias, description: translate(alias.description) })),
-    };
-  }, [language, hintLanguage]);
+    return tool.hints.en;
+  }, []);
   const [tools, setTools] = useState<BuiltinTool[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -135,7 +124,7 @@ export default function ToolsSettingsPage() {
 
   const sections = useMemo<ToolSection[] | null>(() => {
     if (!tools) return null;
-    const zh = language === "zh";
+    const zh = false;
     // Buckets: toggleable (Experience Enhancement) first, then locked-on built-ins, then one
     // section per capability for its owned tools. Backend order is preserved
     // within each bucket (mirrors USER_TOGGLEABLE_TOOL_NAMES / the
@@ -235,7 +224,7 @@ export default function ToolsSettingsPage() {
         }),
       }))
       .filter((section) => section.tools.length > 0);
-  }, [hintLanguage, localizedHints, query, sections]);
+  }, [localizedHints, query, sections]);
 
   const toggleExpanded = (name: string) => {
     setExpanded((prev) => {
@@ -336,17 +325,10 @@ export default function ToolsSettingsPage() {
                     const availabilityCopy = !isAvailable
                       ? toolAvailabilityCopy(
                           tool.unavailable_reason,
-                          language === "zh" ? "en" : "en",
+                          "en",
                         )
                       : null;
-                    const availability =
-                      availabilityCopy && language !== "zh"
-                        ? {
-                            ...availabilityCopy,
-                            badge: (availabilityCopy.badge),
-                            detail: (availabilityCopy.detail),
-                          }
-                        : availabilityCopy;
+                    const availability = availabilityCopy;
                     const isEnabled = toolEffectiveEnabled(
                       tool.toggleable ? enabled.has(tool.name) : true,
                       isAvailable,
@@ -393,9 +375,7 @@ export default function ToolsSettingsPage() {
                                 )}
                                 {isComingSoon && (
                                   <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--muted)]/40 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--muted-foreground)]">
-                                    {language === "zh"
-                                      ? "Coming soon"
-                                      : "Coming soon"}
+                                    {"Coming soon"}
                                   </span>
                                 )}
                                 {availability && !isComingSoon && (
@@ -421,9 +401,7 @@ export default function ToolsSettingsPage() {
                                       href={availability.href}
                                       className="font-medium underline underline-offset-2"
                                     >
-                                      {language === "zh"
-                                        ? "Open settings"
-                                        : "Open settings"}
+                                      {"Open settings"}
                                     </Link>
                                   )}
                                 </p>
@@ -444,7 +422,7 @@ export default function ToolsSettingsPage() {
                                   /* locked */
                                 }}
                                 label={
-                                  language === "zh" ? "Coming soon" : "Coming soon"
+                                  "Coming soon"
                                 }
                               />
                             ) : !isAvailable ? (

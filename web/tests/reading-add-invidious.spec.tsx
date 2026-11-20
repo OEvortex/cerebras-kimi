@@ -11,9 +11,6 @@ const mock = vi.hoisted(() => ({
   listLibrary: vi.fn(),
 }));
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}));
 
 vi.mock("@/components/watching/WatchingBrowser", () => ({
   WatchingBrowser: ({ onSelectUrl, onDismiss }: {

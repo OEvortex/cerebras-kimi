@@ -2,7 +2,6 @@ import { render, screen } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
 
 import { CommandPalette } from "@/components/sidebar/CommandPalette";
-import { initI18n } from "@/i18n/init";
 import type { SessionSummary } from "@/lib/session-api";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
@@ -20,7 +19,6 @@ vi.mock("@/hooks/usePartnerNavigation", () => ({
   }),
 }));
 
-initI18n("en");
 
 Element.prototype.scrollIntoView = vi.fn();
 

@@ -1,5 +1,4 @@
 import type React from "react";
-import i18n from "i18next";
 import { NO_LLM_ACCESS, type StreamEvent } from "@/features/chat/model/protocol";
 import type { UnifiedTurnClient } from "@/features/chat/transport/UnifiedTurnClient";
 import {

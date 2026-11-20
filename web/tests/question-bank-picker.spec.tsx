@@ -3,7 +3,6 @@ import { beforeEach, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import QuestionBankPicker, { type SelectedQuestionEntry } from "@/components/chat/QuestionBankPicker";
 import { listNotebookEntries, type NotebookEntry } from "@/lib/notebook-api";
-import { initI18n } from "@/i18n/init";
 
 vi.mock("@/components/common/PickerShell", () => ({
   default: ({ open, children }: { open: boolean; children: ReactNode }) => open ? <div>{children}</div> : null,
@@ -16,7 +15,6 @@ vi.mock("@/lib/notebook-api", () => ({
   ]),
   listNotebookEntries: vi.fn(),
 }));
-initI18n("en");
 const entry = (id: number, material = "A"): NotebookEntry => ({
   id, session_id: "", session_title: "", turn_id: "", question_id: String(id), question: `Question ${id}`,
   question_type: "choice", options: {}, correct_answer: "", explanation: "", difficulty: "easy",

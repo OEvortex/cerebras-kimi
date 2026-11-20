@@ -4,9 +4,6 @@ import { expect, it, vi } from "vitest";
 
 import { ComposerInput } from "@/components/chat/home/ComposerInput";
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}));
 
 const languageOptions = [
   { value: "zh", label: "简体中文" },

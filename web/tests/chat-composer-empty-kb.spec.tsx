@@ -6,9 +6,6 @@ import { Database, MessageSquare } from "lucide-react";
 import ChatComposer from "@/components/chat/home/ChatComposer";
 import type { CapabilityDef } from "@/features/capabilities/presentation";
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}));
 
 vi.mock("@/lib/workspace-drafts", () => ({
   currentWorkspaceDraftLocation: () => ({ workspaceId: "", pathname: "/chat" }),

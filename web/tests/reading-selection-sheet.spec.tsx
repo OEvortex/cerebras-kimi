@@ -2,9 +2,7 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 
 const device = vi.hoisted(() => ({ isMobile: false }));
 

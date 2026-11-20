@@ -7,9 +7,6 @@ const fixture = vi.hoisted(() => ({
   sync: vi.fn(),
 }));
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: fixture.t }),
-}));
 
 vi.mock("@/features/knowledge/api/catalog", async (original) => ({
   ...(await original<typeof import("@/features/knowledge/api/catalog")>()),

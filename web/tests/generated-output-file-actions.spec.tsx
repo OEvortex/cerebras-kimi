@@ -8,12 +8,6 @@ import {
 
 const mocks = vi.hoisted(() => ({ fetch: vi.fn() }))
 vi.mock('@/shared/api/client', () => ({ apiFetch: (...args: unknown[]) => mocks.fetch(...args) }))
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (value: string) => value,
-  }),
-}))
-
 const url = `/files/workspace-items/ws_${'a'.repeat(32)}/wsi_${'b'.repeat(32)}?dt_workspace=course-one`
 const attachment = {
   generated: true,

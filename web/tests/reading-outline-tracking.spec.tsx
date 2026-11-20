@@ -2,9 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { ReaderPane } from "@/components/reading/ReaderPane";
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 
 const material = {
   material_id: "m-1",

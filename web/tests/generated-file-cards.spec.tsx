@@ -3,7 +3,6 @@ import { describe, expect, it, vi } from "vitest";
 import { GeneratedFileCards } from "@/features/chat/messages/ChatMessageList";
 import type { MessageAttachment } from "@/features/chat/ChatStateAdapter";
 
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 
 function image(path: string, id: string): MessageAttachment {
   return {

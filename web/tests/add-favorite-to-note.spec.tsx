@@ -5,7 +5,6 @@ import AddToNote from '@/features/notes/components/AddToNote'
 const mocks = vi.hoisted(() => ({
   get: vi.fn(), save: vi.fn(), request: vi.fn(), parse: vi.fn(),
 }))
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
 vi.mock('@/lib/notes-api', () => ({
   listNotes: async () => ({ documents: [{ id: 'legacy', title: 'Legacy page' }] }),
   createNote: vi.fn(), getNote: mocks.get, saveNote: mocks.save, noteRequest: mocks.request,

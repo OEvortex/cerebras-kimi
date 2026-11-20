@@ -4,7 +4,6 @@ import { expect, it, vi } from 'vitest';
 import ModelSelector from '@/components/chat/home/ModelSelector';
 import type { LLMOption } from '@/lib/llm-options';
 
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock('@/hooks/use-linger-expand', () => ({
   useLingerExpand: () => ({ expanded: true, linger: vi.fn(), triggerProps: {} }),
 }));

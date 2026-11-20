@@ -9,13 +9,6 @@ import {
   type UsageSummary,
 } from '@/features/chat/messages/usage-summary'
 import type { StreamEvent } from '@/features/chat/model/protocol'
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string, vars?: Record<string, unknown>) =>
-      key.replace(/{{(.*?)}}/g, (_, k) => String(vars?.[k] ?? k)),
-    i18n: { language: 'en' },
-  }),
-}))
 const turn: UsageSummary = {
   total_tokens: 140,
   prompt_tokens: 100,

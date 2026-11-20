@@ -33,9 +33,6 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mocks.push }),
 }));
 const t = (key: string, values?: Record<string, unknown>) => key.replace(/{{(.*?)}}/g, (_, name) => String(values?.[name] ?? name));
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t, i18n: { language: "en" } }),
-}));
 vi.mock("@/lib/theme", async () => {
   const actual = await vi.importActual<typeof import("@/lib/theme")>("@/lib/theme");
   return {

@@ -25,11 +25,6 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({
-    t: fixture.t,
-  }),
-}));
 
 vi.mock("@/lib/notifications", () => ({
   notify: fixture.notify,

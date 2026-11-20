@@ -21,9 +21,6 @@ vi.mock("next/navigation", () => ({ useRouter: () => mocks.router }));
 function translate(key: string) {
   return key;
 }
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: translate }),
-}));
 const shell = {
   codeBlockTheme: "github",
   codeBlockShowLineNumbers: true,

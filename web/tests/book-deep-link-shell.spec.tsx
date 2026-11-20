@@ -2,9 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import BookPage from "@/app/(workspace)/learning/books/BooksRoute";
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 
 // A deep book URL, with the book's data still in flight.
 vi.mock("next/navigation", () => ({

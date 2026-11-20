@@ -67,7 +67,6 @@ const fixture = vi.hoisted(() => {
     ],
   };
 });
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: fixture.t }) }));
 vi.mock("@/hooks/useLLMOptions", () => ({
   useLLMOptions: () => ({
     options: fixture.options,

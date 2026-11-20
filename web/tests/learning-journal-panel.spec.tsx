@@ -9,7 +9,6 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/space/journal",
   useSearchParams: () => new URLSearchParams({ dt_workspace: route.workspace }),
 }));
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock("@/lib/learning-journal-api", () => ({ getLearningJournal: vi.fn() }));
 const empty: LearningJournal = {
   version: 1, updated_at: "", injected_context: "",

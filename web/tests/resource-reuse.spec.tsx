@@ -9,9 +9,6 @@ import {
   DEFAULT_RESOURCE_REUSE,
   retainedKnowledgeBases,
 } from "@/lib/resource-reuse";
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}));
 afterEach(cleanup);
 function Harness({ scope, message }: { scope: string; message?: number }) {
   const reuse = useResourceReusePolicy(scope, message);

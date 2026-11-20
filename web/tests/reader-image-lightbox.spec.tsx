@@ -6,10 +6,6 @@ import { ReaderImageLightbox } from "@/components/reading/ReaderImageLightbox";
 import { EpubDocumentView } from "@/components/reading/EpubDocumentView";
 import { allowsEpubPageTurn } from "@/lib/epub-page-turn";
 
-vi.mock("react-i18next", () => {
-  const t = (key: string) => key;
-  return { useTranslation: () => ({ t }) };
-});
 
 // The text reader loads its unit and its embedded-picture index over the API;
 // this file only cares about the pictures already in the DOM. The EPUB reader

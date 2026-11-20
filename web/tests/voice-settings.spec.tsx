@@ -16,13 +16,6 @@ vi.mock('@/shared/api/client', () => ({
   apiUrl: (url: string) => url,
   apiFetch: (...args: unknown[]) => mock.fetch(...args),
 }))
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (s: string, opts?: Record<string, unknown>) =>
-      opts ? s.replace(/\{\{(\w+)\}\}/g, (_m, key: string) => String(opts[key] ?? '')) : s,
-    i18n: { language: 'en' },
-  }),
-}))
 vi.mock('@/hooks/useVoiceAutoplay', () => ({
   useVoiceAutoplay: () => ({
     autoplayEnabled: false,

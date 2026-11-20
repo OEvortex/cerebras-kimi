@@ -5,9 +5,6 @@ import OfficePdfPreview from "@/components/chat/preview/previewers/OfficePdfPrev
 const fixture = vi.hoisted(() => ({ apiFetch: vi.fn() }));
 
 vi.mock("@/shared/api/client", () => ({ apiFetch: fixture.apiFetch }));
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}));
 vi.mock("@/components/chat/preview/previewers/PdfPreview", () => ({
   default: ({ url, filename }: { url: string; filename: string }) => (
     <div data-testid="pdf-preview" data-url={url}>

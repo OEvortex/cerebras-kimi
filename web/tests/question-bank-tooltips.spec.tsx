@@ -3,9 +3,6 @@ import { expect, it, vi } from "vitest";
 
 import CategoryManager from "@/components/space/question-bank/CategoryManager";
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (value: string) => value }),
-}));
 
 it("names tag actions and exposes their hints without native titles", async () => {
   render(

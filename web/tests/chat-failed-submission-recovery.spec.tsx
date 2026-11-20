@@ -6,7 +6,6 @@ import {
   useChatStateAdapter,
 } from "@/features/chat/ChatStateAdapter";
 import { buildVisiblePath } from "@/lib/message-branches";
-import { initI18n } from "@/i18n/init";
 import { updateRecoveryPrincipal } from "@/lib/recovery-principal";
 import * as notifications from "@/lib/notifications";
 import {
@@ -25,7 +24,6 @@ import {
   SUBMIT_CONNECT_RETRY_LIMIT,
 } from "@/lib/send-retry";
 
-initI18n("en");
 
 const GIVE_UP_MS =
   SUBMIT_CONNECT_RETRY_LIMIT * SUBMIT_CONNECT_RETRY_INTERVAL_MS + 400;

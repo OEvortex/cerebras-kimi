@@ -24,9 +24,6 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: fixture.push }),
 }));
 vi.mock("next/image", () => ({ default: () => null }));
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key, i18n: { language: "en" } }),
-}));
 vi.mock("@/context/AppShellContext", () => ({
   useAppShell: () => ({
     sidebarCollapsed: false,

@@ -22,9 +22,6 @@ const fixture = vi.hoisted(() => ({
   destroyedCharts: 0,
 }));
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: fixture.t }),
-}));
 
 vi.mock("mermaid", () => ({
   default: {

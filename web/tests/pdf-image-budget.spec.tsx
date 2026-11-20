@@ -20,7 +20,6 @@ import { MAX_PAGE_CANVAS_PIXELS } from "@/lib/reading-zoom";
  * bitmap it will drop.
  */
 
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: (k: string) => k }) }));
 
 // A 2x display, which is where the reported allocation came from.
 vi.mock("@/lib/pdfjs-loader", () => ({ outputScale: () => 2 }));

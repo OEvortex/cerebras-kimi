@@ -6,9 +6,7 @@ import {
   selectAttachmentProcessing,
   type AttachmentProcessingItem,
 } from "@/features/chat/selectors/attachment-processing";
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 
 function progress(
   attachmentId: string,

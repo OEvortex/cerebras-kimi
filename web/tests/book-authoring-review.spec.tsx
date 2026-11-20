@@ -1,13 +1,11 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
-import { initI18n } from "@/i18n/init";
 import BookStructureEditor from "@/app/(workspace)/learning/books/components/BookStructureEditor";
 import BookEditReview from "@/app/(workspace)/learning/books/components/BookEditReview";
 import type { BookDetail } from "@/lib/book-types";
 
 const api = vi.hoisted(() => ({ previewEdit: vi.fn(), applyEdit: vi.fn(), listEdits: vi.fn() }));
 vi.mock("@/lib/book-api", () => ({ bookApi: api }));
-initI18n("en");
 afterEach(() => { cleanup(); vi.resetAllMocks(); });
 const proposal = { id: "edit_one", status: "proposed", expected_revision: 1, diff: "+ New section content", edit: { title: "Limits" } };
 const detail = { book: { id: "bk", revision: 1 }, spine: { chapters: [{ id: "ch_0", title: "Chapter", content_type: "theory" }] }, pages: [{ id: "pg_0", title: "Section", content_type: "theory" }] } as unknown as BookDetail;

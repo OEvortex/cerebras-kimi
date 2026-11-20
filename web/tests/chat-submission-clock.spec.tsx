@@ -5,9 +5,7 @@ import {
   useChatStateAdapter,
 } from "@/features/chat/ChatStateAdapter";
 import { StreamingStatus } from "@/features/chat/trace";
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 const transport = vi.hoisted(() => ({
   close: undefined as undefined | (() => void),
   emit: undefined as

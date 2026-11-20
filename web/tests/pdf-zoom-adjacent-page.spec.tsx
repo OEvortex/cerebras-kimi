@@ -68,10 +68,6 @@ vi.mock("@/lib/pdf-page-geometry", async (importOriginal) => {
   };
 });
 
-vi.mock("react-i18next", () => {
-  const t = (key: string) => key;
-  return { useTranslation: () => ({ t }) };
-});
 
 const GAP = 16;
 const ROOT_TOP = 80;

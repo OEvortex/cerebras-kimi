@@ -4,9 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { StreamEvent } from "@/features/chat/model/protocol";
 import { AssistantActivity } from "@/features/chat/trace";
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 
 /**
  * A finished turn keeps only a compact preview in memory, and that preview

@@ -79,7 +79,6 @@ export async function selectWorkspace(
     await options?.beforeNavigate?.()
   } catch {
     const { notify } = await import('./notifications')
-    const { default: i18n } = await import('i18next')
     notify("Could not save the draft. Free browser storage before switching workspaces.", { tone: 'error' })
     window.dispatchEvent(new CustomEvent('deeptutor:workspace-switch-error'))
     return

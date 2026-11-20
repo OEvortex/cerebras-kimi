@@ -4,7 +4,6 @@ import OrganizedSessionList from '@/components/sessions/OrganizedSessionList'
 import { buildSidebarEntries } from '@/lib/sidebar-entries'
 import type { SessionSummary } from '@/lib/session-api'
 
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key, i18n: { language: 'en' } }) }))
 const rows: SessionSummary[] = Array.from({ length: 8 }, (_, index) => ({
   id: `chat-${index}`, session_id: `chat-${index}`, title: `Lesson ${index}`,
   created_at: 1, updated_at: 1, message_count: 2, last_message: '',

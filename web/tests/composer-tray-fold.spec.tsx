@@ -3,7 +3,6 @@ import { beforeEach, expect, it, vi } from 'vitest'
 import { ComposerTray } from '@/components/chat/home/ComposerTray'
 import { CHAT_CAPABILITIES } from '@/features/capabilities/presentation'
 
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
 vi.mock('@/lib/personas-api', () => ({ listPersonas: async () => [] }))
 vi.mock('next/link', () => ({
   default: ({ href, children, ...props }: { href: string; children: React.ReactNode }) => (

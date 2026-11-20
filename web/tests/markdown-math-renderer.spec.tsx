@@ -3,10 +3,8 @@ import { describe, expect, it } from "vitest";
 
 import QuizBlock from "@/app/(workspace)/learning/books/components/blocks/QuizBlock";
 import MarkdownRenderer from "@/components/common/MarkdownRenderer";
-import { initI18n } from "@/i18n/init";
 import type { Block } from "@/lib/book-types";
 
-initI18n("zh");
 
 describe("math Markdown rendering", () => {
   it("renders the plain inline formulas from the reported chat response with KaTeX", async () => {

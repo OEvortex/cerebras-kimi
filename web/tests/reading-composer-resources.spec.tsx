@@ -3,9 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ResourceSelection } from "@/features/chat/ChatStateAdapter";
 import type { ComposerResourceCatalog } from "@/hooks/useComposerResources";
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 
 const captured = vi.hoisted(() => ({
   props: null as {

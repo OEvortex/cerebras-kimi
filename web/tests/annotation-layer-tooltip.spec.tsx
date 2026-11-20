@@ -4,9 +4,6 @@ import { expect, it, vi } from "vitest";
 import { AnnotationLayer } from "@/components/reading/AnnotationLayer";
 import type { AnnotationItem } from "@/lib/reading-api";
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (value: string) => value }),
-}));
 
 it("keeps a highlight's hit area while exposing its note through the shared tooltip", async () => {
   const annotation: AnnotationItem = {

@@ -6,12 +6,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TextUnitView } from "@/components/reading/TextUnitView";
 import { getMaterialMedia, getUnitText } from "@/lib/reading-api";
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({
-    t: (value: string, options?: { unit?: string }) =>
-      value.replace("{{unit}}", options?.unit ?? ""),
-  }),
-}));
 vi.mock("@/lib/reading-api", () => ({
   getUnitText: vi.fn(),
   getMaterialMedia: vi.fn(),

@@ -15,8 +15,6 @@ vi.mock('@/hooks/useVoiceAutoplay', () => ({
   useVoiceAutoplay: () => ({ autoplayEnabled: false }),
 }))
 vi.mock('@/components/chat/home/ResponderList', () => ({ default: () => null }))
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (s: string) => s }) }))
-
 class MockAudio {
   src = ''
   onended: (() => void) | null = null

@@ -3,9 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { ArrowRight } from "lucide-react";
 import { describe, expect, it, vi } from "vitest";
 
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 
 const api = vi.hoisted(() => ({
   fetchExport: vi.fn(),

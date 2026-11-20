@@ -4,7 +4,6 @@ import { ServerFolderPicker } from '@/components/workspaces/ServerFolderPicker'
 
 const fixture = vi.hoisted(() => ({ browse: vi.fn() }))
 vi.mock('@/lib/workspaces-api', () => ({ browseServerFolders: fixture.browse }))
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
 afterEach(() => {
   cleanup()
   vi.resetAllMocks()

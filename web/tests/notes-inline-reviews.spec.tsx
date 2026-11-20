@@ -7,7 +7,6 @@ import NoteInlineReviews from '@/features/notes/components/NoteInlineReviews'
 import type { NotesEditor } from '@/features/notes/components/NoteEditor'
 import type { NoteSuggestion } from '@/lib/notes-api'
 
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
 vi.mock('@/features/notes/components/NoteSuggestionContent', () => ({
   default: ({ markdown }: { markdown: string }) => <p>{markdown}</p>,
 }))

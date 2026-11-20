@@ -1,11 +1,9 @@
 import { render } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { initI18n } from "@/i18n/init";
 import type { ResourceSelection } from "@/features/chat/ChatStateAdapter";
 import type { ComposerResourceCatalog } from "@/hooks/useComposerResources";
 
-initI18n("en");
 
 const captured = vi.hoisted(() => ({
   props: null as {

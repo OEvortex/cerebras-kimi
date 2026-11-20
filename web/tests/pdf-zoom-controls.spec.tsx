@@ -3,10 +3,6 @@ import { describe, expect, it, vi } from "vitest";
 import { PdfZoomControls } from "@/components/reading/PdfZoomControls";
 import type { PdfZoomPreference } from "@/lib/reading-zoom";
 
-vi.mock("react-i18next", () => {
-  const t = (key: string) => key;
-  return { useTranslation: () => ({ t }) };
-});
 
 function controls(overrides: Partial<Parameters<typeof PdfZoomControls>[0]> = {}) {
   const props = {

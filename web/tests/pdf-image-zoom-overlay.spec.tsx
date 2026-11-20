@@ -2,14 +2,6 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { PdfImageZoomOverlay } from '@/components/reading/PdfImageZoomOverlay'
 
-vi.mock('react-i18next', () => {
-  // Interpolate `{{n}}` the way i18next does, so the label reads as the
-  // component renders it rather than as the raw template.
-  const t = (key: string, options?: Record<string, unknown>) =>
-    options && 'n' in options ? key.replace('{{n}}', String(options.n)) : key
-  return { useTranslation: () => ({ t }) }
-})
-
 /**
  * The picture preview.
  *

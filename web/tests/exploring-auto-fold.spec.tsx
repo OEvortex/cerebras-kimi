@@ -5,9 +5,7 @@ import { expect, it } from "vitest";
 import { extractMessageSegments } from "@/components/chat/home/AskUserOptions";
 import type { StreamEvent } from "@/features/chat/model/protocol";
 import { TraceFlow } from "@/features/chat/trace/TracePresentation";
-import { initI18n } from "@/i18n/init";
 
-initI18n("en");
 
 const event = (type: StreamEvent["type"], content: string): StreamEvent =>
   ({

@@ -14,7 +14,6 @@ const fixture = vi.hoisted(() => ({
   t: (key: string) => key,
   refresh: vi.fn(async () => {}),
 }));
-vi.mock("react-i18next", () => ({ useTranslation: () => ({ t: fixture.t }) }));
 vi.mock("next/dynamic", () => ({ default: () => () => null }));
 vi.mock("@/features/knowledge/api/engines", async (original) => ({
   ...(await original<typeof import("@/features/knowledge/api/engines")>()),

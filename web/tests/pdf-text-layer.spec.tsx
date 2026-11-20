@@ -45,9 +45,6 @@ vi.mock("@/lib/pdfjs-loader", () => ({
   }),
 }));
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}));
 
 const page = {
   cleanup: () => {
