@@ -5,7 +5,7 @@ import { Check, X } from "lucide-react";
 
 import type { ObjectiveReport } from "@/lib/learning-api";
 
-import { formatAbsolute, formatRelative, type Translate } from "./format";
+import { formatAbsolute, formatRelative } from "./format";
 
 /**
  * The evidence behind one objective.
@@ -18,10 +18,8 @@ import { formatAbsolute, formatRelative, type Translate } from "./format";
  */
 export function ObjectiveDetail({
   report,
-  zh,
 }: {
   report: ObjectiveReport;
-  zh: boolean;
 }) {
   
   const qualitative = report.gate === "qualitative";
@@ -34,7 +32,7 @@ export function ObjectiveDetail({
       {report.review && (
         <Row label={"Spaced review"}>
           {report.review.due_at
-            ? `Due ${formatRelative(report.review.due_at, zh)} · ${formatAbsolute(report.review.due_at, zh)}`
+            ? `Due ${formatRelative(report.review.due_at)} · ${formatAbsolute(report.review.due_at)}`
             : "Not scheduled"}
           <span className="ml-2 text-[var(--muted-foreground)]">
             {`memory ${Math.round(report.review.retrievability * 100)}% · stability ${report.review.stability.toFixed(1)} days`}
@@ -80,7 +78,7 @@ export function ObjectiveDetail({
                     {"You said: "}
                     {attempt.answer || "(blank)"}
                     <span className="ml-2">
-                      {formatRelative(attempt.at, zh)}
+                      {formatRelative(attempt.at)}
                     </span>
                   </div>
                 </div>
@@ -124,7 +122,7 @@ export function ObjectiveDetail({
                   {evidence.quality !== null &&
                     ` · ${Math.round(evidence.quality * 100)}%`}
                 </span>
-                <span className="shrink-0">{formatRelative(evidence.timestamp, zh)}</span>
+                <span className="shrink-0">{formatRelative(evidence.timestamp)}</span>
               </li>
             ))}
           </ul>

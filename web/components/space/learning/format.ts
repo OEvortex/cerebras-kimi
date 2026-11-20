@@ -3,9 +3,6 @@
 
 import { formatDate, getLocale } from "@/lib/datetime";
 
-/** The `t` from `useTranslation()`, narrowed to what these helpers need. */
-export type Translate = (key: string) => string;
-
 const KNOWLEDGE_TYPE_LABELS: Record<string, string> = {
   concept: "Concept",
   memory: "Memory",
@@ -46,7 +43,7 @@ const DAY = 24 * HOUR;
  * "3 minutes ago" / "in 2 days" — engine timestamps are epoch seconds and can point
  * either way (an attempt happened, a review is due).
  */
-export function formatRelative(epochSeconds: number, zh: boolean): string {
+export function formatRelative(epochSeconds: number): string {
   const deltaSeconds = epochSeconds - Date.now() / 1000;
   const past = deltaSeconds < 0;
   const abs = Math.abs(deltaSeconds);
@@ -66,7 +63,7 @@ export function formatRelative(epochSeconds: number, zh: boolean): string {
 }
 
 /** Calendar form, for when "in 3 days" is not precise enough. */
-export function formatAbsolute(epochSeconds: number, _zh: boolean): string {
+export function formatAbsolute(epochSeconds: number): string {
   return formatDate(new Date(epochSeconds * 1000), "en", {
     month: "short",
     day: "numeric",

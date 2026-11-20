@@ -118,13 +118,12 @@ test("media relies on native player controls and PDF navigation is honest", () =
   const reader = source("components/reading/ReaderPane.tsx");
 
   assert.doesNotMatch(workspace, /function MediaTimeline/);
-  assert.doesNotMatch(workspace, /aria-label=\{t\("Video timeline"\)\}/);
   assert.match(navigator, /material\?\.render_mode === "pdf"/);
   assert.match(navigator, /synthesised/);
   assert.match(navigator, /Page \{\{page\}\}/);
   assert.match(
     workspace,
-    /navigatorOpen \? t\("Collapse contents"\) : t\("Expand contents"\)/,
+    /navigatorOpen \? "Collapse contents" : "Expand contents"/,
   );
   assert.match(page, /externalJump=\{documentJump\}/);
   assert.match(reader, /requestJump\(externalJump\.locator/);
@@ -145,7 +144,7 @@ test("narrow reading workspaces keep the source primary and use dismissible pane
   assert.match(workspace, /xl:static .*xl:shadow-none/);
   // The companion is a sheet with its own header: it is put away from
   // there or by the scrim over the document, and the bar brings it back.
-  assert.match(page, /aria-label=\{t\("Close panels"\)\}/);
+  assert.match(page, /aria-label=\{"Close panels"\}/);
   assert.match(page, /onClose=\{\(\) => toggleCompanion\(false\)\}/);
   assert.match(page, /onOpenCompanion=\{\(\) => toggleCompanion\(true\)\}/);
 });
@@ -158,7 +157,7 @@ test("failed imports expose the durable retry endpoint in product UI", () => {
   assert.match(api, /export async function retryReadingMaterial/);
   assert.match(api, /\/materials\/\$\{materialId\}\/retry/);
   assert.match(page, /retryReadingMaterial/);
-  assert.match(chrome, /retrying \? t\("Retrying…"\) : t\("Retry"\)/);
+  assert.match(chrome, /retrying \? "Retrying…" : "Retry"/);
 });
 
 test("Markdown heading markers stay anchorable but are visually hidden", () => {
@@ -306,5 +305,5 @@ test("bookmarks are one list, read by the toolbar and the outline", () => {
 
   // Its own wording, not Books' "Remove bookmark" (translated there as
   // 取消收藏 — un-favourite, a different gesture).
-  assert.match(navigator, /t\("Remove this bookmark"\)/);
+  assert.match(navigator, /"Remove this bookmark"/);
 });

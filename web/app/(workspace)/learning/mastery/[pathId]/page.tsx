@@ -68,8 +68,6 @@ export default function MasteryTopicPage() {
   const params = useParams<{ pathId: string }>();
   const pathId = String(params.pathId || "");
   const router = useRouter();
-  
-  const zh = Boolean("en"?.toLowerCase().startsWith("zh"));
   const [topic, setTopic] = useState<MasteryTopic | null>(null);
   const [sessions, setSessions] = useState<TopicSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -404,11 +402,7 @@ export default function MasteryTopicPage() {
 
   const nextLabel = NEXT_LABELS[topic.next.action];
   // The reason comes from the server as-is; only the known labels are catalog copy.
-  const nextCopy = nextLabel
-    ? zh
-      ? nextLabel.zh
-      : (nextLabel.en)
-    : topic.next.reason;
+  const nextCopy = nextLabel ?? topic.next.reason;
   const progress = topic.map.counts.total
     ? Math.round((topic.map.counts.mastered / topic.map.counts.total) * 100)
     : 0;
@@ -583,9 +577,7 @@ export default function MasteryTopicPage() {
               className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-[var(--primary)] px-3.5 text-[13px] font-medium text-[var(--primary-foreground)] transition hover:opacity-90"
             >
               {nextCta
-                ? zh
-                  ? nextCta.zh
-                  : (nextCta.en)
+                ? nextCta
                 : topic.session_count > 0
                   ? "Continue learning"
                   : "Begin first waypoint"}
@@ -687,7 +679,6 @@ export default function MasteryTopicPage() {
                   topic={topic}
                   revision={Math.max(topic.path_revision, activity.revision)}
                   selectedId={selectedId}
-                  zh={zh}
                   onSelect={setSelectedId}
                   onOverride={handleOverride}
                 />
@@ -696,7 +687,6 @@ export default function MasteryTopicPage() {
                   pathId={pathId}
                   modules={board.modules}
                   revision={Math.max(topic.path_revision, activity.revision)}
-                  zh={zh}
                   onStartTutoring={startBoardTutoring}
                 />
               ) : boardError ? (
@@ -731,7 +721,6 @@ export default function MasteryTopicPage() {
                 onStrategySave={handleStrategySave}
                 onStrategyDuplicate={handleStrategyDuplicate}
                 onStrategyDelete={handleStrategyDelete}
-                zh={zh}
                 onSelect={(objectiveId) => {
                   setSelectedId(objectiveId);
                   document
@@ -756,7 +745,6 @@ export default function MasteryTopicPage() {
               loading={sessionsLoading}
               stale={sessionsError}
               onRetry={() => void loadSessions()}
-              zh={zh}
             />
           </div>
         </div>

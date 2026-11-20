@@ -43,13 +43,11 @@ export function LearningBoard({
   pathId,
   modules,
   revision,
-  zh,
   onStartTutoring,
 }: {
   pathId: string;
   modules: BoardModule[];
   revision: number;
-  zh: boolean;
   onStartTutoring: (knowledgePointName: string) => void;
 }) {
   
@@ -153,7 +151,7 @@ export function LearningBoard({
                       {card.next_review_at && (
                         <div className="mt-1.5 flex items-center gap-1 text-[11px] text-[var(--muted-foreground)]">
                           <BookOpen className="h-3 w-3" />
-                          {"Review"} {formatRelative(card.next_review_at, zh)}
+                          {"Review"} {formatRelative(card.next_review_at)}
                         </div>
                       )}
                     </button>
@@ -162,7 +160,7 @@ export function LearningBoard({
                       <div className="mt-2 rounded-lg border border-[var(--border)] bg-[var(--card)] p-3">
                         {loaded && report ? (
                           <>
-                            <ObjectiveDetail report={report} zh={zh} />
+                            <ObjectiveDetail report={report} />
                             <button
                               type="button"
                               onClick={() => onStartTutoring(card.name)}

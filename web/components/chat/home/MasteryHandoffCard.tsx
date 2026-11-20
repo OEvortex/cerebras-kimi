@@ -98,8 +98,6 @@ const MasteryHandoff = memo(function MasteryHandoff({
 }: {
   data: MasteryHandoffPayload;
 }) {
-  
-  const zh = Boolean("en"?.toLowerCase().startsWith("zh"));
   const router = useRouter();
   const [draft, setDraft] = useState(data.opening_message);
 

@@ -94,7 +94,6 @@ export function ReviewTrail({
   onStrategySave,
   onStrategyDuplicate,
   onStrategyDelete,
-  zh,
   onSelect,
   onStartReview,
 }: {
@@ -116,7 +115,6 @@ export function ReviewTrail({
   ) => Promise<void>;
   onStrategyDuplicate: (templateId: string, name: string) => Promise<void>;
   onStrategyDelete: (templateId: string) => Promise<void>;
-  zh: boolean;
   onSelect: (objectiveId: string) => void;
   onStartReview: (objectiveId: string, name: string) => void;
 }) {
@@ -385,7 +383,7 @@ export function ReviewTrail({
                 <span className="text-[10px] text-[var(--muted-foreground)]">
                   {review.due
                     ? "Ready now"
-                    : formatRelative(review.due_at, zh)}
+                    : formatRelative(review.due_at)}
                   <span className="ml-2">
                     {`risk ${Math.round(review.forgetting_risk * 100)}%`}
                   </span>

@@ -25,8 +25,6 @@ import { listNotebooks, listNotebookEntries } from "@/lib/notebook-api";
 import { listKnowledgeBases } from "@/features/knowledge/api/catalog";
 import { listSubagentConnections } from "@/lib/subagents-api";
 
-export type Lang = { zh: string; en: string };
-
 export type DashKey =
   | "agents"
   | "knowledge"
@@ -42,13 +40,13 @@ export interface DashboardItem {
   key: DashKey;
   href: string;
   icon: LucideIcon;
-  title: Lang;
-  blurb: Lang;
+  title: string;
+  blurb: string;
   /**
    * Unit shown after the live count, e.g. "168 conversations". Omitted
    * together with ``load`` for a tile that has nothing to count.
    */
-  unit?: Lang;
+  unit?: string;
   /** Icon-tile accent — full class strings so Tailwind keeps them. */
   tile: string;
   /**
@@ -69,24 +67,21 @@ export interface DashboardItem {
 }
 
 export interface DashboardGroup {
-  label: Lang;
+  label: string;
   items: DashboardItem[];
 }
 
 export const DASHBOARD_GROUPS: DashboardGroup[] = [
   {
-    label: { zh: "Conversations & Materials", en: "Conversations & Materials" },
+    label: "Conversations & Materials",
     items: [
       {
         key: "chat_history",
         href: "/space/chat-history",
         icon: History,
-        title: { zh: "Chat History", en: "Chat History" },
-        blurb: {
-          zh: "Review and reopen previous conversations.",
-          en: "Review and reopen previous conversations.",
-        },
-        unit: { zh: "conversations", en: "conversations" },
+        title: "Chat History",
+        blurb: "Review and reopen previous conversations.",
+        unit: "conversations",
         tile: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
         load: async () => (await listSessions(200, 0, { force: true })).length,
       },
@@ -94,12 +89,9 @@ export const DASHBOARD_GROUPS: DashboardGroup[] = [
         key: "notebooks",
         href: "/notebooks",
         icon: Bookmark,
-        title: { zh: "Favorites", en: "Favorites" },
-        blurb: {
-          zh: "Keep original conversations and sources, ready to use in your notes.",
-          en: "Keep original conversations and sources, ready to use in your notes.",
-        },
-        unit: { zh: "collections", en: "collections" },
+        title: "Favorites",
+        blurb: "Keep original conversations and sources, ready to use in your notes.",
+        unit: "collections",
         tile: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
         load: async () => (await listNotebooks()).length,
       },
@@ -107,23 +99,17 @@ export const DASHBOARD_GROUPS: DashboardGroup[] = [
         key: "journal",
         href: "/space/journal",
         icon: NotebookPen,
-        title: { zh: "Learning journal", en: "Learning journal" },
-        blurb: {
-          zh: "Inspect your mission, session handoff and confirmed records.",
-          en: "Inspect your mission, session handoff and confirmed records.",
-        },
+        title: "Learning journal",
+        blurb: "Inspect your mission, session handoff and confirmed records.",
         tile: "bg-teal-500/10 text-teal-600 dark:text-teal-400",
       },
       {
         key: "question_bank",
         href: "/space/questions",
         icon: ClipboardList,
-        title: { zh: "Question Bank", en: "Question Bank" },
-        blurb: {
-          zh: "Review and organize quiz questions across sessions.",
-          en: "Review and organize quiz questions across sessions.",
-        },
-        unit: { zh: "questions", en: "questions" },
+        title: "Question Bank",
+        blurb: "Review and organize quiz questions across sessions.",
+        unit: "questions",
         tile: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
         load: async () => (await listNotebookEntries({ limit: 1 })).total,
       },
@@ -131,29 +117,23 @@ export const DASHBOARD_GROUPS: DashboardGroup[] = [
         key: "knowledge",
         href: "/knowledge-bases",
         icon: BookOpen,
-        title: { zh: "Knowledge Center", en: "Knowledge Center" },
-        blurb: {
-          zh: "Manage knowledge bases and retrieval engines.",
-          en: "Manage knowledge bases and retrieval engines.",
-        },
-        unit: { zh: "knowledge bases", en: "knowledge bases" },
+        title: "Knowledge Center",
+        blurb: "Manage knowledge bases and retrieval engines.",
+        unit: "knowledge bases",
         tile: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
         load: async () => (await listKnowledgeBases({ library: true })).length,
       },
     ],
   },
   {
-    label: { zh: "More Projects", en: "More Projects" },
+    label: "More Projects",
     items: [
       {
         key: "whisper",
         href: "/whisper",
         icon: Ear,
-        title: { zh: "Whisper", en: "Whisper" },
-        blurb: {
-          zh: "Dual-seat practice room — the supervisor whispers to the trainee only.",
-          en: "Dual-seat practice room — the supervisor whispers to the trainee only.",
-        },
+        title: "Whisper",
+        blurb: "Dual-seat practice room — the supervisor whispers to the trainee only.",
         tile: "bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400",
         credit: "alanguan73",
         // Served by the out-of-tree psych-academy plugin, not by this repo.
@@ -170,18 +150,15 @@ export const DASHBOARD_GROUPS: DashboardGroup[] = [
  */
 export const PERSONALIZATION_GROUPS: DashboardGroup[] = [
   {
-    label: { zh: "Personalization", en: "Personalization" },
+    label: "Personalization",
     items: [
       {
         key: "agents",
         href: "/agents",
         icon: Bot,
-        title: { zh: "My Agents", en: "My Agents" },
-        blurb: {
-          zh: "Connect local or remote agents and consult them from any chat.",
-          en: "Connect local or remote agents and consult them from any chat.",
-        },
-        unit: { zh: "agents", en: "agents" },
+        title: "My Agents",
+        blurb: "Connect local or remote agents and consult them from any chat.",
+        unit: "agents",
         tile: "bg-slate-500/10 text-slate-600 dark:text-slate-300",
         load: async () => (await listSubagentConnections()).length,
       },
@@ -189,12 +166,9 @@ export const PERSONALIZATION_GROUPS: DashboardGroup[] = [
         key: "cli_apps",
         href: "/space/cli-apps",
         icon: Terminal,
-        title: { zh: "CLI Apps", en: "CLI Apps" },
-        blurb: {
-          zh: "Command-line tools from the CLI-Anything catalog, callable from chat.",
-          en: "Command-line tools from the CLI-Anything catalog, callable from chat.",
-        },
-        unit: { zh: "apps", en: "apps" },
+        title: "CLI Apps",
+        blurb: "Command-line tools from the CLI-Anything catalog, callable from chat.",
+        unit: "apps",
         tile: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
         // What this reader can actually use, not what the deployment installed:
         // an app they were not granted is visible on the page but is not theirs.
@@ -206,11 +180,8 @@ export const PERSONALIZATION_GROUPS: DashboardGroup[] = [
         key: "memory",
         href: "/memory",
         icon: Brain,
-        title: { zh: "Memory", en: "Memory" },
-        blurb: {
-          zh: "Review what your tutor remembers about you.",
-          en: "Review what your tutor remembers about you.",
-        },
+        title: "Memory",
+        blurb: "Review what your tutor remembers about you.",
         tile: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
       },
     ],

@@ -1,5 +1,3 @@
-import type { TFunction } from "i18next";
-
 /**
  * What to tell the user about a material that could not be prepared.
  *

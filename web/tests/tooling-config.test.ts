@@ -39,7 +39,6 @@ test("TypeScript includes canonical source roots and no named build output", () 
     "context",
     "features",
     "hooks",
-    "i18n",
     "lib",
     "shared",
     "contracts",
@@ -76,7 +75,7 @@ test("package exposes deterministic frontend checks", () => {
   assert.equal(scripts.typecheck, "node ./scripts/typecheck.mjs");
   assert.equal(
     scripts["check:fast"],
-    "npm run contracts:check && npm run architecture:check && npm run typecheck && npm run test:node && npm run test:unit && npm run lint && npm run i18n:check",
+    "npm run contracts:check && npm run architecture:check && npm run typecheck && npm run test:node && npm run test:unit && npm run lint",
   );
   assert.equal(
     scripts.check,

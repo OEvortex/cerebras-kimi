@@ -12,7 +12,6 @@ import {
   selectClass,
   selectOptionClass,
 } from "./shared";
-import { RESPONSE_LANGUAGE_OPTIONS, useUiSettings } from "@/features/settings/store";
 import { useSettings } from "@/features/settings/store/SettingsStore";
 import { useStagedSettings } from "@/features/settings/store/useStagedSettings";
 import { useUiLayout } from "@/hooks/useUiLayout";
@@ -25,7 +24,6 @@ const UI_LAYOUT_LABELS: Record<UiLayout, string> = {
 
 export default function SettingsOverview() {
   
-  const { responseLanguage, updateResponseLanguage } = useUiSettings();
   const { catalogEditable } = useSettings();
   const uiLayout = useUiLayout();
   const setLiveUiLayout = useCallback(
@@ -44,30 +42,6 @@ export default function SettingsOverview() {
         title={"General"}
         description={"Make DeepTutor feel at home. Apply your preferences using the bar below."}
       />
-      <SettingSection title={"Language"}>
-        <SettingRow
-          title={"Model output language"}
-          description={"Sets the default language for chat and capability responses."}
-          control={
-            <select
-              aria-label={"Model output language"}
-              value={responseLanguage}
-              onChange={(event) =>
-                void updateResponseLanguage(
-                  event.target.value as typeof responseLanguage,
-                )
-              }
-              className={`${selectClass} min-w-[200px] pr-8`}
-            >
-              {RESPONSE_LANGUAGE_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          }
-        />
-      </SettingSection>
       <SettingSection title={"Layout"}>
         <SettingRow
           title={"Interface layout"}

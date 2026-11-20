@@ -285,29 +285,3 @@ test("zoom lives in its own store, not in the text typography preferences", () =
   // stored preference has no page-bitmap field to smuggle a size into.
   assert.deepEqual(Object.keys(preference), ["mode"]);
 });
-
-test("new copy is translated in every shipped locale", () => {
-  // This used to read only `en`, so a locale that never got the key still
-  // passed. `web/i18n/init.ts` is the list of shipped locales; read it rather
-  // than hard-coding, so a new locale is covered the day it ships.
-  const init = readFileSync("i18n/init.ts", "utf8");
-  const shipped = [...init.matchAll(/locales\/([a-z]{2})\/app\.json/g)].map(
-    (match) => match[1],
-  );
-  assert.ok(shipped.includes("en"), "en must be a shipped locale");
-  for (const key of [
-    "Zoom level",
-    "Reset zoom",
-    "Zoom in",
-    "Zoom out",
-    "Fit",
-  ]) {
-    for (const locale of shipped) {
-      const body = readFileSync(`locales/${locale}/app.json`, "utf8");
-      assert.ok(
-        body.includes(`"${key}"`),
-        `${locale}/app.json is missing the "${key}" key`,
-      );
-    }
-  }
-});

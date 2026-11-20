@@ -1,5 +1,3 @@
-import type { TFunction } from "i18next";
-
 export interface KnowledgeUploadPolicy {
   extensions: string[];
   accept: string;

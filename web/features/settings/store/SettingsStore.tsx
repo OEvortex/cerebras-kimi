@@ -32,7 +32,6 @@ import {
   writeStoredCodeBlockTheme,
   writeStoredCodeBlockWrapLongLines,
   writeStoredLanguage,
-  writeStoredResponseLanguage,
 } from "@/context/app-shell-storage";
 import { useAppShell } from "@/context/AppShellContext";
 import { apiFetch, apiUrl } from "@/shared/api/client";
@@ -176,7 +175,6 @@ export type SettingsContextValue = {
   hasUnsavedChanges: boolean;
   theme: UiSettings["theme"];
   language: UiSettings["language"];
-  responseLanguage: UiSettings["response_language"];
   codeBlockTheme: UiSettings["code_block_theme"];
   codeBlockShowLineNumbers: UiSettings["code_block_show_line_numbers"];
   codeBlockWrapLongLines: UiSettings["code_block_wrap_long_lines"];
@@ -191,9 +189,6 @@ export type SettingsContextValue = {
   // UI prefs
   updateTheme: (next: UiSettings["theme"]) => Promise<void>;
   updateLanguage: (next: UiSettings["language"]) => Promise<void>;
-  updateResponseLanguage: (
-    next: UiSettings["response_language"],
-  ) => Promise<void>;
   updateCodeBlockTheme: (next: CodeBlockThemeId) => Promise<void>;
   updateCodeBlockShowLineNumbers: (next: boolean) => Promise<void>;
   updateCodeBlockWrapLongLines: (next: boolean) => Promise<void>;
@@ -375,8 +370,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     async () => {},
   );
   const [language, setLanguage] = useState<UiSettings["language"]>("en");
-  const [responseLanguage, setResponseLanguage] =
-    useState<UiSettings["response_language"]>("en");
   const [catalog, setCatalog] = useState<Catalog>(defaultCatalog());
   const [draft, setDraft] = useState<Catalog>(defaultCatalog());
   const [catalogEditable, setCatalogEditable] = useState<boolean | null>(null);
@@ -494,11 +487,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       serverThemeLoadedRef.current = true;
       setTheme(loadedTheme);
       setLanguage(normalizeLanguage(payload.ui.language));
-      const loadedResponseLanguage =
-        payload.ui.response_language ?? payload.ui.language;
-      setResponseLanguage(loadedResponseLanguage);
       writeStoredLanguage(normalizeLanguage(payload.ui.language));
-      writeStoredResponseLanguage(loadedResponseLanguage);
       syncLoadedCodeBlockSettingsToAppShell(payload.ui);
       if (payload.providers) setProviders(payload.providers);
       if (payload.connection_targets)
@@ -606,7 +595,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       ...learningDisplay,
       theme,
       language,
-      response_language: responseLanguage,
       code_block_theme: codeBlockTheme,
       code_block_show_line_numbers: codeBlockShowLineNumbers,
       code_block_wrap_long_lines: codeBlockWrapLongLines,
@@ -615,7 +603,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       learningDisplay,
       theme,
       language,
-      responseLanguage,
       codeBlockTheme,
       codeBlockShowLineNumbers,
       codeBlockWrapLongLines,
@@ -631,10 +618,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       const language = normalizeLanguage(ui.language);
       setLanguage(language);
       writeStoredLanguage(language);
-    }
-    if (ui.response_language) {
-      setResponseLanguage(ui.response_language);
-      writeStoredResponseLanguage(ui.response_language);
     }
     syncLoadedCodeBlockSettingsToAppShell(ui);
   }, []);
@@ -682,11 +665,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   );
   const updateLanguage = useCallback(
     async (next: UiSettings["language"]) => stageUi({ language: next }),
-    [stageUi],
-  );
-  const updateResponseLanguage = useCallback(
-    async (next: UiSettings["response_language"]) =>
-      stageUi({ response_language: next }),
     [stageUi],
   );
   const updateCodeBlockTheme = useCallback(
@@ -923,7 +901,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       hasUnsavedChanges,
       theme: editedUi.theme,
       language: editedUi.language,
-      responseLanguage: editedUi.response_language,
       codeBlockTheme: editedUi.code_block_theme,
       codeBlockShowLineNumbers: editedUi.code_block_show_line_numbers,
       codeBlockWrapLongLines: editedUi.code_block_wrap_long_lines,
@@ -938,7 +915,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       clearFocusModel,
       updateTheme,
       updateLanguage,
-      updateResponseLanguage,
       updateCodeBlockTheme,
       updateCodeBlockShowLineNumbers,
       updateCodeBlockWrapLongLines,
@@ -1017,7 +993,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       updateContentFontScale,
       updateContentLineSpacing,
       updateLanguage,
-      updateResponseLanguage,
       updateTheme,
     ],
   );

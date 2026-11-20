@@ -13,8 +13,6 @@
  * viewport, so nothing hidden is added to what the learner sees they sent.
  */
 
-import type { TFunction } from "i18next";
-
 export type PassagePromptKey = "explain" | "translate" | "guide";
 
 export interface PassagePrompt {

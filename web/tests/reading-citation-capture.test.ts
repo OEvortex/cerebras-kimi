@@ -18,7 +18,7 @@ test("citation capture extends the existing annotation contract", () => {
   );
   assert.match(
     source("components/reading/AnnotationPopover.tsx"),
-    /label=\{t\(["']Save citation["']\)\}/,
+    /label=\{"Save citation"\}/,
   );
 });
 
@@ -26,5 +26,5 @@ test("citations have a dedicated view in the existing annotation sidebar", () =>
   const list = source("components/reading/AnnotationList.tsx");
   assert.match(list, /view === "citations"/);
   assert.match(list, /annotation\.kind === "citation"/);
-  assert.match(list, /label=\{t\("Citations"\)\}/);
+  assert.match(list, /label=\{"Citations"\}/);
 });

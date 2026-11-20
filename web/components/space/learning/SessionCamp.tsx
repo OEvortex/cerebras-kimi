@@ -8,7 +8,7 @@ import { ArrowRight, Loader2, MessageCircle, Plus, Radio } from "lucide-react";
 
 import type { TopicSession } from "@/lib/learning-api";
 
-import { formatRelative, type Translate } from "./format";
+import { formatRelative } from "./format";
 
 export function SessionCamp({
   pathId,
@@ -16,7 +16,6 @@ export function SessionCamp({
   loading,
   stale = false,
   onRetry,
-  zh,
 }: {
   pathId: string;
   sessions: TopicSession[];
@@ -24,7 +23,6 @@ export function SessionCamp({
   /** The last fetch failed; whatever is listed may be out of date. */
   stale?: boolean;
   onRetry?: () => void;
-  zh: boolean;
 }) {
   
   const router = useRouter();
@@ -120,7 +118,7 @@ export function SessionCamp({
                     <span className="mt-0.5 block truncate text-[11px] text-[var(--muted-foreground)]">
                       {running
                         ? "Tutor is responding"
-                        : `${session.message_count} ${"messages"} · ${formatRelative(session.updated_at, zh)}`}
+                        : `${session.message_count} ${"messages"} · ${formatRelative(session.updated_at)}`}
                     </span>
                     {session.last_message && (
                       <span className="mt-1 block truncate text-[11px] text-[var(--muted-foreground)]/75">

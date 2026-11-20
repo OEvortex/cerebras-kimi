@@ -15,9 +15,6 @@ const grantEditor = readFileSync(
   path.resolve(process.cwd(), "features/multi-user/components/GrantEditor.tsx"),
   "utf8",
 );
-const en = JSON.parse(
-  readFileSync(path.resolve(process.cwd(), "locales/en/app.json"), "utf8"),
-) as Record<string, string>;
 
 test("admin user creation sends the selected preset", () => {
   assert.match(
@@ -41,22 +38,4 @@ test("grant editing exposes the server-enforced learning policy controls", () =>
     grantEditor,
     /checked=\{grant\.learning_policy\.reading\.allow_upload\}/,
   );
-});
-
-test("account preset copy is present in the English locale", () => {
-  const keys = [
-    "Account preset",
-    "Learner",
-    "Preset: {{preset}}",
-    "Learning policy",
-    "Enable learning policy",
-    "Age band",
-    "Assigned reading materials",
-    "Allow learner uploads",
-    "Reading extensions",
-  ];
-  for (const key of keys) {
-    assert.ok(key in en, `missing English key: ${key}`);
-    assert.notEqual(en[key], "");
-  }
 });

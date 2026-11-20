@@ -16,7 +16,6 @@ import {
 const reader = readFileSync("components/reading/TextUnitView.tsx", "utf8");
 const controls = readFileSync("components/reading/ReaderDisplayControls.tsx", "utf8");
 const preferenceStore = readFileSync("lib/reading-display-preferences.ts", "utf8");
-const en = readFileSync("locales/en/app.json", "utf8");
 
 test("text reader exposes persistent display preferences", () => {
   assert.match(preferenceStore, /dt\.reader\.textPreferences/);
@@ -103,23 +102,6 @@ test("keyboard zoom is handled only while the reader is active", () => {
   assert.match(reader, /root\?\.matches\(":hover"\)/);
   assert.match(reader, /root\.contains\(document\.activeElement\)/);
   assert.match(reader, /event\.preventDefault\(\)/);
-});
-
-test("reader display copy exists in English", () => {
-  for (const key of [
-    "Smaller text ({{percent}}%)",
-    "Larger text ({{percent}}%)",
-    "Reset reading display",
-    "Use sans-serif font",
-    "Use serif font",
-    "Change line width ({{width}} characters)",
-    "Change reading theme",
-    "Switch to two-page spread",
-    "Switch to single-page view",
-  ]) {
-    const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    assert.match(en, new RegExp(`"${escaped}": "`));
-  }
 });
 
 test("the reader's state is spoken by the control that changes it", () => {

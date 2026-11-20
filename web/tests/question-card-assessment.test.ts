@@ -20,9 +20,6 @@ test("question cards distinguish partial and ungraded results", () => {
   assert.match(card, /ASSESSMENT_TYPE_LABELS/);
   assert.match(card, /Focus Check/);
   assert.match(card, /source === "immersive_reading"/);
-  assert.match(card, /"Partially Correct"/);
-  assert.match(card, /"Not Graded"/);
-  assert.match(card, /"Focus Check"/);
 });
 
 test("choice cards mark the pick and reference from letter or option text", () => {
