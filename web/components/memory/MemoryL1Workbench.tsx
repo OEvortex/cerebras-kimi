@@ -199,8 +199,7 @@ export default function MemoryL1Workbench({
             focusRef={focusRef}
             onClearFocus={() => setFocusRef(null)}
             onToast={setToast}
-            t={t}
-            compact
+              compact
           />
         </section>
       </div>
@@ -257,7 +256,7 @@ function LayerSwitcher() {
   );
 }
 
-function Breadcrumb({ label }: { label: string; t: (k: string) => string }) {
+function Breadcrumb({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-2 text-[12.5px]">
       <Link

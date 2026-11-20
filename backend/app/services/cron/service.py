@@ -419,10 +419,11 @@ def get_cron_service() -> CronService:
         from ...config import get_settings
         from .executor import execute_job
 
-        root = get_settings().data_dir / "cron"
+        settings = get_settings()
         _service = CronService(
-            store_path=root / "jobs.sqlite3",
-            legacy_store_path=root / "jobs.json",
+            # Jobs share the one application database.
+            store_path=settings.sessions_db,
+            legacy_store_path=settings.data_dir / "cron" / "jobs.json",
             on_job=execute_job,
         )
     return _service

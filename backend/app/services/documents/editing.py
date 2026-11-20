@@ -7,17 +7,17 @@ small history file so the UI can show what the AI changed.
 
 from __future__ import annotations
 
-import json
 import os
 import time
-from pathlib import Path
 from typing import Any
 
 from ...config import get_settings
+from ...store import database
 from ..llm_text import clean_thinking_tags
 
 MAX_TEXT_CHARS = 600_000
 MAX_HISTORY = 200
+_HISTORY_KEY = "documents/history"
 
 ACTION_VERBS = {
     "rewrite": "Rewrite",
@@ -47,29 +47,15 @@ Mark sparingly: at most one term per 100 characters and two statements per parag
 EDIT_SYSTEM = "You are an expert editor and writing assistant."
 
 
-def _history_path() -> Path:
-    root = get_settings().data_dir / "documents"
-    root.mkdir(parents=True, exist_ok=True)
-    return root / "history.json"
-
-
 def load_history() -> list[dict[str, Any]]:
-    try:
-        raw = json.loads(_history_path().read_text(encoding="utf-8"))
-    except Exception:
-        return []
+    raw = database.get_state(get_settings(), _HISTORY_KEY, [])
     return raw if isinstance(raw, list) else []
 
 
 def append_history(entry: dict[str, Any]) -> None:
     entries = load_history()
     entries.insert(0, entry)
-    path = _history_path()
-    tmp = path.with_name(f".{path.name}.tmp")
-    tmp.write_text(
-        json.dumps(entries[:MAX_HISTORY], ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-    os.replace(tmp, path)
+    database.put_state(get_settings(), _HISTORY_KEY, entries[:MAX_HISTORY])
 
 
 def new_operation_id() -> str:

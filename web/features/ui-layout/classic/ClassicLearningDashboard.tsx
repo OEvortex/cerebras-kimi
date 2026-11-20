@@ -124,7 +124,7 @@ export function ClassicLearningDashboard() {
                     subtitle={`${topic.reviews.filter(review => review.due).length} reviews due`}
                     onClick={() =>
                       setPendingPrompt(
-                        masteryOpeningMessage('review', t, {
+                        masteryOpeningMessage('review',{
                           dueTitles: topic.reviews
                             .filter(review => review.due)
                             .slice(0, 5)

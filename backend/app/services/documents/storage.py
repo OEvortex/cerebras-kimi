@@ -2,15 +2,11 @@
 Co-Writer Document Storage
 ==========================
 
-Per-document directory + manifest persistence with atomic writes.
-
-Layout (relative to ``data/user/workspace/co-writer/``)::
-
-    documents/
-    ├── doc_{doc_id}/
-    │   └── manifest.json   # { id, title, content, created_at, updated_at }
-    └── doc_{doc_id2}/
-        └── manifest.json
+Notebook pages live in the shared SQLite database (``data/deeptutor.sqlite3``):
+each page is one row in ``documents``, with the review queue, margin threads and
+flashcard scheduling kept in ``doc_extras`` and binary attachments in
+``doc_assets``. Legacy ``data/documents/doc_*/manifest.json`` trees are imported
+once by :mod:`app.store.database`.
 """
 
 from __future__ import annotations
@@ -18,10 +14,7 @@ from __future__ import annotations
 from contextlib import contextmanager
 import json
 import logging
-import os
-from pathlib import Path
 import re
-import shutil
 import threading
 import time
 from typing import Any
@@ -30,6 +23,7 @@ import uuid
 from pydantic import BaseModel, Field
 
 from ...config import get_settings
+from ...store import database
 from .blocks import blocks_to_markdown, coarse_markdown_to_blocks, validate_blocks
 
 logger = logging.getLogger(__name__)
@@ -70,30 +64,6 @@ class CoWriterDocumentSummary(BaseModel):
     cover: str = ""
     pinned: bool = False
     revision: int = 0
-
-
-def _atomic_write_text(path: Path, text: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(f".{path.name}.tmp")
-    with open(tmp, "w", encoding="utf-8") as handle:
-        handle.write(text)
-    os.replace(tmp, path)
-
-
-def _atomic_write_json(path: Path, payload: Any) -> None:
-    text = json.dumps(payload, ensure_ascii=False, indent=2, default=str)
-    _atomic_write_text(path, text)
-
-
-def _read_json(path: Path) -> Any | None:
-    if not path.exists():
-        return None
-    try:
-        with open(path, encoding="utf-8") as f:
-            return json.load(f)
-    except (OSError, json.JSONDecodeError) as exc:
-        logger.warning(f"Failed to read JSON {path}: {exc}")
-        return None
 
 
 def _derive_title(content: str, fallback: str = "Untitled draft") -> str:
@@ -164,55 +134,41 @@ _STORE_LOCK = threading.RLock()
 
 
 class CoWriterStorage:
-    """File-system backed store for note pages.
+    """SQLite-backed store for note pages and everything attached to them."""
 
-    Layout under ``<data_dir>/documents``::
+    def __init__(self, root: Any | None = None) -> None:
+        # ``root`` is accepted for backwards compatibility with tests and older
+        # callers; it is ignored because pages live in the shared database.
+        self._settings = get_settings()
+        database.ensure_tables(self._settings)
 
-        doc_<id>/manifest.json    page title, blocks, revision, metadata
-        doc_<id>/suggestions.json review queue for proposed edits
-        doc_<id>/assets/          uploaded images and files
-    """
-
-    def __init__(self, root: Path | None = None) -> None:
-        self._root = root
-
-    def docs_root(self) -> Path:
-        return self._root or (get_settings().data_dir / "documents")
-
-    # ── Path helpers ─────────────────────────────────────────────────────
-
-    def doc_root(self, doc_id: str) -> Path:
+    @staticmethod
+    def _check_id(doc_id: str) -> str:
         if not re.fullmatch(r"[0-9a-f]{8,32}", doc_id or ""):
             raise ValueError("Invalid page ID")
-        return self.docs_root() / f"doc_{doc_id}"
-
-    def manifest_path(self, doc_id: str) -> Path:
-        return self.doc_root(doc_id) / "manifest.json"
-
-    def ensure_root(self) -> Path:
-        root = self.docs_root()
-        root.mkdir(parents=True, exist_ok=True)
-        return root
-
-    def ensure_doc_root(self, doc_id: str) -> Path:
-        root = self.doc_root(doc_id)
-        root.mkdir(parents=True, exist_ok=True)
-        return root
+        return doc_id
 
     def doc_exists(self, doc_id: str) -> bool:
-        return self.manifest_path(doc_id).exists()
+        try:
+            doc_id = self._check_id(doc_id)
+        except ValueError:
+            return False
+        with database.connect(self._settings) as connection:
+            return (
+                connection.execute(
+                    "SELECT 1 FROM documents WHERE id = ?", (doc_id,)
+                ).fetchone()
+                is not None
+            )
 
     # ── CRUD ─────────────────────────────────────────────────────────────
 
     def list_doc_ids(self) -> list[str]:
-        root = self.docs_root()
-        if not root.exists():
-            return []
-        ids: list[str] = []
-        for child in root.iterdir():
-            if child.is_dir() and child.name.startswith("doc_"):
-                ids.append(child.name[len("doc_") :])
-        return ids
+        with database.connect(self._settings) as connection:
+            rows = connection.execute(
+                "SELECT id FROM documents ORDER BY updated_at DESC"
+            ).fetchall()
+        return [str(row["id"]) for row in rows]
 
     def list_documents(self) -> list[CoWriterDocumentSummary]:
         summaries: list[CoWriterDocumentSummary] = []
@@ -286,32 +242,85 @@ class CoWriterStorage:
             return doc
 
     def load_document(self, doc_id: str) -> CoWriterDocument | None:
-        data = _read_json(self.manifest_path(doc_id))
-        if data is None:
+        try:
+            doc_id = self._check_id(doc_id)
+        except ValueError:
+            return None
+        with database.connect(self._settings) as connection:
+            row = connection.execute(
+                "SELECT payload FROM documents WHERE id = ?", (doc_id,)
+            ).fetchone()
+        if row is None:
             return None
         try:
-            return CoWriterDocument.model_validate(data)
+            return CoWriterDocument.model_validate(json.loads(row["payload"]))
         except Exception as exc:
             logger.warning(f"Failed to validate Co-Writer document {doc_id}: {exc}")
             return None
 
     @contextmanager
     def locked(self):
-        # One lock covers hierarchy changes as well as document compare-and-swap.
-        # Keep the lock outside doc directories, which may be deleted.
+        # Writers are serialised in-process; SQLite handles the cross-process
+        # case with its own write transaction.
         with _STORE_LOCK:
-            lock_path = self.ensure_root() / ".write.lock"
-            with lock_path.open("a+b") as handle:
-                try:
-                    import fcntl
-                except ImportError:  # pragma: no cover - Windows
-                    yield
-                else:
-                    fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
-                    try:
-                        yield
-                    finally:
-                        fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+            yield
+
+    # ── Extras (review queue, threads, flashcard scheduling) ─────────────
+
+    def load_extra(self, doc_id: str, kind: str, default: Any = None) -> Any:
+        doc_id = self._check_id(doc_id)
+        with database.connect(self._settings) as connection:
+            row = connection.execute(
+                "SELECT payload FROM doc_extras WHERE doc_id = ? AND kind = ?",
+                (doc_id, kind),
+            ).fetchone()
+        if row is None:
+            return default
+        try:
+            return json.loads(row["payload"])
+        except (TypeError, ValueError):
+            return default
+
+    def save_extra(self, doc_id: str, kind: str, payload: Any) -> None:
+        doc_id = self._check_id(doc_id)
+        with database.connect(self._settings) as connection:
+            connection.execute(
+                """
+                INSERT INTO doc_extras (doc_id, kind, payload, updated_at)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(doc_id, kind) DO UPDATE SET
+                    payload = excluded.payload,
+                    updated_at = excluded.updated_at
+                """,
+                (doc_id, kind, json.dumps(payload, ensure_ascii=False), time.time()),
+            )
+
+    # ── Assets ───────────────────────────────────────────────────────────
+
+    def save_asset(
+        self, doc_id: str, name: str, data: bytes, content_type: str = ""
+    ) -> None:
+        doc_id = self._check_id(doc_id)
+        with database.connect(self._settings) as connection:
+            connection.execute(
+                """
+                INSERT OR REPLACE INTO doc_assets
+                    (doc_id, name, content_type, data, created_at)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (doc_id, name, content_type, data, time.time()),
+            )
+
+    def load_asset(self, doc_id: str, name: str) -> tuple[bytes, str] | None:
+        doc_id = self._check_id(doc_id)
+        with database.connect(self._settings) as connection:
+            row = connection.execute(
+                "SELECT data, content_type FROM doc_assets WHERE doc_id = ? AND name = ?",
+                (doc_id, name),
+            ).fetchone()
+        if row is None:
+            return None
+        return bytes(row["data"]), str(row["content_type"] or "")
 
 
     def update_document(
@@ -340,9 +349,8 @@ class CoWriterStorage:
             if blocks is not None:
                 validate_blocks(blocks)
                 if document.blocks is None:
-                    backup = self.doc_root(doc_id) / "legacy.md"
-                    if not backup.exists():
-                        _atomic_write_text(backup, document.content)
+                    if self.load_extra(doc_id, "legacy_markdown") is None:
+                        self.save_extra(doc_id, "legacy_markdown", document.content)
                 document.blocks = blocks
                 content = blocks_to_markdown(blocks)
             if content is not None:
@@ -389,14 +397,33 @@ class CoWriterStorage:
                     child.parent_id = document.parent_id
                     child.revision += 1
                     self._write(child)
-            shutil.rmtree(self.doc_root(doc_id))
+            with database.connect(self._settings) as connection:
+                connection.execute("DELETE FROM documents WHERE id = ?", (doc_id,))
+                connection.execute("DELETE FROM doc_extras WHERE doc_id = ?", (doc_id,))
+                connection.execute("DELETE FROM doc_assets WHERE doc_id = ?", (doc_id,))
             return True
 
     # ── Internal ─────────────────────────────────────────────────────────
 
     def _write(self, document: CoWriterDocument) -> None:
-        self.ensure_doc_root(document.id)
-        _atomic_write_json(self.manifest_path(document.id), document.model_dump(mode="json"))
+        with database.connect(self._settings) as connection:
+            connection.execute(
+                """
+                INSERT INTO documents (id, payload, created_at, updated_at)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(id) DO UPDATE SET
+                    payload = excluded.payload,
+                    updated_at = excluded.updated_at
+                """,
+                (
+                    document.id,
+                    json.dumps(
+                        document.model_dump(mode="json"), ensure_ascii=False, default=str
+                    ),
+                    float(document.created_at or 0),
+                    float(document.updated_at or 0),
+                ),
+            )
 
 
 _storages: dict[str, CoWriterStorage] = {}

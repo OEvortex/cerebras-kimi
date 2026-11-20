@@ -153,7 +153,7 @@ export default function GroupComposer({
             <AtSign size={11} className="shrink-0" />
             <span className="truncate">
               {addressed.length
-                ? `Talking to ${addressed.map((item) => item.name).join("、")}`
+                ? `Talking to ${addressed.map((item) => item.name).join(", ")}`
                 : "No mention · everyone will answer"}
             </span>
           </span>

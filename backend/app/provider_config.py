@@ -7,12 +7,10 @@ the resolved provider / model / base_url / api_key into vtx explicitly (see
 ``agent/runtime.py``), so vtx never needs to consult its own config for model
 selection.
 
-Persistence layout (all under ``Settings.data_dir``):
-
-* ``settings-catalog.json`` — connections, per-service profiles and their
-  models, the active ``llm_selection`` and a short ``recent_models`` list.
-* ``settings.json`` — legacy mirror of ``llm_selection`` kept in sync so older
-  clients and the one-time importer keep working.
+Persistence lives in the shared SQLite database (``data/deeptutor.sqlite3``)
+under the ``settings/catalog`` and ``settings/selection`` keys. Older releases
+kept them in ``settings-catalog.json`` / ``settings.json``; those files are
+imported once by :mod:`app.store.database` and are no longer read or written.
 """
 
 from __future__ import annotations
@@ -106,25 +104,17 @@ def preset_api_key(slug: str | None) -> str:
 # Catalog IO — DeepTutor's own files
 # ---------------------------------------------------------------------------
 
-def catalog_path(settings: Settings) -> Path:
-    return settings.data_dir / "settings-catalog.json"
+def _read_state(settings: Settings, key: str) -> dict[str, Any]:
+    from .store import database
+
+    data = database.get_state(settings, key, {})
+    return data if isinstance(data, dict) else {}
 
 
-def selection_path(settings: Settings) -> Path:
-    return settings.data_dir / "settings.json"
+def _write_state(settings: Settings, key: str, data: dict[str, Any]) -> None:
+    from .store import database
 
-
-def _read_json(path: Path, default: dict[str, Any]) -> dict[str, Any]:
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-        return data if isinstance(data, dict) else dict(default)
-    except Exception:
-        return dict(default)
-
-
-def _write_json(path: Path, data: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+    database.put_state(settings, key, data)
 
 
 def default_catalog() -> dict[str, Any]:
@@ -140,7 +130,7 @@ def default_catalog() -> dict[str, Any]:
 
 
 def load_catalog(settings: Settings) -> dict[str, Any]:
-    data = _read_json(catalog_path(settings), default_catalog())
+    data = _read_state(settings, "settings/catalog") or default_catalog()
     # Fill missing top-level keys so old catalogs keep working.
     defaults = default_catalog()
     for key, value in defaults.items():
@@ -154,7 +144,7 @@ def load_catalog(settings: Settings) -> dict[str, Any]:
 
 
 def save_catalog(settings: Settings, catalog: dict[str, Any]) -> None:
-    _write_json(catalog_path(settings), catalog)
+    _write_state(settings, "settings/catalog", catalog)
 
 
 # ---------------------------------------------------------------------------
@@ -184,13 +174,12 @@ def get_selection(settings: Settings, override: Any = None) -> dict[str, Any] | 
     sel = _clean_selection(catalog.get("llm_selection"))
     if sel:
         return sel
-    sel = _clean_selection(_read_json(selection_path(settings), {}).get("llm_selection"))
+    sel = _clean_selection(_read_state(settings, "settings/selection").get("llm_selection"))
     return sel
 
 
 def set_selection(settings: Settings, selection: Any) -> dict[str, Any] | None:
-    """Persist the active selection and update recency. Source of truth is the
-    DeepTutor catalog; settings.json is mirrored for older clients."""
+    """Persist the active selection and update recency."""
     sel = _clean_selection(selection)
     if sel is None:
         return None
@@ -204,9 +193,9 @@ def set_selection(settings: Settings, selection: Any) -> dict[str, Any] | None:
     catalog["recent_models"] = recent[:_RECENT_LIMIT]
     save_catalog(settings, catalog)
 
-    legacy = _read_json(selection_path(settings), {})
-    legacy["llm_selection"] = sel
-    _write_json(selection_path(settings), legacy)
+    # Keep the selection also under its own key: cheap to read when only the
+    # active model is needed, and it survives a catalog reset.
+    _write_state(settings, "settings/selection", {"llm_selection": sel})
     return sel
 
 

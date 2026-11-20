@@ -200,7 +200,6 @@ function TraceRowBody({
   group: string;
   role: string;
   kind: string;
-  t: (key: string) => string;
 }) {
   const progressEvents = callEvents.filter((event) => {
     if (event.type !== "progress") return false;
@@ -442,7 +441,7 @@ function TraceRowItem({
   const role = getTraceRole(callEvents);
   const group = getTraceGroup(callEvents);
   const kind = getTraceCallKind(callEvents);
-  const header = getTraceHeader(callEvents, nested, t);
+  const header = getTraceHeader(callEvents, nested);
 
   if (kind === "llm_final_response") return null;
   const expandable = hasExpandableContent(callEvents, group, role);
@@ -553,7 +552,7 @@ function TraceRowItem({
     headline = header;
   }
   // What the dot has to say. Deliberately about state, not category: the
-  // row's own text already names the category ("联网搜索 …", "检索", or the
+  // row's own text already names the category ("web search …", "search", or the
   // model's own sentence), so a glyph repeating it spent the one pre-text
   // position in the row on something the reader can already see. Where the
   // step stands is the part the text never says.

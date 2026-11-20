@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import type { BlockPreviewKind } from '../model/block-previews'
 import NoteMath from './NoteMath'
+import { englishLabel } from "@/lib/english-labels";
 
 /** Non-interactive samples: previews never create tasks, fetch media, or run AI. */
 export default function NoteBlockPreview({
@@ -34,7 +35,7 @@ export default function NoteBlockPreview({
     <div className="dt-note-preview-section">
       <div className={`dt-note-preview-heading level-${level}`}>
         {toggle && <ChevronDown size={15} />}
-        {englishLabel(`Heading ${level}`, `Heading ${level}`})
+        {englishLabel(`Heading ${level}`, `Heading ${level}`)}
       </div>
       <p className={toggle ? 'dt-note-preview-toggle-body' : ''}>
         {"Give this section a clear place in your notes."}

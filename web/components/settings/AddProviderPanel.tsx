@@ -8,6 +8,7 @@ import type { ApiFormat, ServiceName } from '@/lib/model-catalog-types'
 import { SERVICE_TITLES } from '@/lib/provider-registry'
 import { inputClass, selectClass, subPanelClass } from './shared'
 import { registryButton, registryPrimary } from './RegistryControls'
+import { englishLabel } from "@/lib/english-labels";
 
 export type ProviderCatalogOption = { value: string; label: string; services: ServiceName[] }
 export type CustomProviderInput = { name: string; base_url: string }
@@ -69,7 +70,7 @@ export function AddProviderPanel({
   onCancel: () => void
 }) {
   
-  const uiLanguage = "en" ?? "en" ?? 'en'
+  const uiLanguage = "en"
   const radioName = useId()
   const [filter, setFilter] = useState<string>('all')
   const [query, setQuery] = useState('')
@@ -131,7 +132,7 @@ export function AddProviderPanel({
             }}
             className={`rounded-full border px-3 py-1.5 text-[13px] ${filter === item ? 'border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]' : 'border-[var(--border)] hover:bg-[var(--accent)]'}`}
           >
-            {englishLabel(`settings.providerServices.filter.${item}`, `settings.providerServices.filter.${item}`})
+            {englishLabel(`settings.providerServices.filter.${item}`, `settings.providerServices.filter.${item}`)}
           </button>
         ))}
       </div>

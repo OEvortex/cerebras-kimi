@@ -45,7 +45,7 @@ function isStructurallyCompleteResearchReport(content: string): boolean {
   const numberedSections = normalized.match(/^##\s+\d+\.\s*\S/gm) ?? [];
   if (numberedSections.length < 3) return false;
   if (normalized.endsWith("</details>")) return true;
-  return /[.!?。！？)\]）】]$/.test(normalized);
+  return /[.!?)\]]$/.test(normalized);
 }
 
 export function normalizeDeepResearchReportFormatting(content: string): string {

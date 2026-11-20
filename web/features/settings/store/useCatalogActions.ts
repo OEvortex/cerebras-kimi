@@ -1,6 +1,4 @@
 import { useCallback } from "react";
-import type { TFunction } from "i18next";
-
 import {
   CONNECTABLE_SERVICES,
   type Catalog,
@@ -33,7 +31,6 @@ type UseCatalogActionsParams = {
   mutateCatalog: (mutator: (next: Catalog) => void) => void;
   embeddingDefaultDim: (binding?: string) => string;
   setToast: (value: string) => void;
-  t: TFunction;
 };
 
 export function useCatalogActions({

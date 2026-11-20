@@ -1024,7 +1024,7 @@ function BookPageInner() {
   const openBook = detail?.book || pendingBook || null
   return (
     <div className="flex h-full w-full min-w-0 flex-col">
-      {/* 「书 / this book」: the book switches to the others from the bar. */}
+      {/* this book: the book switches to the others from the bar. */}
       {requestedBookId && openBook && (
         <div className="flex min-w-0 shrink-0 items-center">
           <BookCrumb id={openBook.id} label={openBook.title || "Untitled book"} />

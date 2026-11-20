@@ -65,7 +65,7 @@ export function favoriteTranscript(markdown: string): { role: string; content: s
       )
         fence = ''
     }
-    const role = !fence && /^##\s+(User|Assistant|System|用户|助手|系统)\s*$/i.exec(line)?.[1]
+    const role = !fence && /^##\s+(User|Assistant|System)\s*$/i.exec(line)?.[1]
     if (role) parts.push({ role, content: '' })
     else {
       if (!parts.length) parts.push({ role: '', content: '' })
@@ -90,7 +90,7 @@ export function favoriteAnswer(markdown: string): { question: string; answer: st
     }
     if (
       !fence &&
-      /^#{1,6}\s+(?:answer|solution|explanation|答案|参考答案|解答|解析)(?:\s+(?:and\s+explanation|与解析))?(?:\s*[：:]\s*.*|\s*)$/i.test(
+      /^#{1,6}\s+(?:answer|solution|explanation)(?:\s+and\s+explanation)?(?:\s*:\s*.*|\s*)$/i.test(
         line
       )
     ) {

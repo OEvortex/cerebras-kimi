@@ -220,7 +220,7 @@ export function ReaderPane({
   // re-rendered the button as `disabled` (all four selection-gated actions
   // declare `requires: ["selection"]`), and the browser then refused to
   // dispatch the rest of the activation sequence to a disabled control. No
-  // fetch, no spinner, no error: 引导我 / 翻译成英文 / 翻译成中文 / 解释词汇
+  // fetch, no spinner, no error: guide me / translate to English / explain vocabulary
   // have been unreachable by pointer since the toolbar shipped.
   const [popoverOpen, setPopoverOpen] = useState(false);
 

@@ -14,7 +14,7 @@ const listed = (session: SessionSummary) =>
   !isLearningSession(session);
 
 /**
- * 「聊天 / this conversation」: the conversation as the page bar's instance
+ * this conversation: the conversation as the page bar's instance
  * crumb. It opens onto the conversations the sidebar lists — same filter:
  * no archived ones, no tutor side threads, no learning sessions (those live
  * under their study record) — with a new chat on top and the full history

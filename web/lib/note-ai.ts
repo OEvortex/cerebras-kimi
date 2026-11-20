@@ -102,7 +102,7 @@ export async function streamSelectionEdit({
   return edited
 }
 
-/** Annotate a whole page: `【term】` and `《statement》` markers, nothing else. */
+/** Annotate a whole page: `[term]` and `<statement>` markers, nothing else. */
 export async function autoMarkPage(text: string, signal?: AbortSignal): Promise<string> {
   const response = await apiFetch(apiUrl('/api/documents/actions/automark'), {
     method: 'POST',

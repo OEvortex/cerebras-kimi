@@ -83,7 +83,7 @@ function MasteryPathRoute() {
             // The button they pressed is the request; the conversation opens
             // by sending it rather than by asking them to phrase it again.
             setPendingPrompt(
-              masteryOpeningMessage("outline", t),
+              masteryOpeningMessage("outline"),
               MASTERY_OPENING_SCOPE,
             );
             setPendingLLMSelection(

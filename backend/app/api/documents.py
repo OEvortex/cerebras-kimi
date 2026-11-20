@@ -1,9 +1,9 @@
 """Note pages (the Note tab and Co-Writer) — pages, review queue, assets, threads.
 
-Pages are stored one directory per page under ``<data_dir>/documents``. A page
-carries BlockNote blocks, a Markdown projection, a revision counter for
-optimistic concurrency, and a review queue of proposed edits that the learner
-accepts or dismisses one by one.
+Pages live in the shared SQLite database. A page carries BlockNote blocks, a
+Markdown projection, a revision counter for optimistic concurrency, and a
+review queue of proposed edits that the learner accepts or dismisses one by
+one.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, Response, StreamingResponse
+from fastapi.responses import Response, StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from ..config import get_settings
@@ -554,10 +554,8 @@ async def upload_note_asset(doc_id: str, request: Request, file: UploadFile = Fi
     data = await file.read(25 * 1024 * 1024 + 1)
     if not data or len(data) > 25 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Attachments must be between 1 byte and 25 MB")
-    folder = storage.doc_root(page_id) / "assets"
-    folder.mkdir(parents=True, exist_ok=True)
     name = uuid.uuid4().hex + suffix
-    (folder / name).write_bytes(data)
+    storage.save_asset(page_id, name, data, (file.content_type or "").split(";")[0].strip())
     workspace = request.query_params.get("dt_workspace") or ""
     return {
         "url": f"/api/documents/{page_id}/assets/{name}"
@@ -571,10 +569,15 @@ def read_note_asset(doc_id: str, name: str):
     page_id = _doc_id(doc_id)
     if not re.fullmatch(r"[0-9a-f]{32}\.(png|jpg|webp|gif|mp3|wav|mp4|pdf)", name):
         raise HTTPException(status_code=404, detail="Attachment not found")
-    path = storage.doc_root(page_id) / "assets" / name
-    if not path.is_file():
+    asset = storage.load_asset(page_id, name)
+    if asset is None:
         raise HTTPException(status_code=404, detail="Attachment not found")
-    return FileResponse(path, headers={"X-Content-Type-Options": "nosniff"})
+    data, content_type = asset
+    return Response(
+        data,
+        media_type=content_type or "application/octet-stream",
+        headers={"X-Content-Type-Options": "nosniff"},
+    )
 
 
 class ClipRequest(BaseModel):

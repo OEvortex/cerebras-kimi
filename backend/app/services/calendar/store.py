@@ -73,7 +73,12 @@ class CalendarStore:
 
     @contextmanager
     def connect(self, *, write=False):
-        db = sqlite3.connect(self.path, timeout=15)
+        db = sqlite3.connect(self.path, timeout=30)
+        try:
+            db.execute("PRAGMA journal_mode=WAL")
+        except sqlite3.OperationalError:
+            pass
+        db.execute("PRAGMA busy_timeout=30000")
         db.execute("PRAGMA foreign_keys=ON")
         try:
             if write:
@@ -564,4 +569,5 @@ class CalendarStore:
 
 
 def get_calendar_store():
-    return CalendarStore(get_settings().data_dir / "calendar" / "calendar.sqlite")
+    # Calendars share the one application database.
+    return CalendarStore(get_settings().sessions_db)

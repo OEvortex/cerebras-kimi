@@ -93,7 +93,7 @@ export default memo(function ResearchConfigPanel({
     next: DeepResearchFormConfig[K],
   ) => onChange({ ...value, [key]: next });
 
-  const rawSummary = summarizeResearchConfig(value, t);
+  const rawSummary = summarizeResearchConfig(value);
   const summary =
     rawSummary === "Incomplete settings" ? undefined : rawSummary;
 

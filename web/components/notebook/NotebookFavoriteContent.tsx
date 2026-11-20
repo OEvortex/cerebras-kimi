@@ -16,11 +16,7 @@ const Markdown = dynamic(() => import('@/components/common/MarkdownRenderer'), {
 const ROLE: Record<string, string> = {
   user: 'user',
   assistant: 'assistant',
-  system: 'system',
-  用户: 'user',
-  助手: 'assistant',
-  系统: 'system',
-}
+  system: 'system',}
 
 /** Read-only source content. Opening a favorite never starts an AI run or changes the archive. */
 export default function NotebookFavoriteContent({

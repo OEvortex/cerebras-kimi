@@ -4,8 +4,6 @@ import {
   type MutableRefObject,
   type SetStateAction,
 } from "react";
-import type { TFunction } from "i18next";
-
 import { apiFetch, apiUrl, asJsonOrThrow } from "@/shared/api/client";
 import {
   normalizeLearningDisplay,
@@ -60,7 +58,6 @@ type UseDraftLifecycleParams = {
   setFocusModel: Dispatch<SetStateAction<IncompleteModel | null>>;
   setModelTests: Dispatch<SetStateAction<Record<string, ModelTestState>>>;
   pushRoute: (href: string) => void;
-  t: TFunction;
 };
 
 export function useDraftLifecycle({
@@ -90,7 +87,6 @@ export function useDraftLifecycle({
   setFocusModel,
   setModelTests,
   pushRoute,
-  t,
 }: UseDraftLifecycleParams) {
   const draftEnvelope = useCallback(
     () => ({

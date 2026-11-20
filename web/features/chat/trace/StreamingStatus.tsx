@@ -154,13 +154,13 @@ function getDeepResearchStatusLabel(
 
     if (event.stage === "reporting") {
       const label = String(meta.label || "").toLowerCase();
-      if (label.includes("intro") || label.includes("引言")) {
+      if (label.includes("intro") || label.includes("introduction")) {
         return "Reporting Intro";
       }
-      if (label.includes("conclusion") || label.includes("结论")) {
+      if (label.includes("conclusion") || label.includes("conclusion")) {
         return "Reporting Conclusion";
       }
-      if (label.includes("section") || label.includes("章节")) {
+      if (label.includes("section") || label.includes("section")) {
         const sectionIndex = parsePositiveInt(meta.section_index);
         return sectionIndex
           ? `Reporting Section #${sectionIndex}`

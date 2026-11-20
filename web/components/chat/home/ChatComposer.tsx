@@ -345,7 +345,6 @@ export default memo(function ChatComposer({
 
   // One selection summary for files, references, and conversation resources.
   const contextTreeItems = buildContextTreeItems({
-    t,
     attachments,
     selectedKnowledgeBases,
     knowledgeBases,
@@ -378,7 +377,6 @@ export default memo(function ChatComposer({
     answerMode,
     partnerLinks,
   } = buildTrayConfig({
-    t,
     capabilityLabel,
     modeInTray,
     activeCap,
@@ -446,7 +444,6 @@ export default memo(function ChatComposer({
       : sendLabel;
 
   const resourceItems = buildKnowledgeResourceItems({
-    t,
     knowledgeBases,
     selectedKnowledgeBases,
     onToggleKB,

@@ -108,7 +108,10 @@ class SQLiteCronRepository:
         """Preserve transaction handling and close without relying on garbage collection."""
         connection = sqlite3.connect(self.path, timeout=30, isolation_level=None)
         try:
-            connection.execute("PRAGMA journal_mode=WAL")
+            try:
+                connection.execute("PRAGMA journal_mode=WAL")
+            except sqlite3.OperationalError:
+                pass
             connection.execute("PRAGMA busy_timeout=30000")
             connection.execute("PRAGMA synchronous=NORMAL")
             with connection:

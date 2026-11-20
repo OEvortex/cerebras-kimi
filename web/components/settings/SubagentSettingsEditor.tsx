@@ -202,39 +202,39 @@ const DISPLAY_NAMES: Record<string, string> = {
 // the agent (a real flag, a native prompt field, or a first-message prefix).
 const SYSTEM_PROMPT_HINT: Record<string, Lang> = {
   grok: {
-    zh: "通过 Grok CLI 的 rules 参数传入额外教学或委派指令。",
+    zh: "Additional teaching or delegation instructions are passed through Grok CLI's rules option.",
     en: "Additional teaching or delegation instructions are passed through Grok CLI's rules option.",
   },
   claude_code: {
-    zh: "追加到该智能体的系统提示（--append-system-prompt）。",
+    zh: "Appended to the agent's system prompt (--append-system-prompt).",
     en: "Appended to the agent's system prompt (--append-system-prompt).",
   },
   kimi: {
-    zh: "Kimi CLI 没有系统提示 flag——该指令会前缀在每个新会话的第一条消息上。",
+    zh: "Kimi CLI has no system-prompt flag — the instruction is prefixed to each new session's first message.",
     en: "Kimi CLI has no system-prompt flag — the instruction is prefixed to each new session's first message.",
   },
   opencode: {
-    zh: "通过服务器 API 的 system 字段注入到每个新会话。",
+    zh: "Injected into each new session via the server API's system field.",
     en: "Injected into each new session via the server API's system field.",
   },
   mimo: {
-    zh: "通过服务器 API 的 system 字段注入到每个新会话。",
+    zh: "Injected into each new session via the server API's system field.",
     en: "Injected into each new session via the server API's system field.",
   },
   hermes: {
-    zh: "Hermes 没有系统提示 flag——该指令会前缀在每个新会话的第一条消息上。",
+    zh: "Hermes has no system-prompt flag — the instruction is prefixed to each new session's first message.",
     en: "Hermes has no system-prompt flag — the instruction is prefixed to each new session's first message.",
   },
   hermes_remote: {
-    zh: "新会话（或远端会话已失效）时，通过 Hermes 网关 API 的 instructions 字段注入。",
+    zh: "Sent through the Hermes gateway API's instructions field for a fresh or expired session.",
     en: "Sent through the Hermes gateway API's instructions field for a fresh or expired session.",
   },
   openclaw: {
-    zh: "该指令会前缀在每个新 OpenClaw session key 的第一条消息上。",
+    zh: "The instruction is prefixed to the first message for each new OpenClaw session key.",
     en: "The instruction is prefixed to the first message for each new OpenClaw session key.",
   },
   deepseek_harness: {
-    zh: "该指令会前缀在每个新 DeepSeek Harness 会话的第一条消息上。",
+    zh: "The instruction is prefixed to the first message in each new DeepSeek Harness session.",
     en: "The instruction is prefixed to the first message in each new DeepSeek Harness session.",
   },
 };
@@ -243,21 +243,21 @@ const PERMISSION_MODES: { value: string; label: Lang }[] = [
   {
     value: "bypassPermissions",
     label: {
-      zh: "绕过权限 · 全自主（推荐）",
+      zh: "Bypass permissions · autonomous (recommended)",
       en: "Bypass permissions · autonomous (recommended)",
     },
   },
   {
     value: "acceptEdits",
-    label: { zh: "自动接受编辑", en: "Accept edits automatically" },
+    label: { zh: "Accept edits automatically", en: "Accept edits automatically" },
   },
   {
     value: "default",
-    label: { zh: "默认 · 可能等待确认", en: "Default · may wait for prompts" },
+    label: { zh: "Default · may wait for prompts", en: "Default · may wait for prompts" },
   },
   {
     value: "plan",
-    label: { zh: "计划模式 · 只读", en: "Plan mode · read-only" },
+    label: { zh: "Plan mode · read-only", en: "Plan mode · read-only" },
   },
 ];
 
@@ -265,29 +265,29 @@ const GROK_PERMISSION_MODES: { value: string; label: Lang }[] = [
   {
     value: "dontAsk",
     label: {
-      zh: "不询问 · 拒绝需审批操作（默认）",
+      zh: "Don't ask · deny approval requests (default)",
       en: "Don't ask · deny approval requests (default)",
     },
   },
   {
     value: "plan",
-    label: { zh: "Plan（兼容模式）", en: "Plan (compatibility mode)" },
+    label: { zh: "Plan (compatibility mode)", en: "Plan (compatibility mode)" },
   },
   {
     value: "default",
-    label: { zh: "默认权限", en: "Default permissions" },
+    label: { zh: "Default permissions", en: "Default permissions" },
   },
   {
     value: "acceptEdits",
-    label: { zh: "自动接受编辑", en: "Accept edits automatically" },
+    label: { zh: "Accept edits automatically", en: "Accept edits automatically" },
   },
   {
     value: "auto",
-    label: { zh: "自动评估权限", en: "Automatically evaluate permissions" },
+    label: { zh: "Automatically evaluate permissions", en: "Automatically evaluate permissions" },
   },
   {
     value: "bypassPermissions",
-    label: { zh: "绕过权限", en: "Bypass permissions" },
+    label: { zh: "Bypass permissions", en: "Bypass permissions" },
   },
 ];
 
@@ -298,28 +298,28 @@ function defaultsForKind(kind: string): typeof DEFAULTS {
 }
 
 const SANDBOXES: { value: string; label: Lang }[] = [
-  { value: "read-only", label: { zh: "只读", en: "Read-only" } },
+  { value: "read-only", label: { zh: "Read-only", en: "Read-only" } },
   {
     value: "workspace-write",
-    label: { zh: "工作目录可写（推荐）", en: "Workspace write (recommended)" },
+    label: { zh: "Workspace write (recommended)", en: "Workspace write (recommended)" },
   },
-  { value: "danger-full-access", label: { zh: "完全访问", en: "Full access" } },
+  { value: "danger-full-access", label: { zh: "Full access", en: "Full access" } },
   {
     value: "bypass",
-    label: { zh: "绕过沙箱与审批", en: "Bypass sandbox & approvals" },
+    label: { zh: "Bypass sandbox & approvals", en: "Bypass sandbox & approvals" },
   },
 ];
 
 const APPROVALS: { value: string; label: Lang }[] = [
   {
     value: "never",
-    label: { zh: "从不询问（推荐）", en: "Never ask (recommended)" },
+    label: { zh: "Never ask (recommended)", en: "Never ask (recommended)" },
   },
-  { value: "on-failure", label: { zh: "失败时询问", en: "On failure" } },
-  { value: "on-request", label: { zh: "按需询问", en: "On request" } },
+  { value: "on-failure", label: { zh: "On failure", en: "On failure" } },
+  { value: "on-request", label: { zh: "On request", en: "On request" } },
   {
     value: "untrusted",
-    label: { zh: "不可信命令时询问", en: "Untrusted commands" },
+    label: { zh: "Untrusted commands", en: "Untrusted commands" },
   },
 ];
 

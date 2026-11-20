@@ -9,7 +9,6 @@ settings page exposes (create, rename, archive, migrate, browse).
 
 from __future__ import annotations
 
-import json
 import os
 import shutil
 import threading
@@ -78,20 +77,18 @@ def _validate_name(value: Any) -> str:
 
 
 class WorkspaceRegistry:
-    """JSON-backed workspace catalog rooted at ``Settings.workspace_dir``."""
+    """Workspace catalog stored in the shared database."""
 
     def __init__(self, settings: Settings) -> None:
         self._settings = settings
-        self._registry_path = settings.data_dir / "workspaces.json"
         self._lock = threading.RLock()
 
     # -- persistence ------------------------------------------------------
 
     def _load(self) -> dict[str, Any]:
-        try:
-            raw = json.loads(self._registry_path.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            raw = {}
+        from ..store import database
+
+        raw = database.get_state(self._settings, "workspaces", {})
         if not isinstance(raw, dict):
             raw = {}
         root = str(raw.get("root") or "").strip()
@@ -105,10 +102,9 @@ class WorkspaceRegistry:
         return data
 
     def _save(self, data: dict[str, Any]) -> None:
-        self._registry_path.parent.mkdir(parents=True, exist_ok=True)
-        temporary = self._registry_path.with_suffix(".tmp")
-        temporary.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
-        temporary.replace(self._registry_path)
+        from ..store import database
+
+        database.put_state(self._settings, "workspaces", data)
 
     @property
     def root(self) -> Path:
@@ -148,7 +144,7 @@ class WorkspaceRegistry:
             known.add(workspace_id)
             changed = True
         data["workspaces"] = rows
-        if changed and self._registry_path.exists():
+        if changed:
             self._save(data)
 
     # -- rows -------------------------------------------------------------

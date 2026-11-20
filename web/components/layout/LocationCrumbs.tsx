@@ -10,7 +10,7 @@ import { formatRelativeTime } from '@/lib/relative-time'
 import type { PageEntry, PageSection } from '@/components/sidebar/page-sections'
 
 /**
- * The top-left of every page reads 「feature / one use of it」: the feature
+ * The top-left of every page reads feature / one use of it: the feature
  * as a soft chip that opens onto the other features of its shelf, and the
  * open session, document or folder as plain text beside it that opens onto
  * the others of its kind. The page bar hosts them; views with a toolbar of

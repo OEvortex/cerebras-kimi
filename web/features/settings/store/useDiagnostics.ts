@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { TFunction } from "i18next";
-
 import { apiFetch, apiUrl } from "@/shared/api/client";
 import type {
   Catalog,
@@ -22,7 +20,6 @@ import type { DiagnosticsResult, EmbeddingCapabilities } from "./types";
 type UseDiagnosticsParams = {
   catalogEditable: boolean | null;
   draft: Catalog;
-  t: TFunction;
 };
 
 export function useDiagnostics({

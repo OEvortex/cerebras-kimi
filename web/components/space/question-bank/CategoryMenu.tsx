@@ -181,7 +181,7 @@ export default function CategoryMenu({
               onChange={(event) => setName(event.target.value)}
               onKeyDown={(event) => {
                 // An IME's enter confirms the candidate word; committing on it
-                // would file a half-typed 中文 name.
+                // would file a half-typed non-English name.
                 if (event.key === "Enter" && !event.nativeEvent.isComposing)
                   void handleCreate();
               }}

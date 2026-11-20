@@ -22,7 +22,7 @@ import type { Book } from '@/lib/book-types'
 
 /**
  * The instance crumb of each kind of record, handed up into the page bar:
- * 「feature / this one」, opening onto the others of its kind. Each lists
+ * feature / this one, opening onto the others of its kind. Each lists
  * what the feature's own page lists, so the two never disagree.
  */
 

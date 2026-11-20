@@ -160,7 +160,7 @@ export default function useNoteSlashItems({
           'Ask Dito',
           'Suggested',
           'Write, explain or improve this part of your note.',
-          ['ai', '生成', '续写'],
+          ['ai', 'generate', 'continue'],
           Sparkles,
           () => onAI(''),
           'ai'
@@ -169,7 +169,7 @@ export default function useNoteSlashItems({
           'Reference a source',
           'Suggested',
           'Bring in a passage from your reading, chats or knowledge bases.',
-          ['source', '引用', '知识'],
+          ['source', 'reference', 'knowledge'],
           BookOpen,
           () =>
             containerRef.current?.dispatchEvent(new CustomEvent('note-sources', { bubbles: true })),
@@ -179,7 +179,7 @@ export default function useNoteSlashItems({
           'Insert favorite',
           'Suggested',
           'Keep an original answer with its source.',
-          ['favorite', '收藏'],
+          ['favorite', 'favorite'],
           Bookmark,
           () =>
             containerRef.current?.dispatchEvent(
@@ -192,7 +192,7 @@ export default function useNoteSlashItems({
           'Callout',
           'Basic blocks',
           'Highlight a key idea, tip or warning.',
-          ['callout', '标注', '提示'],
+          ['callout', 'annotation', 'note'],
           Info,
           () => insert({ type: 'callout' }),
           'callout'
@@ -201,17 +201,17 @@ export default function useNoteSlashItems({
           'Page link',
           'Basic blocks',
           'Link to another notebook page.',
-          ['page', '页面', '链接'],
+          ['page', 'page', 'link'],
           FileText,
           () => editor.getExtension(SuggestionMenu)?.openSuggestionMenu('[['),
           'pageLink'
         ),
         ...(
           [
-            ['image', 'Image', ImageIcon, 'image/png,image/jpeg,image/gif,image/webp', '图片'],
-            ['video', 'Video', Film, 'video/mp4', '视频'],
-            ['audio', 'Audio', Music, 'audio/mpeg,audio/wav', '音频'],
-            ['file', 'File', Upload, noteMediaAccept, '文件'],
+            ['image', 'Image', ImageIcon, 'image/png,image/jpeg,image/gif,image/webp', 'image'],
+            ['video', 'Video', Film, 'video/mp4', 'video'],
+            ['audio', 'Audio', Music, 'audio/mpeg,audio/wav', 'audio'],
+            ['file', 'File', Upload, noteMediaAccept, 'file'],
           ] as const
         ).map(([key, label, Icon, accept, alias]) =>
           item(
@@ -235,7 +235,7 @@ export default function useNoteSlashItems({
           'Web bookmark',
           'Media',
           'Save a link with a title and a short description.',
-          ['bookmark', '书签'],
+          ['bookmark', 'bookmark'],
           Bookmark,
           () => insert({ type: 'webCard' }),
           'bookmark'
@@ -244,7 +244,7 @@ export default function useNoteSlashItems({
           'Embed',
           'Media',
           'Display an external page that allows embedding.',
-          ['embed', '嵌入'],
+          ['embed', 'embed'],
           Globe,
           () => insert({ type: 'webCard', props: { mode: 'embed' } }),
           'embed'
@@ -253,7 +253,7 @@ export default function useNoteSlashItems({
           'HTML',
           'Media',
           'Preview HTML inside an isolated frame.',
-          ['html', '网页'],
+          ['html', 'web page'],
           FileCode,
           () => insert({ type: 'htmlEmbed' }),
           'htmlEmbed'
@@ -263,7 +263,7 @@ export default function useNoteSlashItems({
             { table: 'Task table', board: 'Task board', list: 'Task list' }[view],
             'Linked views',
             'View and update tasks from this workspace.',
-            ['task', view, '任务', { table: '表格', board: '看板', list: '列表' }[view]],
+            ['task', view, 'task', { table: 'table', board: 'board', list: 'list' }[view]],
             Table2,
             () => insert({ type: 'taskView', props: { view } }),
             `task_${view}`
@@ -273,7 +273,7 @@ export default function useNoteSlashItems({
           'Table of contents',
           'Advanced blocks',
           'Jump to headings; updates as your page changes.',
-          ['toc', '目录'],
+          ['toc', 'table of contents'],
           ListTree,
           () => insert({ type: 'tableOfContents' }),
           'toc'
@@ -282,7 +282,7 @@ export default function useNoteSlashItems({
           'Math formula',
           'Advanced blocks',
           'Write a mathematical expression using LaTeX.',
-          ['math', '公式'],
+          ['math', 'formula'],
           Sigma,
           () => insert({ type: 'math' }),
           'math',
@@ -293,7 +293,7 @@ export default function useNoteSlashItems({
             `Toggle heading ${level}`,
             'Advanced blocks',
             'Keep supporting notes inside a collapsible heading.',
-            ['toggle', '折叠', `h${level}`],
+            ['toggle', 'toggle', `h${level}`],
             [Heading1, Heading2, Heading3][level - 1],
             () =>
               insert({ type: 'toggleHeading', props: { level }, children: [{ type: 'paragraph' }] }),
@@ -305,7 +305,7 @@ export default function useNoteSlashItems({
             `${count} columns`,
             'Advanced blocks',
             'Arrange related ideas side by side. Stacks on small screens.',
-            ['columns', '列', String(count)],
+            ['columns', 'column', String(count)],
             Columns2,
             () =>
               insert({
@@ -322,7 +322,7 @@ export default function useNoteSlashItems({
           'Date',
           'Inline',
           'Add an editable date in your text.',
-          ['date', '日期'],
+          ['date', 'date'],
           CalendarDays,
           () =>
             editor.insertInlineContent([
@@ -335,7 +335,7 @@ export default function useNoteSlashItems({
           'Inline formula',
           'Inline',
           'Place a formula within a sentence.',
-          ['inline math', '行内公式'],
+          ['inline math', 'inline formula'],
           Sigma,
           () => editor.insertInlineContent([{ type: 'inlineMath', props: { formula: 'x^2' } }, ' ']),
           'inlineMath',

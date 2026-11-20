@@ -44,7 +44,7 @@ function PreviewRequest({
   const { draft } = useSettings()
   const [text, setText] = useState(() =>
     "en"?.startsWith('zh')
-      ? '你好，我是你的学习伙伴。让我们一起探索新的知识。'
+      ? 'Hello, I am your learning companion. Let us explore new knowledge together.'
       : 'Hello, I am your learning companion. Let us explore something new together.'
   )
   const [pending, setPending] = useState(false)

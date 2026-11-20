@@ -83,7 +83,7 @@ export function TopicAtlas({
               // study one the dashboard's own button opens.
               onClick={() =>
                 setPendingPrompt(
-                  masteryOpeningMessage('review', t, {
+                  masteryOpeningMessage('review',{
                     dueTitles: firstDueTopic.reviews
                       .filter(review => review.due)
                       .slice(0, 5)

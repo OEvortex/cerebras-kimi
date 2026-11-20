@@ -36,11 +36,11 @@ export function looksLikeCrisisRedirect(text: string): boolean {
   return (
     t.includes("cannot provide crisis intervention") ||
     t.includes("i am concerned you may be in danger") ||
-    t.includes("不能做危机干预") ||
-    t.includes("可能处于危险中") ||
+    t.includes("cannot do crisis intervention") ||
+    t.includes("may be in danger") ||
     // optional helpline_text appended by render_redirect
-    t.includes("转介") ||
-    t.includes("热线")
+    t.includes("referral") ||
+    t.includes("hotline")
   );
 }
 

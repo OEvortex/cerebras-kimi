@@ -406,7 +406,7 @@ export default function SaveToNotebookModal({
               // Partial success: the save happened, but say what missed.
               const names = rejected
                 .map((id) => notebooks.find((n) => n.id === id)?.name ?? id)
-                .join("、");
+                .join(", ");
               setError(`Could not save to: ${names}`);
             }
             onSaved?.({ summary });

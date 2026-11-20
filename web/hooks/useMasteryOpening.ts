@@ -37,7 +37,7 @@ export function useMasteryOpening({
     if (isStreaming || openingSentRef.current === pathId) return;
     const opening =
       consumePendingPrompt(MASTERY_OPENING_SCOPE).trim() ||
-      masteryOpeningMessage(sessionMode, t);
+      masteryOpeningMessage(sessionMode);
     // Study mode has no automatic opening. Latch only after submitting.
     if (opening && submit(opening)) openingSentRef.current = pathId;
   }, [hasMessages, pathId, sessionError, sessionLoading, sessionMode, isStreaming, submit, topicReady]);

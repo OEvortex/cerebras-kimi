@@ -245,7 +245,7 @@ export default function NoteEditor({
           sideMenu={() => <NoteEditorHandles editor={editor} />}
           floatingUIOptions={SIDE_MENU_FLOATING}
         />
-        {['/', '、'].map(trigger => (
+        {['/', ', '].map(trigger => (
           <SuggestionMenuController
             key={trigger}
             triggerCharacter={trigger}
@@ -254,7 +254,7 @@ export default function NoteEditor({
               return (
                 !parent.type.spec.code &&
                 !parent.type.isInGroup('tableContent') &&
-                (trigger !== '、' || parent.textContent.length === 0)
+                (trigger !== ', ' || parent.textContent.length === 0)
               )
             }}
             getItems={getItems}

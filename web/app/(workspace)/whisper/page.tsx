@@ -31,7 +31,7 @@ function looksLikeRoomEnded(text: string): boolean {
   const t = (text || "").toLowerCase();
   return (
     t.includes("whisper room has ended") ||
-    t.includes("房间已结束") ||
+    t.includes("room has ended") ||
     t.includes("room has ended")
   );
 }
@@ -256,8 +256,8 @@ export default function WhisperPage() {
 
   function handleEnd() {
     if (seat !== "trainee" || !roomId || sendBlocked) return;
-    // psych-academy is_end_command: 结束 | 复盘 | stop | debrief
-    startTurn("结束");
+    // psych-academy is_end_command: end | review | stop | debrief
+    startTurn("end");
   }
 
   function switchSeat(next: WhisperSeat) {

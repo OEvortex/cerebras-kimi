@@ -13,7 +13,7 @@ Browser ──GET/POST /api/*──────────────▶ FastA
 
 - **`backend/`** — FastAPI/Uvicorn app (`app/main.py`). REST handlers live in `app/api/handlers.py`; turn commands and feature-channel messages are dispatched directly by the REST+SSE controller in `app/api/realtime.py`, which drives the vtx agent loop in `app/agent/runtime.py`. There is no ACP or JSON-RPC layer.
 - **`web/`** — Vite + React 19 + TanStack Router app (`vite.config.ts`, `src/router.tsx`). `features/chat/transport/` holds the SSE-backed `TurnSocket` and the turn protocol client; `lib/sse-socket.ts` is the shared REST+SSE shim used by the turn protocol, `lib/rpc-ws.ts`, and `lib/reconnecting-websocket.ts` for legacy feature channels. Commands are POSTed; frames arrive as named SSE events and are re-emitted with the same JSON payloads the old transport produced.
-- **DeepTutor owns sessions** — conversations live in a WAL-mode SQLite database, `data/deeptutor.sqlite3` (`sessions`, `messages`, `turns`, `vtx_items`, and an FTS5 `session_fts` index). The agent uses a real, append-only vtx `Session`, but its persistence layer is that DeepTutor database; nothing is read from or written to `~/.vtx/sessions`. Legacy `data/sessions/*.json` records are imported on first open and archived under `data/sessions-legacy/`.
+- **DeepTutor owns its state** — everything persistent lives in one WAL-mode SQLite database, `data/deeptutor.sqlite3`: conversations (`sessions`, `messages`, `turns`, `vtx_items`, FTS5 `session_fts`), settings, workspaces, notebook pages, knowledge-base text, memory/learning/mastery, question bank and reviews, calendar, cron jobs and AI edit history. The agent uses a real, append-only vtx `Session`; nothing is read from or written to `~/.vtx/sessions`. Legacy JSON/SQLite stores are imported once on first open; old `data/sessions/*.json` records are archived under `data/sessions-legacy/`.
 
 ### API surface
 
@@ -75,8 +75,8 @@ mode, AGENTS.md/skills and git context are replaced by the tutor prompt in
 - **`web`** — Exa MCP search + Jina Reader fetch (`mode=search|fetch`)
 - **`paper_search`** — arXiv paper search
 - **`knowledge_base_search`** — `search|files|read` over uploaded KBs (BM25 + citations)
-- **`memory`** — `read|write` durable learner facts (`data/memory.json`)
-- **`notes`** — `write|list|search` markdown notebook (`data/notes/`)
+- **`memory`** — `read|write` durable learner facts (stored in `data/deeptutor.sqlite3`)
+- **`notes`** — `write|list|search` markdown notebook (stored in `data/deeptutor.sqlite3`)
 - **`learning`** — `status|update|journal|weak` progress tracking
 - **`mastery`** — Guided Learning loop `topics|start|status|quiz|grade|note|leave`
 - **`quiz`** — `generate|grade`
@@ -94,7 +94,7 @@ Coding-agent tools (`apply_patch`, `read_file`, `list_files`, `codemode`,
 DeepTutor owns its provider and model catalogue. Nothing is loaded from or featured out of `~/.vtx`: no `provider_catalog`, no `~/.vtx/models/` caches, no `~/.vtx/config.yml` (`last_selected`/`recent_models`) and no `~/.vtx/dynamic_auth.json`. The vtx SDK is used **only as an execution engine** — the backend passes the selected provider, model, base URL and API key into `ConversationRuntime` explicitly. (The engine still uses vtx's own built-in model-metadata tables internally for context windows; that metadata is not used to build the settings catalogue or choose a model.)
 
 - **Built-in presets** — 62 providers (OpenAI, Anthropic, OpenRouter, DeepSeek, Zhipu, Together, Fireworks, NVIDIA, Hugging Face, Ollama, Aerolink, Kilo, WuS Router, aihubmix, Vercel AI, and more) live in `backend/app/provider_catalog.json` and are loaded by `backend/app/provider_config.py`. They supply connection prefills and fallback model options. Each entry carries its own `base_url`, `api_key_env`, model-discovery path and parser options.
-- **User configuration** — connections (including API keys), profiles, models, the active `llm_selection` and `recent_models` — lives in `data/settings-catalog.json`. `data/settings.json` mirrors the active selection for older clients.
+- **User configuration** — connections (including API keys), profiles, models, the active `llm_selection` and `recent_models` — lives in the `kv` table of `data/deeptutor.sqlite3` (keys `settings/catalog` and `settings/selection`).
 - **Model discovery** (`/api/settings/test-provider`, `/api/settings/fetch-models`) calls each preset's own `models_endpoint` directly (e.g. Experiential Labs uses `/api/models` with a custom parser) and stores the result in DeepTutor's catalog.
 - **Provider icons** are bundled locally in `web/public/provider-icons/` (favicons fetched from the providers' domains, with a generated initials fallback), keyed by slug in `web/lib/provider-branding.ts`; provenance is recorded in `web/public/provider-icons/sources.json`. No external request is made to render them.
 - A preset key can also come from its conventional env var (e.g. `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`) when no connection is configured.
@@ -114,21 +114,27 @@ DeepTutor owns its provider and model catalogue. Nothing is loaded from or featu
 
 ## Persistence
 
-| Data | Location |
+Everything persistent except uploaded binary workspace files lives in the single
+WAL-mode database `data/deeptutor.sqlite3` (FTS5 index for session search).
+
+| Data | Table(s) |
 |---|---|
-| Conversations | `data/deeptutor.sqlite3` (WAL-mode SQLite; FTS5 index for session search) |
-| Legacy session records | `data/sessions-legacy/` (imported from `data/sessions/*.json` on first open) |
-| Knowledge bases | `data/kb/` (via `KnowledgeBaseStore`) |
-| Memory/learning/mastery/notes | `data/*.json`, `data/notes/` |
-| Extended feature stores | `data/ext/` |
-| Settings catalog/draft | `data/settings-catalog.json`, `data/settings-draft.json` |
-| Scheduled reminders | `data/cron/jobs.sqlite3` (job payloads, run history, next-run times); `data/cron/reports.json` (recent deliveries) |
-| AI edit history | `data/documents/history.json` (last 200 operations: action, mode, model, before/after text) |
-| Note pages | `data/documents/doc_<id>/` — `manifest.json` (blocks, revision), `suggestions.json` (review queue), `threads.json`, `assets/`, `review.json` (flashcard scheduling) |
-| Review schedule | `data/reviews.json` (per-card box and due time; cards come from `data/question_bank.json`) |
-| Calendars and events | `data/calendar/calendar.sqlite` (per-account calendars, recurring events, undo tokens) |
-| Workspace files | `data/workspace/` (`DT_WORKSPACE_DIR`) |
-| Model/provider config | `data/settings-catalog.json` (+ `data/settings.json` mirror); preset keys from env vars |
+| Conversations and messages | `sessions`, `messages`, `turns`, `vtx_items`, `session_fts` |
+| Settings catalog, selection and draft | `kv` (`settings/catalog`, `settings/selection`, `settings/draft`) |
+| Workspaces | `kv` (`workspaces`) |
+| Memory / learning / mastery | `kv` (`memory`, `learning`, `mastery`) |
+| Question bank and reviews | `kv` (`question_bank`, `reviews`) |
+| Notebook pages | `documents` (blocks, revision) |
+| Suggestions, threads, flashcard review | `doc_extras` |
+| Notebook assets | `doc_assets` |
+| AI edit history (last 200 operations) | `kv` (`documents/history`) |
+| Knowledge bases | `kb_meta`, `kb_docs`, `kb_chunks` |
+| Calendars, events and undo tokens | `calendars`, `events`, `undo` |
+| Scheduled reminders and delivery reports | `cron_jobs`, `kv` (`cron/reports`) |
+| Extended feature stores | `ext_items`, `kv` |
+| Uploaded workspace files | `data/files/` (binary media only) |
+| Legacy import sources | read once on first open; session JSON archived to `data/sessions-legacy/` |
+| Model/provider presets | `backend/app/provider_catalog.json` (static); API keys in `kv` or env vars |
 
 ## Development
 

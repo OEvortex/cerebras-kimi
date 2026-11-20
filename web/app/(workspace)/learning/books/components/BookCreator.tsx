@@ -22,25 +22,25 @@ import Tooltip from '@/shared/ui/Tooltip'
  * Mirrors `_LANGUAGE_LABELS` in `deeptutor/services/prompt/language.py`, which
  * has always handled all of these — the picker offered only English and
  * Chinese, so everyone else got a book in a language they didn't ask for
- * (issue #471). Labels are endonyms: someone looking for their own language
- * scans for the word they'd write it in.
+ * (issue #471). Labels are English names so the UI stays English-only.
+ * Every picker offers the same English labels.
  */
 const BOOK_LANGUAGES: Array<{ code: string; label: string }> = [
   { code: 'auto', label: 'Auto' },
   { code: 'en', label: 'English' },
-  { code: 'zh', label: '简体中文' },
-  { code: 'zh-tw', label: '繁體中文' },
-  { code: 'ja', label: '日本語' },
-  { code: 'ko', label: '한국어' },
-  { code: 'es', label: 'Español' },
-  { code: 'fr', label: 'Français' },
-  { code: 'de', label: 'Deutsch' },
-  { code: 'uk', label: 'Українська' },
-  { code: 'ru', label: 'Русский' },
-  { code: 'pt', label: 'Português' },
-  { code: 'it', label: 'Italiano' },
-  { code: 'tr', label: 'Türkçe' },
-  { code: 'vi', label: 'Tiếng Việt' },
+  { code: 'zh', label: 'Chinese (Simplified)' },
+  { code: 'zh-tw', label: 'Chinese (Traditional)' },
+  { code: 'ja', label: 'Japanese' },
+  { code: 'ko', label: 'Korean' },
+  { code: 'es', label: 'Spanish' },
+  { code: 'fr', label: 'French' },
+  { code: 'de', label: 'German' },
+  { code: 'uk', label: 'Ukrainian' },
+  { code: 'ru', label: 'Russian' },
+  { code: 'pt', label: 'Portuguese' },
+  { code: 'it', label: 'Italian' },
+  { code: 'tr', label: 'Turkish' },
+  { code: 'vi', label: 'Vietnamese' },
 ]
 
 const DEPTH_OPTIONS: Array<{ value: BookDepth; label: string; hint: string }> = [

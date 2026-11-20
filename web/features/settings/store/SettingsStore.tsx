@@ -788,7 +788,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     [providers.embedding],
   );
 
-  const diagnostics = useDiagnostics({ catalogEditable, draft, t });
+  const diagnostics = useDiagnostics({ catalogEditable, draft });
 
   const catalogActions = useCatalogActions({
     draft,
@@ -799,7 +799,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     mutateCatalog,
     embeddingDefaultDim,
     setToast,
-    t,
   });
 
   const envelopeSignature = useMemo(
@@ -872,7 +871,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setFocusModel,
     setModelTests: diagnostics.setModelTests,
     pushRoute: router.push,
-    t,
   });
 
   // ── Tour ────────────────────────────────────────────────────────────────

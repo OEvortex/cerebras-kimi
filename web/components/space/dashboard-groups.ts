@@ -75,18 +75,18 @@ export interface DashboardGroup {
 
 export const DASHBOARD_GROUPS: DashboardGroup[] = [
   {
-    label: { zh: "对话与资料", en: "Conversations & Materials" },
+    label: { zh: "Conversations & Materials", en: "Conversations & Materials" },
     items: [
       {
         key: "chat_history",
         href: "/space/chat-history",
         icon: History,
-        title: { zh: "聊天历史", en: "Chat History" },
+        title: { zh: "Chat History", en: "Chat History" },
         blurb: {
-          zh: "回顾并继续此前的对话。",
+          zh: "Review and reopen previous conversations.",
           en: "Review and reopen previous conversations.",
         },
-        unit: { zh: "段对话", en: "conversations" },
+        unit: { zh: "conversations", en: "conversations" },
         tile: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
         load: async () => (await listSessions(200, 0, { force: true })).length,
       },
@@ -94,12 +94,12 @@ export const DASHBOARD_GROUPS: DashboardGroup[] = [
         key: "notebooks",
         href: "/notebooks",
         icon: Bookmark,
-        title: { zh: "收藏夹", en: "Favorites" },
+        title: { zh: "Favorites", en: "Favorites" },
         blurb: {
-          zh: "收藏对话和资料的原文，随时引用到笔记本。",
+          zh: "Keep original conversations and sources, ready to use in your notes.",
           en: "Keep original conversations and sources, ready to use in your notes.",
         },
-        unit: { zh: "个收藏夹", en: "collections" },
+        unit: { zh: "collections", en: "collections" },
         tile: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
         load: async () => (await listNotebooks()).length,
       },
@@ -107,9 +107,9 @@ export const DASHBOARD_GROUPS: DashboardGroup[] = [
         key: "journal",
         href: "/space/journal",
         icon: NotebookPen,
-        title: { zh: "学习日志", en: "Learning journal" },
+        title: { zh: "Learning journal", en: "Learning journal" },
         blurb: {
-          zh: "查看当前目标、上次会话交接和已确认的学习记录。",
+          zh: "Inspect your mission, session handoff and confirmed records.",
           en: "Inspect your mission, session handoff and confirmed records.",
         },
         tile: "bg-teal-500/10 text-teal-600 dark:text-teal-400",
@@ -118,12 +118,12 @@ export const DASHBOARD_GROUPS: DashboardGroup[] = [
         key: "question_bank",
         href: "/space/questions",
         icon: ClipboardList,
-        title: { zh: "题库", en: "Question Bank" },
+        title: { zh: "Question Bank", en: "Question Bank" },
         blurb: {
-          zh: "跨会话回顾和整理测验题目。",
+          zh: "Review and organize quiz questions across sessions.",
           en: "Review and organize quiz questions across sessions.",
         },
-        unit: { zh: "道题", en: "questions" },
+        unit: { zh: "questions", en: "questions" },
         tile: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
         load: async () => (await listNotebookEntries({ limit: 1 })).total,
       },
@@ -131,27 +131,27 @@ export const DASHBOARD_GROUPS: DashboardGroup[] = [
         key: "knowledge",
         href: "/knowledge-bases",
         icon: BookOpen,
-        title: { zh: "知识中心", en: "Knowledge Center" },
+        title: { zh: "Knowledge Center", en: "Knowledge Center" },
         blurb: {
-          zh: "管理知识库与检索引擎。",
+          zh: "Manage knowledge bases and retrieval engines.",
           en: "Manage knowledge bases and retrieval engines.",
         },
-        unit: { zh: "个知识库", en: "knowledge bases" },
+        unit: { zh: "knowledge bases", en: "knowledge bases" },
         tile: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
         load: async () => (await listKnowledgeBases({ library: true })).length,
       },
     ],
   },
   {
-    label: { zh: "更多项目", en: "More Projects" },
+    label: { zh: "More Projects", en: "More Projects" },
     items: [
       {
         key: "whisper",
         href: "/whisper",
         icon: Ear,
-        title: { zh: "密语", en: "Whisper" },
+        title: { zh: "Whisper", en: "Whisper" },
         blurb: {
-          zh: "双席位咨询练习房间：督导只对受训者耳语。",
+          zh: "Dual-seat practice room — the supervisor whispers to the trainee only.",
           en: "Dual-seat practice room — the supervisor whispers to the trainee only.",
         },
         tile: "bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400",
@@ -170,18 +170,18 @@ export const DASHBOARD_GROUPS: DashboardGroup[] = [
  */
 export const PERSONALIZATION_GROUPS: DashboardGroup[] = [
   {
-    label: { zh: "个性化", en: "Personalization" },
+    label: { zh: "Personalization", en: "Personalization" },
     items: [
       {
         key: "agents",
         href: "/agents",
         icon: Bot,
-        title: { zh: "子智能体", en: "My Agents" },
+        title: { zh: "My Agents", en: "My Agents" },
         blurb: {
-          zh: "连接本机或远程的智能体，在对话中随时请教。",
+          zh: "Connect local or remote agents and consult them from any chat.",
           en: "Connect local or remote agents and consult them from any chat.",
         },
-        unit: { zh: "个智能体", en: "agents" },
+        unit: { zh: "agents", en: "agents" },
         tile: "bg-slate-500/10 text-slate-600 dark:text-slate-300",
         load: async () => (await listSubagentConnections()).length,
       },
@@ -189,12 +189,12 @@ export const PERSONALIZATION_GROUPS: DashboardGroup[] = [
         key: "cli_apps",
         href: "/space/cli-apps",
         icon: Terminal,
-        title: { zh: "CLI 应用", en: "CLI Apps" },
+        title: { zh: "CLI Apps", en: "CLI Apps" },
         blurb: {
-          zh: "来自 CLI-Anything 目录的命令行工具，启用后对话可直接调用。",
+          zh: "Command-line tools from the CLI-Anything catalog, callable from chat.",
           en: "Command-line tools from the CLI-Anything catalog, callable from chat.",
         },
-        unit: { zh: "个应用", en: "apps" },
+        unit: { zh: "apps", en: "apps" },
         tile: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
         // What this reader can actually use, not what the deployment installed:
         // an app they were not granted is visible on the page but is not theirs.
@@ -206,9 +206,9 @@ export const PERSONALIZATION_GROUPS: DashboardGroup[] = [
         key: "memory",
         href: "/memory",
         icon: Brain,
-        title: { zh: "记忆", en: "Memory" },
+        title: { zh: "Memory", en: "Memory" },
         blurb: {
-          zh: "查看与整理导师记住的偏好和学习经历。",
+          zh: "Review what your tutor remembers about you.",
           en: "Review what your tutor remembers about you.",
         },
         tile: "bg-rose-500/10 text-rose-600 dark:text-rose-400",

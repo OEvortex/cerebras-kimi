@@ -38,12 +38,12 @@ const INLINE_PATTERN =
   /(\*\*|__)([^\n]+?)\1|`([^`\n]+)`|\[([^\]\n]+)\]\(([^)\s]+)\)|(\*|_)([^\s*_][^\n]*?)\6(?!\w)/g;
 
 /**
- * An embedded-picture ingest marker line — ``[图片 3: image-03.png]``, the
+ * An embedded-picture ingest marker line — ``[image 3: image-03.png]``, the
  * exact fixed format the extractor emits. Matching the whole line keeps the
  * figure at the picture's original position between paragraphs; anything
  * else falls back to literal text.
  */
-const IMAGE_MARKER_PATTERN = /^\s{0,3}\[图片 \d+: ([^\]\s]+)\]\s*$/;
+const IMAGE_MARKER_PATTERN = /^\s{0,3}\[image \d+: ([^\]\s]+)\]\s*$/;
 
 /**
  * Names of embedded pictures whose marker lines appear in *text*, so a caller

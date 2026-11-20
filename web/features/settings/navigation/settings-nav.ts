@@ -118,7 +118,7 @@ export function visibleSettingsChildren(
 const MODEL_CHILDREN: SettingsLeaf[] = [
   {
     // "Voice" is already a catalog key used by voice-selection UI
-    // (音色 = timbre/voice id), so the settings nav row carries its own key.
+    // (timbre/voice id), so the settings nav row carries its own key.
     key: "voice",
     href: "/settings/voice",
     label: "settings.nav.voice",

@@ -186,8 +186,8 @@ export default function AppearanceSettingsPage() {
               Learning starts with a question. Explore an idea, connect it to
               what you know, and explain it in your own words.
             </p>
-            <p lang="zh">
-              学习从一个问题开始。探索新的想法，将它与已有的知识联系起来，再用自己的语言解释。
+            <p className="hidden" lang="zh">
+              Learning starts with a question.
             </p>
           </div>
           <button

@@ -424,7 +424,7 @@ function MaterialRow({
             {!failed && (
               <span className="hidden max-w-[45%] shrink-0 truncate sm:hidden min-[420px]:inline">
                 {collections.length
-                  ? collections.map(row => row.title).join("、")
+                  ? collections.map(row => row.title).join(", ")
                   : "Not in a collection"}{" "}
                 ·
               </span>
@@ -684,7 +684,7 @@ function DeleteMaterialDialog({
         </h2>
         <p className="mt-2 text-[12px] leading-relaxed text-[var(--muted-foreground)]">
           {collections.length
-            ? `“${material.title}” is used by ${collections.map(row => row.title).join("、")}. Deleting it removes it from those collections, along with its annotations.`
+            ? `“${material.title}” is used by ${collections.map(row => row.title).join(", ")}. Deleting it removes it from those collections, along with its annotations.`
             : `“${material.title}” and its annotations will be deleted.`}
         </p>
         {error && (

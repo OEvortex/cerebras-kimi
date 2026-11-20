@@ -47,7 +47,7 @@ import {
 
 export function ProvidersWorkspace() {
   
-  const uiLanguage = "en" ?? "en" ?? "en";
+  const uiLanguage = "en";
   const {
     catalog,
     draft,

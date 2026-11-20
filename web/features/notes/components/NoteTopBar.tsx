@@ -126,7 +126,7 @@ export default function NoteTopBar({
           <PanelLeft size={16} strokeWidth={1.7} />
         </button>
       </Tooltip>
-      {/* 「笔记本 / … / this page」: the feature opens onto the home shelf,
+      {/* this page: the feature opens onto the home shelf,
           the page onto every other page of the notebook. */}
       <nav className="dt-note-breadcrumb" aria-label={"Breadcrumb"}>
         {!embedded && feature && (

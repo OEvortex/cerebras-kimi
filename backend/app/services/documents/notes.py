@@ -1,54 +1,35 @@
 """Bridge the agent's ``notes`` tool to the Co-Writer notebook.
 
-The Learning notebook (/co-writer) lists Co-Writer pages from
-``<data_dir>/documents``.  Historically the ``notes`` tool wrote standalone
-markdown files into ``<data_dir>/notes`` instead, so notes reported as saved
-never appeared in the notebook.  Notes now live in Co-Writer; the markdown
-files are kept as a portable mirror and imported once into Co-Writer so notes
-saved before the fix remain visible too.
+Notes live in Co-Writer pages inside the shared SQLite database. The
+``notes/index`` key records which legacy markdown files were already imported;
+the import runs once, so notes saved by older versions remain visible.
 """
 
 from __future__ import annotations
 
-import json
-import os
 import re
-import time
-from pathlib import Path
 
 from ...config import get_settings
+from ...store import database
 from .storage import get_co_writer_storage
 
 _FRONTMATTER = re.compile(r"\A---\s*\n(.*?)\n---\s*\n?", re.S)
-_INDEX_NAME = ".notebook-index.json"
+_INDEX_KEY = "notes/index"
 
 
-def _legacy_dir() -> Path:
+def _legacy_dir():
     root = get_settings().data_dir / "notes"
     root.mkdir(parents=True, exist_ok=True)
     return root
 
 
-def _index_path() -> Path:
-    return _legacy_dir() / _INDEX_NAME
-
-
 def _load_index() -> dict[str, str]:
-    path = _index_path()
-    if not path.exists():
-        return {}
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return {}
+    data = database.get_state(get_settings(), _INDEX_KEY, {})
     return data if isinstance(data, dict) else {}
 
 
 def _save_index(index: dict[str, str]) -> None:
-    path = _index_path()
-    tmp = path.with_name(f".{path.name}.tmp")
-    tmp.write_text(json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8")
-    os.replace(tmp, path)
+    database.put_state(get_settings(), _INDEX_KEY, index)
 
 
 def _parse_markdown(text: str, fallback_title: str) -> tuple[str, list[str], str]:
@@ -65,14 +46,6 @@ def _parse_markdown(text: str, fallback_title: str) -> tuple[str, list[str], str
                 tags = [t.strip() for t in value.split(",") if t.strip()]
         body = text[match.end() :].lstrip("\n")
     return title, tags, body
-
-
-def _render_markdown(title: str, tags: list[str], body: str, doc_id: str) -> str:
-    return (
-        f"---\ntitle: {title}\ntags: {', '.join(tags)}\n"
-        f"notebook_id: {doc_id}\ncreated: {time.strftime('%Y-%m-%dT%H:%M:%S')}\n---\n\n"
-        f"{body}"
-    )
 
 
 def sync_legacy_notes() -> None:
@@ -95,7 +68,7 @@ def sync_legacy_notes() -> None:
 
 
 def write_note(title: str, content: str, tags: str = "") -> str:
-    """Save a note as a Co-Writer notebook page; mirror it to markdown.
+    """Save a note as a Co-Writer notebook page.
 
     Returns the new page id, which the agent can use to refer to the note.
     """
@@ -104,15 +77,6 @@ def write_note(title: str, content: str, tags: str = "") -> str:
         content=content,
         tags=[t.strip() for t in tags.split(",") if t.strip()],
     )
-    note_id = f"{doc.title.lower()[:60].strip() or 'note'}-{doc.id[:6]}"
-    note_id = re.sub(r"[^a-z0-9]+", "-", note_id).strip("-") or "note"
-    root = _legacy_dir()
-    (root / f"{note_id}.md").write_text(
-        _render_markdown(doc.title, doc.tags, content, doc.id), encoding="utf-8"
-    )
-    index = _load_index()
-    index[f"{note_id}.md"] = doc.id
-    _save_index(index)
     return doc.id
 
 

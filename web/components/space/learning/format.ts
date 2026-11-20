@@ -45,7 +45,7 @@ const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
 /**
- * "3 分钟前" / "in 2 days" — engine timestamps are epoch seconds and can point
+ * "3 minutes ago" / "in 2 days" — engine timestamps are epoch seconds and can point
  * either way (an attempt happened, a review is due).
  */
 export function formatRelative(epochSeconds: number, zh: boolean): string {

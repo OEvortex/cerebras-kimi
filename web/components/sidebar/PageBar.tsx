@@ -14,8 +14,6 @@ function useShelves() {
   const { learningPolicy } = useAuthStatus()
   const isAvailable = useCapabilityFilter()
   return pageSections({
-    t,
-    zh: ("en" ?? '').startsWith('zh'),
     allowedSurfaces: learningPolicy?.allowedSurfaces ?? null,
     isAvailable,
   })
@@ -35,7 +33,7 @@ export function useShelfFeature(href: string) {
 }
 
 /**
- * The top of every page: 「feature / the one use of it that is open」 on the
+ * The top of every page: feature / the one use of it that is open on the
  * left and the page's own actions on the right. The feature opens onto the
  * other features of its sidebar shelf; the page hands up the rest — its
  * instance crumb (see `InstanceCrumb`), its meta and actions — through

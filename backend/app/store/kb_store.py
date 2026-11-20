@@ -1,25 +1,27 @@
-"""Knowledge-base store: per-KB directories with parsed docs + chunk index.
+"""Knowledge-base store: uploaded documents + a chunk index in SQLite.
 
-Layout under ``data/kbs/<name>/``:
+Layout in the shared database (``data/deeptutor.sqlite3``)::
 
-    docs/<file>          original uploads (txt/md/pdf/docx where parseable)
-    index.json           {chunks: [{id, doc, page?, text, tokens}]}
-    meta.json            {name, created_at, doc_count, ...}
+    kb_meta    (name, payload)            {name, created_at, last_updated}
+    kb_docs    (kb, name, data, size)     original uploads (txt/md/pdf/docx)
+    kb_chunks  (kb, chunk_id, doc, text)  parsed text, one row per chunk
 
 Retrieval is dependency-free BM25-style keyword scoring — good enough for
-tutor citations without an embedding service.
+tutor citations without an embedding service. Legacy ``data/kbs/<name>/``
+directories are imported once by :mod:`app.store.database`.
 """
 
 from __future__ import annotations
 
+import io
 import json
 import math
 import re
 import time
-from pathlib import Path
 from typing import Any, List
 
 from ..config import Settings
+from ..store import database
 
 _CHUNK_SIZE = 1200
 _CHUNK_OVERLAP = 150
@@ -29,26 +31,25 @@ def _tokenize(text: str) -> list[str]:
     return re.findall(r"[a-zA-Z0-9]+", text.lower())
 
 
-def _extract_text(path: Path) -> str:
-    suffix = path.suffix.lower()
-    raw = path.read_bytes()
-    if suffix == ".pdf":
+def _extract_text(name: str, data: bytes) -> str:
+    suffix = name.rsplit(".", 1)[-1].lower() if "." in name else ""
+    if suffix == "pdf":
         try:
             from pypdf import PdfReader
 
-            reader = PdfReader(path)
-            return "\n".join((p.extract_text() or "") for p in reader.pages)
+            reader = PdfReader(io.BytesIO(data))
+            return "\n".join((page.extract_text() or "") for page in reader.pages)
         except Exception:
             return ""
-    if suffix in (".docx",):
+    if suffix == "docx":
         try:
             import docx
 
-            d = docx.Document(str(path))
-            return "\n".join(p.text for p in d.paragraphs)
+            document = docx.Document(io.BytesIO(data))
+            return "\n".join(paragraph.text for paragraph in document.paragraphs)
         except Exception:
             return ""
-    return raw.decode("utf-8", errors="replace")
+    return data.decode("utf-8", errors="replace")
 
 
 def _chunk(text: str) -> list[str]:
@@ -62,48 +63,83 @@ def _chunk(text: str) -> list[str]:
     return chunks or ([text] if text.strip() else [])
 
 
+def _safe_name(name: str) -> str:
+    return "".join(c for c in name if c.isalnum() or c in "-_ ").strip()
+
+
 class KnowledgeBaseStore:
     def __init__(self, settings: Settings) -> None:
-        self._root = settings.data_dir / "kbs"
-        self._root.mkdir(parents=True, exist_ok=True)
+        self._settings = settings
+        database.ensure_tables(settings)
 
-    def _kb_dir(self, name: str) -> Path:
-        safe = "".join(c for c in name if c.isalnum() or c in "-_ ")
-        return self._root / safe
+    # -- helpers ------------------------------------------------------------
 
-    def _meta_path(self, name: str) -> Path:
-        return self._kb_dir(name) / "meta.json"
+    @staticmethod
+    def _meta_payload(raw: Any) -> dict[str, Any]:
+        try:
+            payload = json.loads(raw) if isinstance(raw, str) else raw
+        except (TypeError, ValueError):
+            return {}
+        return payload if isinstance(payload, dict) else {}
 
-    def _index_path(self, name: str) -> Path:
-        return self._kb_dir(name) / "index.json"
+    def _meta(self, name: str) -> dict[str, Any] | None:
+        with database.connect(self._settings) as connection:
+            row = connection.execute(
+                "SELECT payload FROM kb_meta WHERE name = ?", (name,)
+            ).fetchone()
+        return None if row is None else self._meta_payload(row["payload"])
+
+    def _save_meta(self, name: str, payload: dict[str, Any]) -> None:
+        with database.connect(self._settings) as connection:
+            connection.execute(
+                """
+                INSERT INTO kb_meta (name, payload, updated_at) VALUES (?, ?, ?)
+                ON CONFLICT(name) DO UPDATE SET
+                    payload = excluded.payload,
+                    updated_at = excluded.updated_at
+                """,
+                (name, json.dumps(payload, ensure_ascii=False), time.time()),
+            )
 
     # -- CRUD ---------------------------------------------------------------
 
     def list(self) -> List[dict[str, Any]]:
+        with database.connect(self._settings) as connection:
+            rows = connection.execute(
+                "SELECT name, payload FROM kb_meta ORDER BY name"
+            ).fetchall()
+            counts = {
+                row["kb"]: row["count"]
+                for row in connection.execute(
+                    "SELECT kb, COUNT(*) AS count FROM kb_chunks GROUP BY kb"
+                )
+            }
+            doc_counts = {
+                row["kb"]: row["count"]
+                for row in connection.execute(
+                    "SELECT kb, COUNT(*) AS count FROM kb_docs GROUP BY kb"
+                )
+            }
         out = []
-        for d in sorted(self._root.iterdir()):
-            if not d.is_dir():
-                continue
-            meta = self._read_json(self._meta_path(d.name), {})
-            index = self._read_json(self._index_path(d.name), {"chunks": []})
-            docs_dir = d / "docs"
-            doc_count = len(list(docs_dir.glob("*"))) if docs_dir.exists() else 0
+        for row in rows:
+            meta = self._meta_payload(row["payload"])
+            chunks = int(counts.get(row["name"], 0))
             out.append(
                 {
-                    "name": meta.get("name", d.name),
-                    "id": d.name,
+                    "name": meta.get("name", row["name"]),
+                    "id": row["name"],
                     "is_default": False,
                     "status": "ready",
-                    "path": str(d),
+                    "path": f"sqlite:///{self._settings.sessions_db.name}?kb={row['name']}",
                     "metadata": {
                         "created_at": meta.get("created_at"),
                         "last_updated": meta.get("last_updated"),
-                        "last_indexed_count": len(index.get("chunks", [])),
+                        "last_indexed_count": chunks,
                         "rag_provider": "keyword",
                     },
                     "statistics": {
-                        "raw_documents": doc_count,
-                        "rag_initialized": bool(index.get("chunks")),
+                        "raw_documents": int(doc_counts.get(row["name"], 0)),
+                        "rag_initialized": chunks > 0,
                         "status": "ready",
                     },
                 }
@@ -111,133 +147,169 @@ class KnowledgeBaseStore:
         return out
 
     def create(self, name: str) -> dict[str, Any]:
-        kb = self._kb_dir(name)
-        (kb / "docs").mkdir(parents=True, exist_ok=True)
-        meta = {
-            "name": name,
-            "created_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
-            "last_updated": time.strftime("%Y-%m-%dT%H:%M:%S"),
-        }
-        self._write_json(self._meta_path(name), meta)
-        self._write_json(self._index_path(name), {"chunks": []})
-        return {"name": name, "id": name, "status": "ready"}
+        safe = _safe_name(name)
+        if not safe:
+            raise ValueError("Knowledge base needs a name")
+        if self._meta(safe) is None:
+            stamp = time.strftime("%Y-%m-%dT%H:%M:%S")
+            self._save_meta(safe, {"name": safe, "created_at": stamp, "last_updated": stamp})
+        return {"name": safe, "id": safe, "status": "ready"}
 
     def delete(self, name: str) -> bool:
-        import shutil
-
-        kb = self._kb_dir(name)
-        if kb.exists():
-            shutil.rmtree(kb)
-            return True
-        return False
+        safe = _safe_name(name)
+        with database.connect(self._settings) as connection:
+            exists = connection.execute(
+                "SELECT 1 FROM kb_meta WHERE name = ?", (safe,)
+            ).fetchone()
+            if exists is None:
+                return False
+            connection.execute("DELETE FROM kb_meta WHERE name = ?", (safe,))
+            connection.execute("DELETE FROM kb_docs WHERE kb = ?", (safe,))
+            connection.execute("DELETE FROM kb_chunks WHERE kb = ?", (safe,))
+        return True
 
     def exists(self, name: str) -> bool:
-        return self._kb_dir(name).exists()
+        return self._meta(_safe_name(name)) is not None
 
     # -- documents ------------------------------------------------------------
 
     def add_document(self, name: str, filename: str, data: bytes) -> dict[str, Any]:
-        if not self.exists(name):
-            self.create(name)
-        kb = self._kb_dir(name)
-        safe_name = Path(filename).name or "upload.bin"
-        doc_path = kb / "docs" / safe_name
-        doc_path.write_bytes(data)
-        self.reindex(name)
-        return {"filename": safe_name, "size": len(data)}
+        safe = _safe_name(name)
+        if not self.exists(safe):
+            self.create(safe)
+        doc_name = filename.rsplit("/", 1)[-1] or "upload.bin"
+        with database.connect(self._settings) as connection:
+            connection.execute(
+                """
+                INSERT OR REPLACE INTO kb_docs (kb, name, data, size) VALUES (?, ?, ?, ?)
+                """,
+                (safe, doc_name, data, len(data)),
+            )
+        self.reindex(safe)
+        return {"filename": doc_name, "size": len(data)}
 
     def list_documents(self, name: str) -> List[dict[str, Any]]:
-        docs = self._kb_dir(name) / "docs"
-        if not docs.exists():
-            return []
+        safe = _safe_name(name)
+        with database.connect(self._settings) as connection:
+            rows = connection.execute(
+                "SELECT name, size FROM kb_docs WHERE kb = ? ORDER BY name", (safe,)
+            ).fetchall()
         return [
-            {"name": p.name, "size": p.stat().st_size, "suffix": p.suffix}
-            for p in sorted(docs.iterdir())
+            {
+                "name": row["name"],
+                "size": int(row["size"] or 0),
+                "suffix": ("." + row["name"].rsplit(".", 1)[-1]) if "." in row["name"] else "",
+            }
+            for row in rows
         ]
 
     def delete_document(self, name: str, filename: str) -> bool:
-        path = self._kb_dir(name) / "docs" / Path(filename).name
-        if path.exists():
-            path.unlink()
-            self.reindex(name)
-            return True
-        return False
+        safe = _safe_name(name)
+        doc_name = filename.rsplit("/", 1)[-1]
+        with database.connect(self._settings) as connection:
+            cursor = connection.execute(
+                "DELETE FROM kb_docs WHERE kb = ? AND name = ?", (safe, doc_name)
+            )
+            if cursor.rowcount == 0:
+                return False
+        self.reindex(safe)
+        return True
 
     # -- indexing / retrieval ---------------------------------------------------
 
     def reindex(self, name: str) -> int:
-        kb = self._kb_dir(name)
-        docs_dir = kb / "docs"
-        chunks: list[dict[str, Any]] = []
-        if docs_dir.exists():
-            for doc in sorted(docs_dir.iterdir()):
-                if doc.name.startswith("."):
-                    continue
-                text = _extract_text(doc)
-                if not text.strip():
-                    continue
-                for i, chunk in enumerate(_chunk(text)):
-                    chunks.append(
-                        {
-                            "id": f"{doc.name}#{i}",
-                            "doc": doc.name,
-                            "text": chunk,
-                            "tokens": _tokenize(chunk),
-                        }
+        safe = _safe_name(name)
+        with database.connect(self._settings) as connection:
+            docs = connection.execute(
+                "SELECT name, data FROM kb_docs WHERE kb = ? ORDER BY name", (safe,)
+            ).fetchall()
+        chunks: list[tuple[str, str, str, str, int]] = []
+        for doc in docs:
+            text = _extract_text(doc["name"], bytes(doc["data"]))
+            if not text.strip():
+                continue
+            for index, chunk in enumerate(_chunk(text)):
+                chunks.append(
+                    (
+                        safe,
+                        f"{doc['name']}#{index}",
+                        doc["name"],
+                        chunk,
+                        len(chunks),
                     )
-        self._write_json(self._index_path(name), {"chunks": chunks})
-        meta = self._read_json(self._meta_path(name), {})
+                )
+        with database.connect(self._settings) as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            try:
+                connection.execute("DELETE FROM kb_chunks WHERE kb = ?", (safe,))
+                connection.executemany(
+                    """
+                    INSERT OR REPLACE INTO kb_chunks
+                        (kb, chunk_id, doc, text, tokens, seq)
+                    VALUES (?, ?, ?, ?, '[]', ?)
+                    """,
+                    chunks,
+                )
+                connection.execute("COMMIT")
+            except Exception:
+                connection.execute("ROLLBACK")
+                raise
+        meta = self._meta(safe) or {"name": safe}
         meta["last_updated"] = time.strftime("%Y-%m-%dT%H:%M:%S")
-        self._write_json(self._meta_path(name), meta)
+        self._save_meta(safe, meta)
         return len(chunks)
 
     def search(self, name: str, query: str, top_k: int = 5) -> List[dict[str, Any]]:
-        index = self._read_json(self._index_path(name), {"chunks": []})
-        chunks = index.get("chunks", [])
-        if not chunks:
+        safe = _safe_name(name)
+        with database.connect(self._settings) as connection:
+            rows = connection.execute(
+                "SELECT chunk_id, doc, text FROM kb_chunks WHERE kb = ?", (safe,)
+            ).fetchall()
+        if not rows:
             return []
         q_tokens = _tokenize(query)
         if not q_tokens:
             return []
-        # Document frequency for IDF
+        chunks = [
+            {
+                "id": row["chunk_id"],
+                "doc": row["doc"],
+                "text": row["text"],
+                "tokens": _tokenize(row["text"]),
+            }
+            for row in rows
+        ]
         df: dict[str, int] = {}
-        for c in chunks:
-            for t in set(c["tokens"]):
-                df[t] = df.get(t, 0) + 1
-        n = len(chunks)
+        for chunk in chunks:
+            for token in set(chunk["tokens"]):
+                df[token] = df.get(token, 0) + 1
+        total = len(chunks)
         scored = []
-        for c in chunks:
+        for chunk in chunks:
             tf: dict[str, int] = {}
-            for t in c["tokens"]:
-                tf[t] = tf.get(t, 0) + 1
+            for token in chunk["tokens"]:
+                tf[token] = tf.get(token, 0) + 1
             score = 0.0
-            for qt in q_tokens:
-                if qt in tf:
-                    idf = math.log(1 + (n - df.get(qt, 0) + 0.5) / (df.get(qt, 0) + 0.5))
-                    score += idf * (tf[qt] * 2.2) / (tf[qt] + 1.2)
+            for token in q_tokens:
+                if token in tf:
+                    idf = math.log(1 + (total - df.get(token, 0) + 0.5) / (df.get(token, 0) + 0.5))
+                    score += idf * (tf[token] * 2.2) / (tf[token] + 1.2)
             if score > 0:
-                scored.append((score, c))
-        scored.sort(key=lambda x: x[0], reverse=True)
+                scored.append((score, chunk))
+        scored.sort(key=lambda item: item[0], reverse=True)
         return [
-            {"id": c["id"], "doc": c["doc"], "text": c["text"], "score": round(s, 3)}
-            for s, c in scored[:top_k]
+            {"id": chunk["id"], "doc": chunk["doc"], "text": chunk["text"], "score": round(score, 3)}
+            for score, chunk in scored[:top_k]
         ]
 
     def read_source(self, name: str, doc: str) -> str:
-        index = self._read_json(self._index_path(name), {"chunks": []})
-        parts = [c["text"] for c in index.get("chunks", []) if c.get("doc") == doc]
-        return "\n\n".join(parts)[:30000] if parts else ""
+        safe = _safe_name(name)
+        with database.connect(self._settings) as connection:
+            rows = connection.execute(
+                "SELECT text FROM kb_chunks WHERE kb = ? AND doc = ? ORDER BY seq",
+                (safe, doc),
+            ).fetchall()
+        return "\n\n".join(row["text"] for row in rows)[:30000] if rows else ""
 
-    # -- helpers ---------------------------------------------------------------
 
-    @staticmethod
-    def _read_json(path: Path, default: Any) -> Any:
-        try:
-            return json.loads(path.read_text(encoding="utf-8"))
-        except Exception:
-            return default
-
-    @staticmethod
-    def _write_json(path: Path, data: Any) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+__all__ = ["KnowledgeBaseStore"]

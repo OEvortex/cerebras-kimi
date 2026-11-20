@@ -36,7 +36,6 @@ import type {
   SpaceSelectionCounts,
 } from "./types";
 
-type TranslateFn = (key: string) => string;
 
 export function buildSpaceSelectionCounts(params: {
   attachments: PendingAttachment[];
@@ -71,7 +70,6 @@ export function buildSpaceSelectionCounts(params: {
 }
 
 export function buildContextTreeItems(params: {
-  t: TranslateFn;
   attachments: PendingAttachment[];
   selectedKnowledgeBases: string[];
   knowledgeBases: KnowledgeBase[];
@@ -99,7 +97,6 @@ export function buildContextTreeItems(params: {
   onClearPersona: () => void;
   onToggleMemoryFile: (file: SpaceMemoryFile) => void;
 }): ContextTreeItem[] {
-  const { t } = params;
   return [
     // Quotes are drawn as passages above the input, not listed as files.
     ...params.attachments.flatMap((file, index): ContextTreeItem[] =>
@@ -208,12 +205,11 @@ export function buildContextTreeItems(params: {
 }
 
 export function buildKnowledgeResourceItems(params: {
-  t: TranslateFn;
   knowledgeBases: KnowledgeBase[];
   selectedKnowledgeBases: string[];
   onToggleKB?: (name: string) => void;
 }): ComposerResourceItem[] {
-  const { t, knowledgeBases, selectedKnowledgeBases, onToggleKB } = params;
+  const { knowledgeBases, selectedKnowledgeBases, onToggleKB } = params;
   // The panel holds materials only; skills, connectors and how to answer live
   // in the tray under the box. Omitted catalogs stay hidden.
   const resourceItems: ComposerResourceItem[] = [];
@@ -246,7 +242,6 @@ export function buildKnowledgeResourceItems(params: {
 }
 
 export function buildTrayConfig(params: {
-  t: TranslateFn;
   capabilityLabel: (cap: CapabilityDef) => string;
   modeInTray: boolean;
   activeCap: CapabilityDef;
@@ -277,7 +272,7 @@ export function buildTrayConfig(params: {
   selectedPartnerGroup: string | null;
   onSelectPartnerGroup?: (id: string | null) => void;
 }) {
-  const { t, capabilityLabel } = params;
+  const { capabilityLabel } = params;
 
   // The mode, skills and connectors from the tray open the message itself
   // instead of joining the attachments: they say how to answer, not what to

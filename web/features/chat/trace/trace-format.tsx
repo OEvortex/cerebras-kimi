@@ -293,25 +293,17 @@ export function describeToolCall(
   }
 }
 
-export function humanizeQuestionId(
-  value: string,
-  t?: (key: string, opts?: Record<string, unknown>) => string,
-) {
-  return value.replace(/\bq_(\d+)\b/gi, (_match, n) =>
-    t ? `Question ${n}` : `Question ${n}`,
-  );
+export function humanizeQuestionId(value: string) {
+  return value.replace(/\bq_(\d+)\b/gi, (_match, n) => `Question ${n}`);
 }
 
-function getTraceLabel(
-  events: StreamEvent[],
-  t?: (key: string, opts?: Record<string, unknown>) => string,
-) {
+function getTraceLabel(events: StreamEvent[]) {
   for (const event of events) {
     const meta = getTraceMeta(event);
-    if (meta.label) return humanizeQuestionId(String(meta.label), t);
+    if (meta.label) return humanizeQuestionId(String(meta.label));
   }
   const fallback = events[0]?.stage || "trace";
-  return humanizeQuestionId(titleCase(fallback), t);
+  return humanizeQuestionId(titleCase(fallback));
 }
 
 /**
@@ -327,12 +319,8 @@ function getTraceLabel(
  * dropped (a reconnect mid-turn) should still be labelled correctly.
  */
 
-export function getTraceHeader(
-  events: StreamEvent[],
-  nested?: boolean,
-  t: (key: string, opts?: Record<string, unknown>) => string = (k) => k,
-) {
-  const label = getTraceLabel(events, t);
+export function getTraceHeader(events: StreamEvent[], nested?: boolean) {
+  const label = getTraceLabel(events);
   const role = getTraceRole(events);
   const group = getTraceGroup(events);
   const kind = getTraceCallKind(events);
@@ -535,7 +523,7 @@ export function providerLabel(slug: string): string {
  * Only the ones the user picks a provider for. Which engine answered is the
  * whole difference between two calls that otherwise render identically, and
  * it is the part of the pipeline the reader configured themselves — so
- * "Perplexity 联网搜索" says more than "联网搜索" at no extra width.
+ * "Perplexity web search" says more than "web search" at no extra width.
  */
 export const ENGINE_NAMED_TOOLS = new Set([
   "web_search",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { englishLabel } from "@/lib/english-labels";
 
 
 export type ContextBudgetSegment = { key: string; tokens: number };
@@ -301,7 +302,7 @@ export default function ContextBudgetChip({
               <SegmentRow
                 key={segment.key}
                 color={segmentColor(segment.key)}
-                label={englishLabel(`contextBudget.segment.${segment.key}`, `contextBudget.segment.${segment.key}`})
+                label={englishLabel(`contextBudget.segment.${segment.key}`, `contextBudget.segment.${segment.key}`)}
                 tokens={segment.tokens}
                 share={(segment.tokens / total) * 100}
               />

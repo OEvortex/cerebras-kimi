@@ -10,7 +10,7 @@ const RichInlineMarkdown = dynamic(() => import("./RichInlineMarkdown"), {
 
 // Emphasis, inline code and links are the rest of what a tutor writes into a
 // question stem or an option. Matching them here (not just math) is what keeps
-// `**听懂**` from reaching the learner with its asterisks attached.
+// `**understood**` from reaching the learner with its asterisks attached.
 const INLINE_MARKUP_RE = /(\*\*|__|`|~~|\[[^\]]+\]\()/;
 
 /**

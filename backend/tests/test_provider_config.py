@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -26,9 +25,11 @@ class SelectionTests(unittest.TestCase):
         self.assertEqual(pc.get_selection(settings)["model_id"], "gpt-4o")
         self.assertIn(("openai", "gpt-4o"), pc.recent_pairs(settings))
 
-        # Legacy mirror is kept in sync.
-        legacy = json.loads((settings.data_dir / "settings.json").read_text())
-        self.assertEqual(legacy["llm_selection"]["model_id"], "gpt-4o")
+        # The selection is also stored under its own key in the shared DB.
+        from app.store import database
+
+        stored = database.get_state(settings, "settings/selection")
+        self.assertEqual(stored["llm_selection"]["model_id"], "gpt-4o")
 
         # Explicit override wins, without changing the persisted selection.
         override = pc.get_selection(settings, {"profile_id": "x", "model_id": "y"})
@@ -147,8 +148,9 @@ class CatalogTests(unittest.TestCase):
         pc.provider_options(settings)
         pc.connection_targets(settings)
         pc.resolve_runtime_model(settings)
+        # Everything persistent is in the one database; no per-store files.
         names = {p.name for p in settings.data_dir.iterdir()}
-        self.assertEqual(names, {"settings-catalog.json", "settings.json"})
+        self.assertEqual(names, {"deeptutor.sqlite3"})
 
 
 class CatalogFileTests(unittest.TestCase):

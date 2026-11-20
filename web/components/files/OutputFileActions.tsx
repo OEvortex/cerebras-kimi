@@ -34,7 +34,7 @@ export function OutputFileActions({ url, kind }: { url: string; kind: 'render' |
   const [confirm, setConfirm] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
-  // 只对当前应用发布的工作区文件提供管理操作。
+  // Only provide management actions for workspace files published by the current app.
   const asset = URL.canParse(url, 'http://workspace.local')
     ? new URL(url, 'http://workspace.local')
     : null

@@ -42,7 +42,7 @@ export function RoughActionButton({
  * ``Promise<void>`` and not ``void | Promise<void>``: this button reports
  * success to the user, so it needs a handler that can tell it about failure.
  * A synchronously-void handler has no way to, which is how a swallowed
- * clipboard error came to be rendered as 已复制.
+ * clipboard error came to be rendered as Copied.
  */
 export type CopyHandler = (content: string) => Promise<void>;
 

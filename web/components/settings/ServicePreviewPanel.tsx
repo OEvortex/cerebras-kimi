@@ -12,6 +12,7 @@ import { apiFetch, apiUrl } from '@/shared/api/client'
 import { modelTestFingerprint } from '@/lib/model-settings'
 import { inputClass, subPanelClass } from './shared'
 import { registryButton, registryPrimary } from './RegistryControls'
+import { englishLabel } from "@/lib/english-labels";
 
 type Service = 'search' | 'stt' | 'imagegen' | 'videogen'
 type Result = {
@@ -185,13 +186,13 @@ function Preview({ service, profile, model }: Props) {
     state === 'success' ? (empty ? 'empty' : 'success') : state === 'running' ? phase : state
   return (
     <section
-      aria-label={englishLabel(`settings.servicePreview.title.${service}`, `settings.servicePreview.title.${service}`})
+      aria-label={englishLabel(`settings.servicePreview.title.${service}`, `settings.servicePreview.title.${service}`)}
       className={`space-y-4 p-4 ${subPanelClass}`}
     >
       <div>
-        <h4 className="text-sm font-medium">{englishLabel(`settings.servicePreview.title.${service}`, `settings.servicePreview.title.${service}`}</h4>)
+        <h4 className="text-sm font-medium">{englishLabel(`settings.servicePreview.title.${service}`, `settings.servicePreview.title.${service}`)}</h4>
         <p className="mt-1 text-xs leading-relaxed text-[var(--muted-foreground)]">
-          {englishLabel(`settings.servicePreview.description.${service}`, `settings.servicePreview.description.${service}`})
+          {englishLabel(`settings.servicePreview.description.${service}`, `settings.servicePreview.description.${service}`)}
         </p>
       </div>
       {service === 'stt' ? (
@@ -241,7 +242,7 @@ function Preview({ service, profile, model }: Props) {
             maxLength={2000}
             value={text}
             disabled={running}
-            placeholder={englishLabel(`settings.servicePreview.placeholder.${service}`, `settings.servicePreview.placeholder.${service}`})
+            placeholder={englishLabel(`settings.servicePreview.placeholder.${service}`, `settings.servicePreview.placeholder.${service}`)}
             onChange={e => {
               clearResult()
               setText(e.target.value)
@@ -261,7 +262,7 @@ function Preview({ service, profile, model }: Props) {
           onClick={() => void run()}
         >
           {running ? <Loader2 size={14} className="animate-spin" /> : <FlaskConical size={14} />}
-          {englishLabel(`settings.servicePreview.action.${service}`, `settings.servicePreview.action.${service}`})
+          {englishLabel(`settings.servicePreview.action.${service}`, `settings.servicePreview.action.${service}`)}
         </button>
         {running && (
           <button
@@ -283,7 +284,7 @@ function Preview({ service, profile, model }: Props) {
           aria-live="polite"
           className={`text-xs leading-relaxed ${['failed', 'timeout', 'invalidAudio'].includes(state) ? 'text-red-600 dark:text-red-400' : 'text-[var(--muted-foreground)]'}`}
         >
-          {englishLabel(`settings.servicePreview.status.${message}`, `settings.servicePreview.status.${message}`})
+          {englishLabel(`settings.servicePreview.status.${message}`, `settings.servicePreview.status.${message}`)}
         </p>
       )}
       {(running || state === 'cancelled' || state === 'timeout') && service === 'videogen' && (

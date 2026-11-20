@@ -585,7 +585,7 @@ export function MasteryStudy({
           as a single "where am I" statement, and the ring + count are one
           unit rather than a ring on the left and its own number on the
           right saying the same thing twice. */}
-      {/* 「精通之路 / the path / the waypoint」 and the session's controls go
+      {/* the path / the waypoint and the session's controls go
           up into the page bar; without one this row keeps them, with its own
           way back to the path. */}
       <header className="dt-study-head flex h-[56px] shrink-0 items-center gap-1 bg-[var(--background)] px-3 sm:px-4">

@@ -646,7 +646,7 @@ button.dt-record-toggle:focus-visible { outline: 2px solid var(--ring); outline-
 /* Its title and actions went up into the page bar; nothing is left of the row. */
 .dt-chat-head:empty { display: none; }
 
-/* ---- Page bar: 「feature / one use of it」 on the left, actions right --
+/* ---- Page bar: feature / one use of it on the left, actions right --
    The feature is a soft chip; the open session, document or folder is
    plain text in the same box beside it, filled only on hover. On a feature
    page the bar is the whole header: the page's own title, icon and blurb

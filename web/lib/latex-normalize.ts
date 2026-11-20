@@ -28,7 +28,7 @@ const INLINE_CODE_SPAN_RE = /(`+)([^`\n]+?)\1/g;
 // `$$...$$` first so a display span is never split into two inline ones.
 const MATH_SPAN_RE = /\$\$[\s\S]*?\$\$|\$(?!\s)(?:\\.|[^$\n])*?(?<!\s)\$/g;
 const CJK_RE =
-  /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]|[，。、；：？！（）《》「」【】…—]/u;
+  /[,.;:?!()…—]/u;
 const LATEX_STRUCTURE_RE = /\\[a-zA-Z]+|[\^_]|\\\\/;
 // Function names a writer may legitimately spell out inside a formula.
 const MATH_WORDS = new Set([
@@ -198,7 +198,7 @@ function plausibleMathBody(body: string, tight: boolean): boolean {
   if (value.length > 60) return false;
 
   if (CJK_RE.test(value)) {
-    // "速度 = 路程/时间" is a formula a Chinese tutor writes; "5 和 " is the gap
+    // "speed = distance/time" is a formula; "5 and " is the gap
     // between two prices. Require the shape of an equation, tightly delimited,
     // and keep it short.
     return tight && value.length <= 40 && /[=+\-*/<>]/.test(value);
@@ -402,7 +402,7 @@ function scanFragmentEnd(
       continue;
     }
 
-    // Inside a group anything goes — `\text{速度}` is legitimate.
+    // Inside a group anything goes — `\text{speed}` is legitimate.
     if (depth > 0) {
       if (ch === "`" || ch === "$" || ch === "|" || ch === "@") break;
       i += 1;

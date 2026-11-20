@@ -5,7 +5,7 @@ import json
 import time
 
 from .blocks import walk_blocks
-from .storage import _atomic_write_json, _read_json
+
 
 
 def page_cards(doc):
@@ -44,7 +44,7 @@ def due_cards(storage, now=None):
         doc = storage.load_document(summary.id)
         if doc is None:
             continue
-        progress = _read_json(storage.doc_root(doc.id) / "review.json") or {}
+        progress = storage.load_extra(doc.id, "review", {}) or {}
         for card in page_cards(doc):
             due = progress.get(card["card_id"], {}).get("due_at", 0)
             if due <= now:
@@ -60,8 +60,11 @@ def grade_card(storage, page_id, card_id, remembered):
         valid = {card["card_id"] for card in page_cards(doc)}
         if card_id not in valid:
             raise ValueError("This flashcard has changed or no longer exists")
-        path = storage.doc_root(page_id) / "review.json"
-        progress = {key: value for key, value in (_read_json(path) or {}).items() if key in valid}
+        progress = {
+            key: value
+            for key, value in (storage.load_extra(page_id, "review", {}) or {}).items()
+            if key in valid
+        }
         previous = progress.get(card_id, {})
         interval = min(180, max(1, previous.get("interval_days", 0) * 2 + 1)) if remembered else 0
         result = {
@@ -70,5 +73,5 @@ def grade_card(storage, page_id, card_id, remembered):
             "reviewed_at": time.time(),
         }
         progress[card_id] = result
-        _atomic_write_json(path, progress)
+        storage.save_extra(page_id, "review", progress)
         return result

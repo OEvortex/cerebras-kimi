@@ -38,8 +38,8 @@ def test_notes_write_creates_a_notebook_page(tmp_path, monkeypatch):
     assert "Carriers diffuse" in page.content
     assert page.id in result.result
 
-    # The markdown mirror is still written for portability.
-    assert len(list((tmp_path / "notes").glob("*.md"))) == 1
+    # Markdown mirrors are no longer written: the page is the only copy.
+    assert list((tmp_path / "notes").glob("*.md")) == []
 
 
 def test_legacy_notes_are_imported_once_and_are_searchable(tmp_path, monkeypatch):

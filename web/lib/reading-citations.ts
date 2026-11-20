@@ -131,9 +131,6 @@ const SPELLED_OUT_LOCATION = new RegExp(
   "(?:" +
     // English: "page 3", "on pages 3", "chapter 3", "slide 3", "section 3"
     "(?:pages?|chapters?|slides?|sections?)\\s*(\\d+)" +
-    "|" +
-    // Chinese: "第 3 页", "第3章", "第 3 节", "第3张幻灯片"
-    "第\\s*(\\d+)\\s*(?:页|章|节|张幻灯片|张)" +
     ")",
   "gi",
 );
@@ -173,7 +170,7 @@ function findAbsorbablePhrase(
   // Never reach across a sentence boundary or a link that is already there.
   const lastBreak = Math.max(
     window.lastIndexOf("."),
-    window.lastIndexOf("。"),
+    window.lastIndexOf("."),
     window.lastIndexOf("\n"),
     window.lastIndexOf(")"),
     window.lastIndexOf("]"),

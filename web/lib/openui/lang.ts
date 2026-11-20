@@ -3,7 +3,7 @@
  *
  * The tutor prompt asks for a bare program ("Your ENTIRE response must be
  * valid openui-lang code"), and most replies are one. Models still prefix a
- * sentence of prose now and then — "I'll lay out the derivation …root = Col(…)」
+ * sentence of prose now and then — "I'll lay out the derivation …root = Col(…)
  * — and that single line is enough to fail the parser outright, which is what
  * left those turns as raw source (or blank) in the transcript. These helpers
  * find the program inside a mixed reply, so the chat can render it instead of

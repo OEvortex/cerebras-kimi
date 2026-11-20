@@ -1060,7 +1060,7 @@ export default function ChatWorkspace() {
     return () => cancelAnimationFrame(frame);
   }, [awaitingUserCard, scrollToBottom, shouldAutoScrollRef]);
 
-  // Deliberately does not catch. `CopyActionButton` renders 已复制 off this
+  // Deliberately does not catch. `CopyActionButton` renders Copied off this
   // promise resolving, so swallowing the failure here is what made the button
   // announce a success that never happened — to screen readers included.
   const copyAssistantMessage = useCallback(
@@ -2228,7 +2228,7 @@ export default function ChatWorkspace() {
             data-viewer-open={viewerPanelOpen ? "true" : "false"}
             className="chat-preview-shell flex h-full flex-col overflow-hidden bg-[var(--background)]"
           >
-            {/* 「聊天 / this conversation」 and the conversation's actions go
+            {/* this conversation and the conversation's actions go
                 up into the page bar; without one (phones, the classic layout)
                 they stay in this row, which is then all that is left of it. */}
             <div className="dt-chat-head mx-auto flex w-full max-w-[960px] flex-wrap items-center justify-between gap-x-3 gap-y-1.5 px-6 pt-3 pb-0">

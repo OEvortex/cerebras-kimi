@@ -7,7 +7,7 @@ import time
 import uuid
 
 from .blocks import blocks_to_markdown, validate_blocks, walk_blocks
-from .storage import RevisionConflict, _atomic_write_json, _read_json
+from .storage import RevisionConflict
 
 _UNSET = object()
 
@@ -23,7 +23,7 @@ def _normalize_resources(markdown: str, blocks: list[dict] | None) -> tuple[str,
 
 
 def list_proposals(storage, doc_id):
-    return _read_json(storage.doc_root(doc_id) / "suggestions.json") or []
+    return storage.load_extra(doc_id, "suggestions", []) or []
 
 
 def review_anchors(blocks, block_id):
@@ -58,7 +58,7 @@ def refresh_review_anchors(storage, doc_id, blocks, previous_blocks):
             proposal["anchors"] = anchors
             changed = True
     if changed:
-        _atomic_write_json(storage.doc_root(doc_id) / "suggestions.json", proposals)
+        storage.save_extra(doc_id, "suggestions", proposals)
 
 
 def preserves_children(operation, original, blocks):
@@ -135,7 +135,7 @@ def propose(
         if sum(p["status"] == "pending" for p in proposals) >= 100:
             raise ValueError("Review pending suggestions before creating more")
         proposals.append(proposal)
-        _atomic_write_json(storage.doc_root(doc_id) / "suggestions.json", proposals[-500:])
+        storage.save_extra(doc_id, "suggestions", proposals[-500:])
         return proposal
 
 
@@ -207,7 +207,7 @@ def review(storage, doc_id, proposal_id, *, accept, blocks=None):
             doc.applied_suggestion_ids = (doc.applied_suggestion_ids + [proposal_id])[-1000:]
             storage._write(doc)
         proposal["status"] = "accepted" if accept else "dismissed"
-        _atomic_write_json(storage.doc_root(doc_id) / "suggestions.json", proposals)
+        storage.save_extra(doc_id, "suggestions", proposals)
         return doc
 
 

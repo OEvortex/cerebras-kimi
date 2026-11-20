@@ -1,4 +1,4 @@
-import type { TFunction } from 'i18next'
+import { englishLabel } from '@/lib/english-labels'
 
 export const STARTER_GROUPS = ['explain', 'solve', 'practice', 'plan', 'research'] as const
 export type StarterGroup = (typeof STARTER_GROUPS)[number]
@@ -38,8 +38,7 @@ export const DEFAULT_PAGE_CUSTOMIZATION: PageCustomization = {
 }
 export function starterPrompts(
   chat: ChatPageCustomization,
-  group: StarterGroup,
-  t: TFunction
+  group: StarterGroup
 ): StarterPrompt[] {
   return (
     chat.starters[group] ??

@@ -151,7 +151,7 @@ const MATH_SPAN_REGEX =
 // non-space and end at a colon, because this rewrite has no notion of which
 // two delimiters the author meant to pair (see repairStrongEmphasisLine).
 const MALFORMED_STRONG_EMPHASIS_REGEX =
-  /(?<!\S)\*\*(?=\S)([^*\n]*?[:：])[ \t]+\*\*(?=\S)/g;
+  /(?<!\S)\*\*(?=\S)([^*\n]*?[:])[ \t]+\*\*(?=\S)/g;
 const ESCAPED_UNICODE_RUN_REGEX = /(?:\\u[0-9a-fA-F]{4}){3,}/g;
 const INDENTED_CODE_LINE_REGEX = /^(?: {4}|\t)/;
 const FENCE_LINE_REGEX = /^ {0,3}(`{3,}|~{3,})(.*)$/;
@@ -403,7 +403,7 @@ const EXISTING_RESEARCH_CITATION_LINK_REGEX = new RegExp(
   "gi",
 );
 const REFERENCE_LIST_START_REGEX =
-  /^##\s+(References|参考文献|参考资料)|<details\b[^>]*\bid=["']references["'][^>]*>/im;
+  /^##\s+(References)|<details\b[^>]*\bid=["']references["'][^>]*>/im;
 const REFERENCE_LIST_DATA_ID_REGEX =
   /data-citation-id=["'](CIT-\d+-\d+|PLAN-\d+)["']/gi;
 const RESEARCH_CITATION_ID_TEXT_REGEX = /\b(CIT-\d+-\d+|PLAN-\d+)\b/gi;
@@ -478,7 +478,7 @@ function linkifyCitations(content: string): string {
 
   // Remove stray space before trailing punctuation after citations
   linked = linked.replace(
-    /(\(#(?:references|ref-[a-z0-9_-]+)\s+"citation"\))\s+([.。,，;:!?])/gi,
+    /(\(#(?:references|ref-[a-z0-9_-]+)\s+"citation"\))\s+([.,;:!?])/gi,
     "$1$2",
   );
 
@@ -762,7 +762,7 @@ function repairChineseEmphasisLine(line: string): string {
 }
 
 // Japanese and Korean set punctuation flush against the next word just as
-// Chinese does — 「…」**です, 「…」**는 — so a closing marker after a bracket
+// CJK languages do, so a closing marker after a bracket
 // fails CommonMark's flanking rule in all three, not only in Chinese.
 const CJK_EMPHASIS_LANGUAGES = ["zh", "ja", "ko"];
 

@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import asyncio
 import json
+import time
+import uuid
 from typing import Any
 
 from pydantic import BaseModel
@@ -568,7 +570,7 @@ async def kb_upload(request: Request, name: str, file: UploadFile) -> dict[str, 
 def _settings_dir(request: Request) -> Path:
     d = request.app.state.settings.data_dir
     d.mkdir(parents=True, exist_ok=True)
-    return d
+    return d  # kept for callers that still resolve provider preset files
 
 
 def _default_catalog() -> dict[str, Any]:
@@ -596,24 +598,19 @@ def _save_live_catalog(request: Request, catalog: dict[str, Any]) -> None:
 
 
 def _load_draft(request: Request) -> dict[str, Any] | None:
-    import json as _json
+    from ..store import database
 
-    path = _settings_dir(request) / "settings-draft.json"
-    try:
-        data = _json.loads(path.read_text(encoding="utf-8"))
-        return data if isinstance(data, dict) and "catalog" in data else None
-    except Exception:
-        return None
+    data = database.get_state(_settings(request), "settings/draft")
+    return data if isinstance(data, dict) and "catalog" in data else None
 
 
 def _save_draft(request: Request, draft: dict[str, Any] | None) -> None:
-    import json as _json
+    from ..store import database
 
-    path = _settings_dir(request) / "settings-draft.json"
     if draft is None:
-        path.unlink(missing_ok=True)
+        database.delete_state(_settings(request), "settings/draft")
     else:
-        path.write_text(_json.dumps(draft, ensure_ascii=False), encoding="utf-8")
+        database.put_state(_settings(request), "settings/draft", draft)
 
 
 @router.get("/settings/draft")
@@ -983,63 +980,38 @@ def session_threads(session_id: str) -> dict[str, Any]:
 # All served through the same http.request RPC dispatch.
 # ==========================================================================
 
-import json as _json
-import time as _time
-import uuid as _uuid
-from pathlib import Path as _Path
 
 
-def _store_file(request: Request, *parts: str) -> _Path:
-    base = _store(request)._settings.data_dir / "ext"
-    p = base.joinpath(*parts)
-    p.parent.mkdir(parents=True, exist_ok=True)
-    return p
-
-
-def _load_json(path: _Path, default):
-    try:
-        return _json.loads(path.read_text())
-    except Exception:  # noqa: BLE001
-        return default
-
-
-def _save_json(path: _Path, data) -> None:
-    path.write_text(_json.dumps(data, ensure_ascii=False, default=str))
+def _collection(*parts: str) -> str:
+    """Map the old ``ext/<dir>/<kind>`` path segments to one SQLite collection."""
+    return "/".join(parts[:-1]) if len(parts) > 1 else (parts[0] if parts else "misc")
 
 
 def _list_dir(request: Request, *parts: str) -> list[dict[str, Any]]:
-    d = _store_file(request, *parts).parent
-    if not d.is_dir():
-        return []
-    out = []
-    for f in sorted(d.glob("*.json")):
-        try:
-            out.append(_json.loads(f.read_text()))
-        except Exception:  # noqa: BLE001
-            continue
-    return out
+    from ..store import database
+
+    return database.list_items(_settings(request), _collection(*parts))
 
 
 def _get_item(request: Request, *parts: str) -> dict[str, Any] | None:
-    for item in _list_dir(request, *parts[:-1]):
-        if str(item.get("id")) == parts[-1]:
-            return item
-    return None
+    from ..store import database
+
+    return database.get_item(_settings(request), _collection(*parts), str(parts[-1]))
 
 
 def _put_item(request: Request, item: dict[str, Any], *parts: str) -> None:
-    item.setdefault("id", _uuid.uuid4().hex[:12])
-    item.setdefault("created_at", _time.time())
-    item["updated_at"] = _time.time()
-    _save_json(_store_file(request, *parts[:-1], f"{item['id']}.json"), item)
+    from ..store import database
+
+    item.setdefault("id", uuid.uuid4().hex[:12])
+    item.setdefault("created_at", time.time())
+    item["updated_at"] = time.time()
+    database.put_item(_settings(request), _collection(*parts), item)
 
 
 def _del_item(request: Request, item_id: str, *parts: str) -> bool:
-    p = _store_file(request, *parts[:-1], f"{item_id}.json")
-    if p.exists():
-        p.unlink()
-        return True
-    return False
+    from ..store import database
+
+    return database.delete_item(_settings(request), _collection(*parts), str(item_id))
 
 
 # -- memory -----------------------------------------------------------------
@@ -1300,7 +1272,9 @@ def nb_records(request: Request, nb_id: str) -> dict[str, Any]:
 @router.post("/notebooks/{nb_id}/records")
 def nb_record_create(request: Request, nb_id: str, body: dict[str, Any]) -> dict[str, Any]:
     nb = _get_item(request, "notebooks", nb_id) or {"id": nb_id, "records": []}
-    rec = dict(body); rec.setdefault("id", _uuid.uuid4().hex[:12]); rec.setdefault("created_at", _time.time())
+    rec = dict(body)
+    rec.setdefault("id", uuid.uuid4().hex[:12])
+    rec.setdefault("created_at", time.time())
     nb.setdefault("records", []).append(rec)
     _put_item(request, nb, "notebooks", nb_id)
     return rec
@@ -1328,7 +1302,7 @@ def nb_record_action(request: Request, nb_id: str, rec_id: str, action: str, bod
     nb = _get_item(request, "notebooks", nb_id) or {"records": []}
     for r in nb.get("records") or []:
         if str(r.get("id")) == rec_id:
-            r.setdefault("actions", []).append({"action": action, "at": _time.time(), **body})
+            r.setdefault("actions", []).append({"action": action, "at": time.time(), **body})
             _put_item(request, nb, "notebooks", nb_id)
             return {"ok": True}
     return {"ok": False}
@@ -1382,7 +1356,7 @@ def partner_delete(request: Request, pid: str) -> dict[str, Any]:
 
 @router.post("/partners/consultation-session")
 def partner_consult(request: Request, body: dict[str, Any]) -> dict[str, Any]:
-    sess = {"id": _uuid.uuid4().hex[:12], "status": "active", "created_at": _time.time(), **body}
+    sess = {"id": uuid.uuid4().hex[:12], "status": "active", "created_at": time.time(), **body}
     _put_item(request, sess, "partners", "sessions", "s")
     return sess
 
@@ -1560,7 +1534,7 @@ def session_quiz_results(request: Request, session_id: str) -> dict[str, Any]:
 
 @router.post("/sessions/submission-replacement")
 def submission_replacement(request: Request, body: dict[str, Any]) -> dict[str, Any]:
-    return {"ok": True, "receipt": {"id": _uuid.uuid4().hex[:12]}}
+    return {"ok": True, "receipt": {"id": uuid.uuid4().hex[:12]}}
 
 
 # -- settings extras (presets / services preview / tests) --------------------------

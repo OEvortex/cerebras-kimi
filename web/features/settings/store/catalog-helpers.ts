@@ -204,7 +204,7 @@ export function nextModelName(
   models: CatalogModel[],
   language: UiSettings["language"],
 ): string {
-  const prefix = language === "zh" ? "模型" : "Model ";
+  const prefix = language === "zh" ? "Model " : "Model ";
   const used = new Set(models.map((model) => model.name.trim()));
   let index = models.length + 1;
   while (used.has(`${prefix}${index}`)) {

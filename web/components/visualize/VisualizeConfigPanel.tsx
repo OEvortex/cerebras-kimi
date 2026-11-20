@@ -274,7 +274,7 @@ export default memo(function VisualizeConfigPanel({
   return (
     <CollapsibleConfigSection
       collapsed={collapsed}
-      summary={summarizeVisualizeConfig(value, t)}
+      summary={summarizeVisualizeConfig(value)}
       onToggleCollapsed={onToggleCollapsed ?? (() => undefined)}
       bodyClassName="flex flex-wrap items-end gap-x-3 gap-y-2 px-3.5 pb-2.5"
     >

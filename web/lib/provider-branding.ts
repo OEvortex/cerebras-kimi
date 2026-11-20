@@ -154,26 +154,26 @@ const PROVIDER_ALIASES: Readonly<Record<string, string>> = {
 };
 
 const CHINESE_NAMES: Readonly<Record<string, { name: string; labels: string[] }>> = {
-  aihubmix: {"name": "推理时代", "labels": ["AiHubMix"]},
-  siliconflow: {"name": "硅基流动", "labels": ["SiliconFlow"]},
-  volcengine: {"name": "火山引擎", "labels": ["VolcEngine", "Volcengine Ark (Seedream)", "Volcengine Ark (Seedance)"]},
-  volcengine_coding_plan: {"name": "火山引擎", "labels": ["VolcEngine Coding Plan"]},
-  volcengine_speech: {"name": "火山引擎豆包语音", "labels": ["Volcengine Speech (Doubao)"]},
-  deepseek: {"name": "深度求索", "labels": ["DeepSeek"]},
-  zhipu: {"name": "智谱", "labels": ["Zhipu AI", "Zhipu"]},
-  dashscope: {"name": "阿里云百炼", "labels": ["DashScope", "Aliyun DashScope"]},
-  aliyun: {"name": "阿里云百炼", "labels": ["Aliyun DashScope"]},
-  aliyun_iqs: {"name": "阿里云信息查询服务", "labels": ["Aliyun IQS"]},
-  moonshot: {"name": "月之暗面", "labels": ["Moonshot", "Moonshot AI"]},
-  minimax: {"name": "稀宇科技", "labels": ["MiniMax"]},
-  minimax_anthropic: {"name": "稀宇科技", "labels": ["MiniMax (Anthropic)"]},
-  stepfun: {"name": "阶跃星辰", "labels": ["Step Fun", "StepFun"]},
-  xiaomi_mimo: {"name": "小米 MiMo", "labels": ["Xiaomi MIMO", "Xiaomi MiMo"]},
-  qianfan: {"name": "百度智能云千帆", "labels": ["Qianfan", "Baidu Qianfan"]},
-  bocha: {"name": "博查", "labels": ["Bocha"]},
-  doubao: {"name": "豆包", "labels": ["Doubao"]},
-  codebuddy: {"name": "腾讯代码助手", "labels": ["CodeBuddy/WorkBuddy", "CodeBuddy"]},
-  baidu: {"name": "百度", "labels": ["Baidu"]},
+  aihubmix: {"name": "AiHubMix", "labels": ["AiHubMix"]},
+  siliconflow: {"name": "SiliconFlow", "labels": ["SiliconFlow"]},
+  volcengine: {"name": "VolcEngine", "labels": ["VolcEngine", "Volcengine Ark (Seedream)", "Volcengine Ark (Seedance)"]},
+  volcengine_coding_plan: {"name": "VolcEngine", "labels": ["VolcEngine Coding Plan"]},
+  volcengine_speech: {"name": "VolcEngine Speech", "labels": ["Volcengine Speech (Doubao)"]},
+  deepseek: {"name": "DeepSeek", "labels": ["DeepSeek"]},
+  zhipu: {"name": "Zhipu AI", "labels": ["Zhipu AI", "Zhipu"]},
+  dashscope: {"name": "Aliyun", "labels": ["DashScope", "Aliyun DashScope"]},
+  aliyun: {"name": "Aliyun", "labels": ["Aliyun DashScope"]},
+  aliyun_iqs: {"name": "Aliyun IQS", "labels": ["Aliyun IQS"]},
+  moonshot: {"name": "Moonshot", "labels": ["Moonshot", "Moonshot AI"]},
+  minimax: {"name": "MiniMax", "labels": ["MiniMax"]},
+  minimax_anthropic: {"name": "MiniMax", "labels": ["MiniMax (Anthropic)"]},
+  stepfun: {"name": "Step Fun", "labels": ["Step Fun", "StepFun"]},
+  xiaomi_mimo: {"name": "Xiaomi MiMo", "labels": ["Xiaomi MIMO", "Xiaomi MiMo"]},
+  qianfan: {"name": "Qianfan", "labels": ["Qianfan", "Baidu Qianfan"]},
+  bocha: {"name": "Bocha", "labels": ["Bocha"]},
+  doubao: {"name": "Doubao", "labels": ["Doubao"]},
+  codebuddy: {"name": "CodeBuddy", "labels": ["CodeBuddy/WorkBuddy", "CodeBuddy"]},
+  baidu: {"name": "Baidu", "labels": ["Baidu"]},
 };
 
 export function canonicalProviderBrand(provider?: string | null): string {
@@ -191,7 +191,7 @@ export function formatProviderLabel(provider: string, label: string, language: s
   const key = canonicalProviderBrand(provider);
   const chinese = Object.hasOwn(CHINESE_NAMES, key) ? CHINESE_NAMES[key] : undefined;
   if (!chinese) return label;
-  const suffix = `（${chinese.name}）`;
+  const suffix = ` (${chinese.name})`;
   const english = label.endsWith(suffix) ? label.slice(0, -suffix.length) : label;
   if (!/^zh(?:[-_]|$)/i.test(language)) return english;
   return english.includes(chinese.name) ? english : `${english}${suffix}`;

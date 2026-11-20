@@ -19,6 +19,7 @@ import { activeWorkspaceId, scopedUrl } from "@/lib/workspace-scope";
 import { usePageCustomization } from "@/context/PageCustomizationContext";
 import { starterPrompts, type StarterGroup } from "@/lib/page-customization";
 import { apiFetch, apiUrl } from "@/shared/api/client";
+import { englishLabel } from "@/lib/english-labels";
 
 interface Suggestion {
   /** The line the learner reads — names the specific thing worth doing next. */
@@ -265,7 +266,7 @@ export default function StarterSuggestions({
       </>
     );
   }
-  const guides = GUIDES.filter(entry => starterPrompts(chat, entry.id, t).length > 0);
+  const guides = GUIDES.filter(entry => starterPrompts(chat, entry.id).length > 0);
   const guide = guides.find((entry) => entry.id === open);
 
   return (
@@ -301,16 +302,16 @@ export default function StarterSuggestions({
                 />
               )}
               <entry.icon />
-              <span>{englishLabel(`starters.${entry.id}`, `starters.${entry.id}`}</span>)
+              <span>{englishLabel(`starters.${entry.id}`, `starters.${entry.id}`)}</span>
             </button>
           ))}
         </div>
         {guide && (
-          <div id={panelId} role="group" aria-label={englishLabel(`starters.${guide.id}`, `starters.${guide.id}`} className="dt-starter-card">)
+          <div id={panelId} role="group" aria-label={englishLabel(`starters.${guide.id}`, `starters.${guide.id}`)} className="dt-starter-card">
             {/* Keyed so switching ways swaps the rows in place: the card stays,
                 only its content changes. */}
             <div key={guide.id} className="dt-starter-card-body">
-              {starterPrompts(chat, guide.id, t).map(({ label, prompt }, n) => {
+              {starterPrompts(chat, guide.id).map(({ label, prompt }, n) => {
                 return (
                   // The whole request shows on hover: what the box will hold.
                   <Tooltip key={n} label={prompt} side="top" as="div" className="dt-starter-item" delay={500}>

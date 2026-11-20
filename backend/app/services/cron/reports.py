@@ -3,35 +3,25 @@
 A due job writes one entry here so an open tab can surface it without
 reloading the conversation: the calendar runtime polls
 ``GET /api/cron/reports?since=`` and raises the same toast/notification it
-uses for event reminders. The store is a small JSON ring buffer — the durable
-copy of every reminder is the conversation it was appended to.
+uses for event reminders. The store is a bounded ring buffer in the shared
+SQLite database — the durable copy of every reminder is the conversation it
+was appended to.
 """
 
 from __future__ import annotations
 
-import json
-import os
 import time
-from pathlib import Path
 from typing import Any
 
 from ...config import get_settings
+from ...store import database
 
 MAX_REPORTS = 200
-
-
-def _path() -> Path:
-    return get_settings().data_dir / "cron" / "reports.json"
+_KEY = "cron/reports"
 
 
 def _read() -> list[dict[str, Any]]:
-    path = _path()
-    if not path.exists():
-        return []
-    try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return []
+    raw = database.get_state(get_settings(), _KEY, [])
     return [item for item in raw if isinstance(item, dict)] if isinstance(raw, list) else []
 
 
@@ -46,11 +36,7 @@ def record(*, job_id: str, name: str, text: str, status: str) -> dict[str, Any]:
         "at": time.time(),
     }
     items = [*_read(), entry][-MAX_REPORTS:]
-    path = _path()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(".tmp")
-    tmp.write_text(json.dumps(items, ensure_ascii=False), encoding="utf-8")
-    os.replace(tmp, path)
+    database.put_state(get_settings(), _KEY, items)
     return entry
 
 

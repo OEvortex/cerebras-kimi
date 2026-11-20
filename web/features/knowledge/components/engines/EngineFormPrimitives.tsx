@@ -74,7 +74,7 @@ export function CopyableCommand({ command }: { command: string }) {
           // The write is awaited before the label changes. This used to be
           // `void navigator.clipboard?.writeText(...)` followed by an
           // unconditional `setCopied(true)` — where the `?.` meant a missing
-          // Clipboard API did not even throw, and the label said 已复制 anyway.
+          // Clipboard API did not even throw, and the label said Copied anyway.
           void copyText(command).then(
             () => setOutcome("copied"),
             () => setOutcome("failed"),

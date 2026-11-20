@@ -557,7 +557,7 @@ function PendingRow({
   
   const matched = item.match?.material;
   const collections = item.match?.collections ?? [];
-  const where = collections.map((row) => row.title).join("、");
+  const where = collections.map((row) => row.title).join(", ");
 
   return (
     <li className="rounded-lg bg-[var(--muted)] px-3 py-2">

@@ -150,14 +150,14 @@ export default function MemoryRunPanel({
         mode,
         iterations: typeof iterations === "number" ? iterations : undefined,
         llmSelection,
-        language: "en" || "en",
+        language: "en",
       });
     } else {
       void start({
         mode,
         budget: typeof budget === "number" ? budget : undefined,
         llmSelection,
-        language: "en" || "en",
+        language: "en",
       });
     }
   }, [
@@ -392,7 +392,7 @@ export default function MemoryRunPanel({
         ) : (
           <ol className="space-y-2">
             {turns.map((turn) => (
-              <TurnCard key={`${turn.kind}-${turn.id}`} turn={turn} t={t} />
+              <TurnCard key={`${turn.kind}-${turn.id}`} turn={turn} />
             ))}
             {isRunning && (
               <li className="flex items-center gap-2 rounded-md bg-[var(--muted)]/40 px-2.5 py-1.5 text-[11.5px] text-[var(--muted-foreground)]">
@@ -489,7 +489,7 @@ function groupByTurn(events: RunEvent[]): Turn[] {
   return out;
 }
 
-function TurnCard({ turn, t }: { turn: Turn; t: (k: string) => string }) {
+function TurnCard({ turn }: { turn: Turn }) {
   if (turn.kind === "system") {
     return <SystemEventRow event={turn.payload}  />;
   }
@@ -500,7 +500,6 @@ function SystemEventRow({
   event,
 }: {
   event: RunEvent["payload"];
-  t: (k: string) => string;
 }) {
   const stage = String(event.stage || "");
   const display = systemEventDisplay(stage, event);
@@ -690,7 +689,6 @@ function LLMTurnCard({
   turn,
 }: {
   turn: Extract<Turn, { kind: "llm" }>;
-  t: (k: string) => string;
 }) {
   const [systemOpen, setSystemOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
@@ -828,7 +826,6 @@ interface ModelPillProps {
   error: boolean;
   disabled: boolean;
   onChange: (next: LLMSelection | null) => void;
-  t: (k: string) => string;
 }
 
 function ModelPill({

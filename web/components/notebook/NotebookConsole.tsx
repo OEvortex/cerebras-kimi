@@ -72,8 +72,8 @@ interface NotebookConsoleProps {
 }
 
 /**
- * 收藏夹, as every feature reads: `/notebooks` lists the notebooks, and
- * `/notebooks/<id>` is one of them — 「收藏夹 / its name」 in the page bar,
+ * Favorites, as every feature reads: `/notebooks` lists the notebooks, and
+ * `/notebooks/<id>` is one of them — Favorites / its name in the page bar,
  * where the name switches to the others. Notebooks are created and edited
  * from the list; the open one can be edited, exported or deleted from its
  * own header.
@@ -650,7 +650,9 @@ function NotebookDetail({
             description={selected?.description || undefined}
             meta={
               <span className="text-[12.5px] tabular-nums text-[var(--muted-foreground)]">
-                {(selected?.records.length ?? 0 === 1 ? `${selected?.records.length ?? 0} item` : `${selected?.records.length ?? 0} items`)}
+                {(selected?.records.length ?? 0) === 1
+                  ? `${selected?.records.length ?? 0} item`
+                  : `${selected?.records.length ?? 0} items`}
               </span>
             }
             action={

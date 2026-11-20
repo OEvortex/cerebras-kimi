@@ -8,7 +8,7 @@ import type { ActivityState } from "./types";
  * This is the whole icon vocabulary for activity rows. It replaced a family
  * of thirteen hand-drawn semantic glyphs, for two reasons that hold on every
  * surface, not just chat: the row's own text already names *what* is
- * happening ("Perplexity 联网搜索 …", "编译第 3 章"), so a glyph restating the
+ * happening ("Perplexity web search …", "compiling chapter 3"), so a glyph restating the
  * category spent the row's only pre-text position on information already in
  * view; and at 15px a multi-stroke mark reads as a smaller, muddier version
  * of the thought-orb sitting above it in the same column.

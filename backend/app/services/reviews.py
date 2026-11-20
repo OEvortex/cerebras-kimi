@@ -1,55 +1,40 @@
 """Spaced repetition for flashcards (the question bank), feeding the
 calendar's Reviews layer.
 
-Every ``question_bank.json`` entry with no schedule yet gets a first review
-one day after it was created. Correct answers advance a Leitner box with
-growing intervals (1, 3, 7, 14, 30, 60 days); "again" resets to box 1.
-State lives in ``data/reviews.json`` keyed by a hash of the question text, so
+Every question-bank entry with no schedule yet gets a first review one day
+after it was created. Correct answers advance a Leitner box with growing
+intervals (1, 3, 7, 14, 30, 60 days); "again" resets to box 1. Both the bank
+and the review state live in the shared SQLite database (keys
+``question_bank`` and ``reviews``), keyed by a hash of the question text, so
 edits to the question simply start a new card.
 """
 
 from __future__ import annotations
 
 import hashlib
-import json
-import os
-from pathlib import Path
 import time
 from typing import Any
 
 from ..config import get_settings
+from ..store import database
 
 # Days between reviews per box, 1-indexed.
 INTERVALS_DAYS = (1, 3, 7, 14, 30, 60)
 MAX_BOX = len(INTERVALS_DAYS)
 
 
-def _bank_path() -> Path:
-    root = Path(os.environ.get("DT_DATA_DIR", "./data")).resolve()
-    return root / "question_bank.json"
-
-
-def _state_path() -> Path:
-    return get_settings().data_dir / "reviews.json"
+def _load_bank() -> list[dict[str, Any]]:
+    bank = database.get_state(get_settings(), "question_bank", [])
+    return bank if isinstance(bank, list) else []
 
 
 def _load_state() -> dict[str, Any]:
-    path = _state_path()
-    if not path.exists():
-        return {}
-    try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return {}
-    return raw if isinstance(raw, dict) else {}
+    state = database.get_state(get_settings(), "reviews", {})
+    return state if isinstance(state, dict) else {}
 
 
 def _save_state(state: dict[str, Any]) -> None:
-    path = _state_path()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(".tmp")
-    tmp.write_text(json.dumps(state, ensure_ascii=False, sort_keys=True), encoding="utf-8")
-    os.replace(tmp, path)
+    database.put_state(get_settings(), "reviews", state)
 
 
 def key_for(question: str) -> str:
@@ -67,10 +52,7 @@ def _card(*, created: float, due_at: float, box: int = 1, last_at: float | None 
 
 def sync() -> dict[str, Any]:
     """Register question-bank entries that are not scheduled yet."""
-    try:
-        bank = json.loads(_bank_path().read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        bank = []
+    bank = _load_bank()
     state = _load_state()
     now = time.time()
     changed = False
@@ -98,10 +80,7 @@ def sync() -> dict[str, Any]:
 def due_between(start_ts: float, end_ts: float) -> list[dict[str, Any]]:
     """Cards due in ``[start_ts, end_ts)``, with their question text."""
     state = sync()
-    try:
-        bank = json.loads(_bank_path().read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        bank = []
+    bank = _load_bank()
     question_by_key = {key_for(str(e.get("q") or "")): e for e in bank if str(e.get("q") or "")}
     out: list[dict[str, Any]] = []
     for key, card in state.items():

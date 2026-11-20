@@ -36,6 +36,7 @@ import {
   type UpdateJob,
   type UpdateJobStatus,
 } from "@/lib/app-update";
+import { englishLabel } from "@/lib/english-labels";
 import {
   clientEdition,
   normalizeVersionTag,
@@ -382,7 +383,7 @@ export default function AboutSettingsPage() {
               ) : (
                 <CircleAlert className="h-3.5 w-3.5" />
               )}
-              {englishLabel(`updateJob.${job.status}`, `updateJob.${job.status}`})
+              {englishLabel(`updateJob.${job.status}`, `updateJob.${job.status}`)}
             </div>
             {job.error && (
               <p className="mt-2 text-[12px] text-red-600 dark:text-red-400">

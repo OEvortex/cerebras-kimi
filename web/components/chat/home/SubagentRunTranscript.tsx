@@ -176,10 +176,10 @@ function ToolResultBlock({ text }: { text: string }) {
         >
           {open
             ? zh
-              ? "收起"
+              ? "collapse"
               : "collapse"
             : zh
-              ? `… 展开 +${hidden} 行`
+              ? `… expand +${hidden} lines`
               : `… +${hidden} lines`}
         </button>
       )}

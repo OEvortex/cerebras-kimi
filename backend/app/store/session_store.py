@@ -31,6 +31,7 @@ from pathlib import Path
 from typing import Any, List
 
 from ..config import Settings
+from . import database
 
 
 # Sentinel for ``append_user_message``: the wire may omit ``parent_message_id``
@@ -182,24 +183,13 @@ class SessionStore:
 
     @contextlib.contextmanager
     def _connect(self) -> Any:
-        connection = sqlite3.connect(self._db_path, timeout=30, isolation_level=None)
-        try:
-            connection.row_factory = sqlite3.Row
-            # WAL is a persistent database property; setting it is only needed
-            # on first open. Keep it best-effort so concurrent turns never fail
-            # just because another writer holds the mode lock.
-            try:
-                connection.execute("PRAGMA journal_mode=WAL")
-            except sqlite3.OperationalError:
-                pass
-            connection.execute("PRAGMA busy_timeout=30000")
-            connection.execute("PRAGMA synchronous=NORMAL")
-            connection.execute("PRAGMA foreign_keys=ON")
+        with database.connect(self._settings) as connection:
             yield connection
-        finally:
-            connection.close()
 
     def _initialize(self) -> None:
+        # The database module owns the shared schema and the one-shot import of
+        # pre-SQLite stores; session tables are added on top of it.
+        database.ensure_schema(self._settings)
         with self._connect() as connection:
             # executescript manages its own transaction; the schema is
             # idempotent, so a retry after a crash is always safe.

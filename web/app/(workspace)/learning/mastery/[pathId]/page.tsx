@@ -35,10 +35,7 @@ import { ModuleOutline } from "@/components/space/learning/ModuleOutline";
 import { ConfirmDialog } from "@/components/space/learning/ConfirmDialog";
 import { EditTopicRouteDialog } from "@/components/space/learning/EditTopicRouteDialog";
 import { LearningBoard } from "@/components/space/learning/LearningBoard";
-import {
-  topicDisplayName,
-  type Translate,
-} from "@/components/space/learning/format";
+import { topicDisplayName } from "@/components/space/learning/format";
 import { PathTitle } from "@/components/space/learning/PathTitle";
 import { MasteryPathCrumb } from "@/components/layout/instance-crumbs";
 import { ReviewTrail } from "@/components/space/learning/ReviewTrail";
@@ -370,7 +367,7 @@ export default function MasteryTopicPage() {
 
   const startReview = (objectiveId: string, knowledgePointName: string) => {
     setPendingPrompt(
-      masteryOpeningMessage("review", t as Translate, {
+      masteryOpeningMessage("review",{
         dueTitles: [knowledgePointName],
       }),
       MASTERY_OPENING_SCOPE,
@@ -567,7 +564,7 @@ export default function MasteryTopicPage() {
               onClick={() => {
                 if (topic.next.action === "review") {
                   setPendingPrompt(
-                    masteryOpeningMessage("review", t as Translate, {
+                    masteryOpeningMessage("review",{
                       dueTitles: topic.next.knowledge_point_name
                         ? [topic.next.knowledge_point_name]
                         : [],
@@ -614,7 +611,7 @@ export default function MasteryTopicPage() {
               <Link
                 onClick={() =>
                   setPendingPrompt(
-                    masteryOpeningMessage("outline", t),
+                    masteryOpeningMessage("outline"),
                     MASTERY_OPENING_SCOPE,
                   )
                 }

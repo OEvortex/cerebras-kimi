@@ -8,18 +8,13 @@ copying messages. Stored beside the page manifest.
 from __future__ import annotations
 
 import time
-from pathlib import Path
 from typing import Any
 
-from .storage import CoWriterStorage, _atomic_write_json, _read_json
-
-
-def _path(storage: CoWriterStorage, doc_id: str) -> Path:
-    return storage.doc_root(doc_id) / "threads.json"
+from .storage import CoWriterStorage
 
 
 def list_threads(storage: CoWriterStorage, doc_id: str) -> list[dict[str, Any]]:
-    raw = _read_json(_path(storage, doc_id))
+    raw = storage.load_extra(doc_id, "threads", [])
     return raw if isinstance(raw, list) else []
 
 
@@ -47,7 +42,7 @@ def anchor(
                     origin=origin or thread.get("origin", "ask"),
                     updated_at=now,
                 )
-                _atomic_write_json(_path(storage, doc_id), threads)
+                storage.save_extra(doc_id, "threads", threads)
                 return thread
         thread = {
             "session_id": session_id,
@@ -58,7 +53,7 @@ def anchor(
             "updated_at": now,
         }
         threads.append(thread)
-        _atomic_write_json(_path(storage, doc_id), threads)
+        storage.save_extra(doc_id, "threads", threads)
         return thread
 
 
@@ -68,5 +63,5 @@ def remove(storage: CoWriterStorage, doc_id: str, session_id: str) -> bool:
         kept = [thread for thread in threads if thread.get("session_id") != session_id]
         if len(kept) == len(threads):
             return False
-        _atomic_write_json(_path(storage, doc_id), kept)
+        storage.save_extra(doc_id, "threads", kept)
         return True

@@ -23,19 +23,13 @@ from .toolkit import tool
 _HEADERS = {"User-Agent": "DeepTutor/0.1 (+https://deeptutor.info)"}
 
 
-def _notes_dir_for_env() -> Path:
-    root = Path(os.environ.get("DT_DATA_DIR", "./data")).resolve() / "notes"
-    root.mkdir(parents=True, exist_ok=True)
-    return root
-
-
 @tool(mutating=True, tool_icon="📝")
 def notes(action: str, title: str = "", content: str = "", tags: str = "",
           query: str = "") -> str:
     """The user's notebook — one tool for write, list, and search.
 
     Notes are Co-Writer notebook pages, so anything saved here is visible in
-    the Notebook tab. A markdown copy is kept alongside them as a backup.
+    the Notebook tab.
 
     Actions:
     - ``write``: save a notebook page (``title``, ``content``, optional
@@ -92,16 +86,18 @@ def question_bank(action: str, question: str = "", answer: str = "", topic: str 
     :param answer: The answer (for add).
     :param topic: Optional topic tag.
     """
-    root = _notes_dir_for_env().parent / "question_bank.json"
-    root.parent.mkdir(parents=True, exist_ok=True)
-    bank = json.loads(root.read_text()) if root.exists() else []
+    from ..config import get_settings
+    from ..store import database
+
+    settings = get_settings()
+    bank = database.get_state(settings, "question_bank", []) or []
     action = (action or "").strip().lower()
     if action == "add":
         if not question.strip():
             return "question is required for add."
         bank.append({"q": question, "a": answer, "topic": topic,
                      "created": time.time()})
-        root.write_text(json.dumps(bank, ensure_ascii=False, indent=1))
+        database.put_state(settings, "question_bank", bank)
         return f"Saved question to bank ({len(bank)} total)."
     if action == "list":
         return "\n".join(f"- {e['q']}" + (f" [{e.get('topic','')}]" if e.get("topic") else "")
@@ -116,12 +112,6 @@ def question_bank(action: str, question: str = "", answer: str = "", topic: str 
 # ---------------------------------------------------------------------------
 # memory — tiny persistent memory (read_memory / write_memory)
 # ---------------------------------------------------------------------------
-
-
-def _memory_path() -> Path:
-    root = Path(os.environ.get("DT_DATA_DIR", "./data")).resolve()
-    root.mkdir(parents=True, exist_ok=True)
-    return root / "memory.json"
 
 
 @tool(mutating=True, tool_icon="🧠")
@@ -139,19 +129,21 @@ def memory(action: str, query: str = "", fact: str = "",
     :param fact: Fact to store for write.
     :param category: Category for write.
     """
-    path = _memory_path()
+    from ..config import get_settings
+    from ..store import database
+
+    settings = get_settings()
+    memories = database.get_state(settings, "memory", []) or []
     action = (action or "read").lower()
     if action == "write":
         if not fact:
             return "memory write needs a fact."
-        memories = json.loads(path.read_text(encoding="utf-8")) if path.exists() else []
         memories.append({"fact": fact, "category": category, "created": time.time()})
-        path.write_text(json.dumps(memories, ensure_ascii=False, indent=1))
+        database.put_state(settings, "memory", memories)
         return f"Remembered: {fact}"
     # read
-    if not path.exists():
+    if not memories:
         return "No memories stored yet."
-    memories = json.loads(path.read_text(encoding="utf-8"))
     q = query.strip().lower()
     if q:
         memories = [m for m in memories if q in json.dumps(m, ensure_ascii=False).lower()]
@@ -162,12 +154,6 @@ def memory(action: str, query: str = "", fact: str = "",
 # learning — single tool covering the whole learning-state surface
 # (upstream learning_status + learning_update + journal merged)
 # ---------------------------------------------------------------------------
-
-
-def _learning_path() -> Path:
-    root = Path(os.environ.get("DT_DATA_DIR", "./data")).resolve()
-    root.mkdir(parents=True, exist_ok=True)
-    return root / "learning.json"
 
 
 @tool(mutating=True, tool_icon="📚")
@@ -188,10 +174,12 @@ def learning(action: str, topic: str = "", note: str = "", status: str = "",
     :param status: learned|learning|weak (for update).
     :param minutes: Minutes spent (for update).
     """
-    path = _learning_path()
-    try:
-        data = json.loads(path.read_text())
-    except Exception:  # noqa: BLE001
+    from ..config import get_settings
+    from ..store import database
+
+    settings = get_settings()
+    data = database.get_state(settings, "learning", {"topics": {}, "journal": []})
+    if not isinstance(data, dict):
         data = {"topics": {}, "journal": []}
     topics = cast(dict[str, Any], data.setdefault("topics", {}))
     journal = cast(list[dict[str, Any]], data.setdefault("journal", []))
@@ -207,13 +195,13 @@ def learning(action: str, topic: str = "", note: str = "", status: str = "",
             t["notes"].append({"at": time.time(), "note": note})
         t["minutes"] = int(t.get("minutes", 0)) + max(0, minutes)
         t["updated_at"] = time.time()
-        path.write_text(json.dumps(data, ensure_ascii=False, indent=2))
+        database.put_state(settings, "learning", data)
         return f"Recorded: {topic} → {t['status']}"
     if action == "journal":
         if not note:
             return "journal needs a note."
         journal.append({"at": time.time(), "note": note})
-        path.write_text(json.dumps(data, ensure_ascii=False, indent=2))
+        database.put_state(settings, "learning", data)
         return "Journal entry saved."
     if action == "weak":
         weak = {k: v for k, v in topics.items() if v.get("status") == "weak"}
@@ -335,12 +323,6 @@ def workspace(action: str, path: str = "", content: str = "",
 # ---------------------------------------------------------------------------
 
 
-def _mastery_path() -> Path:
-    root = Path(os.environ.get("DT_DATA_DIR", "./data")).resolve()
-    root.mkdir(parents=True, exist_ok=True)
-    return root / "mastery.json"
-
-
 @tool(mutating=True, tool_icon="🎯")
 def mastery(action: str, topic: str = "", question: str = "",
             answer: str = "", score: int = -1, note: str = "") -> str:
@@ -363,10 +345,12 @@ def mastery(action: str, topic: str = "", question: str = "",
     :param score: 0-100 correctness (grade).
     :param note: Free-text note.
     """
-    path = _mastery_path()
-    try:
-        data = json.loads(path.read_text())
-    except Exception:  # noqa: BLE001
+    from ..config import get_settings
+    from ..store import database
+
+    settings = get_settings()
+    data = database.get_state(settings, "mastery", {"topics": {}, "session": None})
+    if not isinstance(data, dict):
         data = {"topics": {}, "session": None}
     topics = cast(dict[str, Any], data.setdefault("topics", {}))
     session = data.get("session")
@@ -383,7 +367,7 @@ def mastery(action: str, topic: str = "", question: str = "",
             return "mastery start needs a topic."
         topics.setdefault(topic, {"level": 0, "reviews": 0, "notes": []})
         data["session"] = {"topic": topic, "started_at": time.time(), "turn": 0}
-        path.write_text(json.dumps(data, ensure_ascii=False, indent=2))
+        database.put_state(settings, "mastery", data)
         return f"Started mastery session on {topic}. Ask a diagnostic question."
     if action == "status":
         return f"Session: {session} " if session else "No active session. " + \
@@ -414,18 +398,18 @@ def mastery(action: str, topic: str = "", question: str = "",
         if note:
             t.setdefault("notes", []).append({"at": time.time(), "note": note})
         t["updated_at"] = time.time()
-        path.write_text(json.dumps(data, ensure_ascii=False, indent=2))
+        database.put_state(settings, "mastery", data)
         return (f"Recorded: level {t['level']}/5 after {t['reviews']} reviews "
                 f"on {session['topic']}.")
     if action == "note":
         tname = topic or (session or {}).get("topic")
         t = topics.setdefault(tname or "general", {"level": 0, "reviews": 0, "notes": []})
         t.setdefault("notes", []).append({"at": time.time(), "note": note})
-        path.write_text(json.dumps(data, ensure_ascii=False, indent=2))
+        database.put_state(settings, "mastery", data)
         return "Note saved."
     if action == "leave":
         data["session"] = None
-        path.write_text(json.dumps(data, ensure_ascii=False, indent=2))
+        database.put_state(settings, "mastery", data)
         return "Mastery session ended."
     return f"Unknown mastery action: {action}"
 

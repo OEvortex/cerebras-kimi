@@ -158,7 +158,7 @@ export function catalogTranslate(
 }
 
 function questionCandidate(row: Record<string, unknown>, tr: Translate): SourceCandidate {
-  return { key: JSON.stringify([row.content_workspace_id ?? '', 'question_bank', row.id]), kind: 'question_bank', sourceId: String(row.id), label: String(row.question || tr('未命名', 'Untitled')), detail: '', excerpt: String(row.question || ''), content_workspace_id: String(row.content_workspace_id ?? ''), content_workspace_name: String(row.content_workspace_name ?? ''), available: row.available !== false && !row.unreadable }
+  return { key: JSON.stringify([row.content_workspace_id ?? '', 'question_bank', row.id]), kind: 'question_bank', sourceId: String(row.id), label: String(row.question || tr('Untitled', 'Untitled')), detail: '', excerpt: String(row.question || ''), content_workspace_id: String(row.content_workspace_id ?? ''), content_workspace_name: String(row.content_workspace_name ?? ''), available: row.available !== false && !row.unreadable }
 }
 
 export function useTopicSourceLibrary(tr: Translate) {
@@ -204,7 +204,7 @@ export function useTopicSourceLibrary(tr: Translate) {
       key: JSON.stringify([row.content_workspace_id ?? '', kind, id]),
       kind,
       sourceId: String(id),
-      label: String(label || tr('未命名', 'Untitled')),
+      label: String(label || tr('Untitled', 'Untitled')),
       detail: String(detail || ''),
       content_workspace_id: String(row.content_workspace_id ?? ''),
       content_workspace_name: String(row.content_workspace_name || ''),
@@ -350,7 +350,7 @@ export function useTopicSourceLibrary(tr: Translate) {
             error:
               reason instanceof Error
                 ? reason.message
-                : tr('无法读取列表', 'Could not load the list'),
+                : tr('Could not load the list', 'Could not load the list'),
           },
         }))
       }
@@ -401,7 +401,7 @@ async function fetchChildren(
           kind: 'file' as const,
           sourceId: entry.name,
           label: entry.name,
-          detail: tr('{{name}} 中的文件', 'File in {{name}}', { name: kbName }),
+          detail: tr('File in {{name}}', 'File in {{name}}', { name: kbName }),
           available: true,
           kbName,
           path: entry.name,
@@ -420,10 +420,10 @@ async function fetchChildren(
       key: `question_bank:${entry.id}`,
       kind: 'question_bank' as const,
       sourceId: String(entry.id),
-      label: entry.question.slice(0, 80) || tr('未命名题目', 'Untitled question'),
+      label: entry.question.slice(0, 80) || tr('Untitled question', 'Untitled question'),
       detail: entry.is_correct
-        ? tr('已答对', 'Answered correctly')
-        : tr('答错过', 'Answered wrong'),
+        ? tr('Answered correctly', 'Answered correctly')
+        : tr('Answered wrong', 'Answered wrong'),
       available: true,
       excerpt: entry.question,
       parentKey,
@@ -436,8 +436,8 @@ async function fetchChildren(
       kind: 'chat' as const,
       // The reference form chat's own transcript reader understands.
       sourceId: `partner:${candidate.sourceId}:${session.session_key}`,
-      label: session.title || tr('未命名对话', 'Untitled conversation'),
-      detail: tr('{{count}} 条消息', '{{count}} messages', { count: session.message_count }),
+      label: session.title || tr('Untitled conversation', 'Untitled conversation'),
+      detail: tr('{{count}} messages', '{{count}} messages', { count: session.message_count }),
       available: true,
       excerpt: session.last_message || '',
       parentKey,
@@ -449,8 +449,8 @@ async function fetchChildren(
       key: `partner_group:${candidate.sourceId}:${session.session_key}`,
       kind: 'partner_group' as const,
       sourceId: `${candidate.sourceId}:${session.session_key}`,
-      label: session.title || tr('未命名讨论', 'Untitled discussion'),
-      detail: tr('{{count}} 条消息', '{{count}} messages', { count: session.message_count }),
+      label: session.title || tr('Untitled discussion', 'Untitled discussion'),
+      detail: tr('{{count}} messages', '{{count}} messages', { count: session.message_count }),
       available: true,
       parentKey,
     }))

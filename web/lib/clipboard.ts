@@ -14,7 +14,7 @@
  *
  * And `writeText` rejects for reasons that have nothing to do with the caller
  * — the document lost focus, the permission was denied. Callers kept
- * swallowing those rejections next to a checkmark that said 已复制.
+ * swallowing those rejections next to a checkmark that said Copied.
  *
  * So the contract here is: **this rejects when the text did not reach the
  * clipboard.** A caller that wants to stay quiet can catch; a caller that

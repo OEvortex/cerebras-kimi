@@ -36,7 +36,7 @@ export function normalizeMasteryMode(value: unknown): MasteryMode {
  *
  * Namespaced rather than the bare words: "Review" already exists elsewhere in
  * the product meaning *proofread*, and reusing it rendered this control as
- * 「审阅」 — the right translation of a different word.
+ * review — the right translation of a different word.
  */
 export const MASTERY_MODE_LABELS: Record<MasteryMode, string> = {
   outline: "masteryMode.outline",
@@ -89,21 +89,16 @@ export const MASTERY_OPENING_SCOPE = "mastery_opening";
  */
 export function masteryOpeningMessage(
   mode: MasteryMode,
-  translate: (key: string, vars?: Record<string, unknown>) => string,
   options: { dueTitles?: string[] } = {},
 ): string {
   if (mode === "outline") {
-    return translate(
-      "Use the materials I chose and design the outline for this goal with me.",
-    );
+    return "Use the materials I chose and design the outline for this goal with me.";
   }
   if (mode === "review") {
     const due = (options.dueTitles ?? []).filter(Boolean);
     return due.length
-      ? translate("Let's review what is due today: {{items}}.", {
-          items: due.join(translate("source list separator")),
-        })
-      : translate("Let's review what I have already learned.");
+      ? `Let's review what is due today: ${due.join(", ")}.`
+      : "Let's review what I have already learned.";
   }
   return "";
 }

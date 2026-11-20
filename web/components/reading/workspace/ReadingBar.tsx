@@ -69,8 +69,8 @@ function BarButton({
 /**
  * The reading workspace's one row of chrome, over the document only.
  *
- * Its left half is the location every page states, 「沉浸式阅读 / the
- * collection / the document」: the feature opens onto the other features of
+ * Its left half is the location every page states, Immersive Reading / the
+ * collection / the document: the feature opens onto the other features of
  * the learning shelf, the collection onto the other collections (double-click
  * renames it, as does its menu; its folder page is at the bottom), the document onto the other
  * files in it (adding one is at the top). The reader pane hands its place,

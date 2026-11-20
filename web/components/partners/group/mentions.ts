@@ -11,10 +11,10 @@
 import type { PartnerGroupMember } from "@/lib/partner-groups-api";
 
 /** Tokens that address the whole panel, in both supported UI languages. */
-const EVERYONE_TOKENS = new Set(["all", "everyone", "所有人", "全部", "大家"]);
+const EVERYONE_TOKENS = new Set(["all", "everyone"]);
 
 /** A raw @token stops at whitespace, another @, or sentence punctuation. */
-const MENTION_TOKEN = /(?<![\w@])@([^\s@,，、:：;；!?！？。.]+)/g;
+const MENTION_TOKEN = /(?<![\w@])@([^\s@,:;!?.]+)/g;
 
 export interface ResolvedMentions {
   /** Partner ids to address; empty means "everyone" (the @all default). */
