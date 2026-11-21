@@ -296,6 +296,9 @@ def safe_link(value: str) -> bool:
     """
     if not isinstance(value, str):
         return False
+    # Browsers strip surrounding whitespace before resolving a URL, so inspect
+    # the normalised form rather than the raw stored string.
+    value = value.strip()
     if not value:
         return True
     if _CONTROL_CHARS.search(value) or value.startswith("//"):

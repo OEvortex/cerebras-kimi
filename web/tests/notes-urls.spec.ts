@@ -24,6 +24,7 @@ describe('safeNoteUrl', () => {
       'vbscript:x',
       '//evil.test/x',
       'java\nscript:alert(1)',
+      ' javascript:alert(1)',
       '',
     ]) {
       expect(safeNoteUrl(value)).toBeNull()

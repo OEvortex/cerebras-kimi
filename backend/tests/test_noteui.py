@@ -120,6 +120,7 @@ def test_safe_link_allows_relative_notebook_links_but_blocks_code():
         "vbscript:x",
         "//evil.test/x",
         "java\nscript:alert(1)",
+        " javascript:alert(1)",
         None,
     ):
         assert not safe_link(value), value
