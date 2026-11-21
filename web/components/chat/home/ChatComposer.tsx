@@ -1,7 +1,7 @@
 "use client";
 
-import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { Paperclip } from "lucide-react";
+import { memo, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Paperclip, Sparkles } from "lucide-react";
 
 
 import { ATTACHMENT_ACCEPT } from "@/lib/doc-attachments";
@@ -23,6 +23,8 @@ import ComposerResources from "./ComposerResources";
 import { ComposerTray } from "./ComposerTray";
 import { QuotedPassage } from "./QuotedPassage";
 import ReminderButton from "./ReminderButton";
+import { ghostTextEnabled, setGhostTextEnabled, subscribeGhostText } from "@/lib/ghost-text/enabled";
+import Tooltip from "@/shared/ui/Tooltip";
 import SelectedResources from "./SelectedResources";
 import { CapabilityMenu } from "./composer/CapabilityMenu";
 import { ComposerActionButtons } from "./composer/ComposerActionButtons";
@@ -149,6 +151,7 @@ export default memo(function ChatComposer({
   
   const capabilityLabel = useCapabilityLabel();
   const { value: pageCustomization } = usePageCustomization();
+  const ghostOn = useSyncExternalStore(subscribeGhostText, ghostTextEnabled, () => false);
   const controls = customizable ? pageCustomization.chat.controls : undefined;
   const capabilities = customizable
     ? allCapabilities.filter(
@@ -613,6 +616,21 @@ export default memo(function ChatComposer({
                   />
                 )}
               </div>
+
+              <Tooltip label={ghostOn ? "Ghost text: on (Tab accepts)" : "Ghost text: off"}>
+                <button
+                  type="button"
+                  aria-pressed={ghostOn}
+                  onClick={() => setGhostTextEnabled(!ghostOn)}
+                  className={`flex size-8 items-center justify-center rounded-lg transition-colors ${
+                    ghostOn
+                      ? "bg-[var(--primary)]/10 text-[var(--primary)]"
+                      : "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]"
+                  }`}
+                >
+                  <Sparkles size={15} strokeWidth={1.8} />
+                </button>
+              </Tooltip>
 
               <ReminderButton />
 

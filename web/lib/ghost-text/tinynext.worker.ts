@@ -65,15 +65,15 @@ function emptyCache(seqLen: number): { k: ort.Tensor; v: ort.Tensor } {
 
 async function suggest(before: string): Promise<string> {
   if (!session || !tokenizer) return "";
-  const ids = (await tokenizer.encode(before)).ids;
+  const ids = (await tokenizer.encode(before)).getIds();
   if (!ids.length) return "";
 
   const feeds = {
     input_ids: new ort.Tensor("int64", BigInt64Array.from(ids.map(BigInt)), [1, ids.length]),
     ...emptyCache(0),
   };
-  const first = await session.run(feeds);
-  let logits = first.logits;
+  const first = (await session.run(feeds)) as Record<string, ort.Tensor>;
+  let logits: ort.Tensor = first.logits;
   let cache: Cache = { k: first.present_k, v: first.present_v };
   let out = "";
   let prob = 1;
@@ -108,12 +108,12 @@ async function suggest(before: string): Promise<string> {
     out += text;
     if (/[.,!?;:]$/.test(text) || out.length >= MAX_CHARS || out.trim().split(/\s+/).length >= MAX_WORDS) break;
 
-    const nextFeeds = {
+    const nextFeeds: Record<string, ort.Tensor> = {
       input_ids: new ort.Tensor("int64", BigInt64Array.from([BigInt(top)]), [1, 1]),
       past_k: cache!.k,
       past_v: cache!.v,
     };
-    const step = await session.run(nextFeeds);
+    const step = (await session.run(nextFeeds)) as Record<string, ort.Tensor>;
     logits = step.logits;
     cache = { k: step.present_k, v: step.present_v };
   }
