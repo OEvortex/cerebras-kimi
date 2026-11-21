@@ -455,6 +455,17 @@ class RealtimeHub:
         if client is not None:
             await client.close()
 
+    async def broadcast(self, frame: dict[str, Any]) -> None:
+        """Push a frame to every connected browser client.
+
+        Used for detached work (a notebook sub-agent finishing long after its
+        parent turn ended) that has no live turn pump to write into.
+        """
+        async with self._lock:
+            clients = list(self._clients.values())
+        for client in clients:
+            await client.emit(frame)
+
     async def _sweep(self) -> None:
         while True:
             await asyncio.sleep(SWEEP_SECONDS)

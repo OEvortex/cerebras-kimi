@@ -179,6 +179,12 @@ kb = KnowledgeBaseStore(settings)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.realtime.start()
+    # Notebook writer progress/completion needs to reach the browser even when
+    # the parent turn has already ended (the usual case for a background job).
+    from .agent.notebook_agent import events as notebook_events
+
+    notebook_events.set_broadcast(app.state.realtime.broadcast)
+    notebook_events.set_runtime(runtime)
     # Notes saved by older versions lived outside the notebook store. Bring
     # them into Co-Writer on boot so they are visible without a tool call.
     from .services.documents.notes import sync_legacy_notes

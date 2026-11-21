@@ -24,7 +24,6 @@ const loading = () => (
 );
 const General = dynamic(() => import("./SettingsOverview"), { loading });
 const Usage = dynamic(() => import("@/features/settings/sections/UsageSettingsSection"), { loading });
-const DataMigration = dynamic(() => import("@/features/settings/sections/DataMigrationSettingsSection"), { loading });
 const Status = dynamic(() => import("./SettingsRuntimePage"), { loading });
 const Appearance = dynamic(
   () => import("@/features/settings/sections/AppearanceSettingsSection"),
@@ -159,7 +158,6 @@ const Multimodal = dynamic(
 );
 
 const PAGES: Record<string, React.ComponentType> = {
-  "data-migration": DataMigration,
   voice: Voice,
   multimodal: Multimodal,
   archive: Archive,

@@ -10,7 +10,7 @@ import type { LucideIcon } from 'lucide-react'
 import type { SettingsAccess } from './settings-access'
 
 export const SETTINGS_PAGE_GROUPS: { label: string; keys: string[] }[] = [
-  { label: 'Personal', keys: ['general', 'workspace', 'data-migration', 'appearance', 'usage'] },
+  { label: 'Personal', keys: ['general', 'workspace', 'appearance', 'usage'] },
   {
     label: 'Models & services',
     keys: ['connections', 'llm', 'task-models', 'embedding', 'search', 'voice', 'multimodal'],
@@ -65,14 +65,6 @@ const extraPages: SettingsLeaf[] = [
     blurb: 'Reading progress and recent learning actions',
     icon: BarChart3,
     href: '/settings/progress',
-    tile: '',
-  },
-  {
-    key: 'data-migration',
-    label: 'Data migration',
-    blurb: 'Discover, migrate and export learning data',
-    icon: Archive,
-    href: '/settings/data-migration',
     tile: '',
   },
   {
