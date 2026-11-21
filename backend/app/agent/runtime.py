@@ -636,6 +636,7 @@ class AgentRuntime:
         assistant_parts: list[str] = []
         usage: Any = None
         turn_started_at = time.time()
+        first_token_at: float | None = None
         # Some OpenAI-compatible gateways forget to move a model's scratchpad
         # into `reasoning`/`reasoning_content` and leave it inline in the text
         # stream. vtx only knows the ` thinking` spelling, so split the other
@@ -702,6 +703,8 @@ class AgentRuntime:
                         event.future, event.tool_call_id, prompts)
                     continue
                 if isinstance(event, ThinkingDeltaEvent):
+                    if event.delta and first_token_at is None:
+                        first_token_at = time.time()
                     if event.delta:
                         # The frontend groups trace rows by metadata.call_id.
                         # Without it, reasoning deltas are dropped by
@@ -719,6 +722,8 @@ class AgentRuntime:
                                 "call_role": "assistant",
                             }))
                 elif isinstance(event, TextDeltaEvent):
+                    if event.delta and first_token_at is None:
+                        first_token_at = time.time()
                     if event.delta:
                         for kind, piece in inline_thinking.feed(event.delta):
                             await publish_text_piece(kind, piece)
@@ -914,15 +919,22 @@ class AgentRuntime:
             from ..config import get_settings
             from ..services import usage_stats
 
-            usage_stats.record_turn(
+            usage_stats.record_live_turn(
                 get_settings(),
                 session_id=handle.session_id,
-                model=str(getattr(runtime, "model", "") or ""),
-                provider=str(getattr(runtime, "model_provider", "") or ""),
-                usage=usage,
+                turn_id=handle.turn_id,
                 started_at=turn_started_at,
-                finished_at=time.time(),
             )
+            if first_token_at is not None:
+                usage_stats.record_turn_timing(
+                    get_settings(),
+                    turn_id=handle.turn_id,
+                    session_id=handle.session_id,
+                    model=str(getattr(runtime, "model", "") or ""),
+                    provider=str(getattr(runtime, "model_provider", "") or ""),
+                    ttft_s=first_token_at - turn_started_at,
+                    gen_s=time.time() - first_token_at,
+                )
         except Exception:  # noqa: BLE001
             pass
         assistant_text = "".join(assistant_parts).strip()
