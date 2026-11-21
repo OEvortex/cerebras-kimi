@@ -277,11 +277,33 @@ def _blk_code(language: str, code: str) -> dict:
     }
 
 
+# A URI scheme is a leading ``name:`` token. Only these may navigate away from
+# the app; everything else (javascript:, data:, file:, …) is page-provided code
+# or an unsupported target and must never reach a rendered ``href``.
+_ALLOWED_URI_SCHEMES = frozenset({"http", "https", "mailto"})
+_URI_SCHEME = re.compile(r"^([a-z][a-z0-9+.-]*):", re.I)
+_CONTROL_CHARS = re.compile(r"[\x00-\x1f\x7f]")
+
+
 def safe_link(value: str) -> bool:
-    """Only links the editor can display without executing page-provided code."""
-    return isinstance(value, str) and (
-        not value or bool(re.match(r"^(https?://|mailto:|/(?!/)|#)", value, re.I))
-    )
+    """Only links the editor can display without executing page-provided code.
+
+    Absolute http(s)/mailto URLs, root-relative paths and fragments are safe.
+    Plain relative paths are safe too: they resolve against the app origin and
+    carry no scheme, so a notebook's ``[Lasers](Lasers)`` cross-reference does
+    not break saving. Executable schemes, protocol-relative ``//host`` URLs and
+    control characters (which browsers can fold into a scheme) are rejected.
+    """
+    if not isinstance(value, str):
+        return False
+    if not value:
+        return True
+    if _CONTROL_CHARS.search(value) or value.startswith("//"):
+        return False
+    scheme = _URI_SCHEME.match(value)
+    if scheme:
+        return scheme.group(1).lower() in _ALLOWED_URI_SCHEMES
+    return True
 
 
 def validate_blocks(blocks: list[dict[str, Any]]) -> list[dict[str, Any]]:

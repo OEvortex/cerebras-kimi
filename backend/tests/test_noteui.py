@@ -9,6 +9,7 @@ import pytest
 from app.services.documents.blocks import (
     blocks_to_markdown,
     coarse_markdown_to_blocks,
+    safe_link,
     validate_blocks,
 )
 from app.services.documents.noteui import NoteUIError, blocks_to_dsl, compile_noteui
@@ -105,6 +106,40 @@ def test_learning_fences_still_work():
     assert blocks[0]["props"]["kind"] == "quiz"
     assert blocks[1]["props"]["kind"] == "mermaid"
     validate_blocks(blocks)
+
+
+def test_safe_link_allows_relative_notebook_links_but_blocks_code():
+    # Cross-page references written as `[Lasers](Lasers)` must not break saves.
+    for value in ("Lasers", "Optical Fibers", "/co-writer/abc", "#top", "", "a/b"):
+        assert safe_link(value), value
+    for value in ("https://x.test", "http://x.test", "mailto:a@b.c"):
+        assert safe_link(value), value
+    for value in (
+        "javascript:alert(1)",
+        "data:text/html,x",
+        "vbscript:x",
+        "//evil.test/x",
+        "java\nscript:alert(1)",
+        None,
+    ):
+        assert not safe_link(value), value
+
+
+def test_relative_link_block_survives_validation():
+    block = {
+        "id": "a1",
+        "type": "paragraph",
+        "props": {},
+        "content": [
+            {
+                "type": "link",
+                "href": "Lasers",
+                "content": [{"type": "text", "text": "Lasers", "styles": {}}],
+            }
+        ],
+        "children": [],
+    }
+    validate_blocks([block])
 
 
 def test_markdown_elements():
