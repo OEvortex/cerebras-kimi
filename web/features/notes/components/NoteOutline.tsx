@@ -43,9 +43,6 @@ export default function NoteOutline({
   roomy,
   onToggle,
   onJump,
-  subpages = [],
-  onNavigateSubpage,
-  onCreateSubpage,
 }: {
   blocks: NoteBlock[] | null | undefined
   /** The scrolling page column; the reading position is measured in it. */
@@ -55,10 +52,6 @@ export default function NoteOutline({
   roomy: boolean
   onToggle: () => void
   onJump: (id: string) => void
-  /** Direct child pages of the current page, shown for quick switching. */
-  subpages?: NoteSummary[]
-  onNavigateSubpage?: (event: MouseEvent<HTMLAnchorElement>, id: string) => void
-  onCreateSubpage?: () => void
 }) {
   
   const headings = useMemo(() => pageHeadings(blocks), [blocks])
@@ -91,7 +84,7 @@ export default function NoteOutline({
     }
   }, [headings, scroller])
 
-  if (!headings.length && !subpages.length) return null
+  if (!headings.length) return null
   const expanded = (open && roomy) || peek
   return (
     <div className="dt-note-outline-anchor">
@@ -125,63 +118,22 @@ export default function NoteOutline({
             </Tooltip>
           )}
         </div>
-        {!!headings.length && (
-          <ol>
-            {headings.map(heading => (
-              <li key={heading.id} data-level={heading.level - minLevel + 1}>
-                <button
-                  aria-current={heading.id === current ? 'location' : undefined}
-                  onClick={() => {
-                    setPeek(false)
-                    onJump(heading.id)
-                  }}
-                >
-                  <span className="dt-note-outline-mark" aria-hidden />
-                  <span className="dt-note-outline-text">{heading.text}</span>
-                </button>
-              </li>
-            ))}
-          </ol>
-        )}
-        {!!subpages.length && (
-          <div className="dt-note-outline-subpages">
-            <div className="dt-note-outline-subhead">
-              <span>{"Subpages"}</span>
-              {onCreateSubpage && (
-                <Tooltip label={"New subpage"} side="right">
-                  <button
-                    className="dt-note-icon-button"
-                    aria-label={"New subpage"}
-                    onClick={() => {
-                      setPeek(false)
-                      onCreateSubpage()
-                    }}
-                  >
-                    <Plus size={14} strokeWidth={1.7} />
-                  </button>
-                </Tooltip>
-              )}
-            </div>
-            <ul>
-              {subpages.map(subpage => (
-                <li key={subpage.id}>
-                  <Link
-                    href={`/co-writer/${subpage.id}`}
-                    onClick={event => {
-                      setPeek(false)
-                      onNavigateSubpage?.(event, subpage.id)
-                    }}
-                  >
-                    <span className="dt-note-outline-subpage-icon" aria-hidden>
-                      {subpage.icon || <FileText size={13} strokeWidth={1.7} />}
-                    </span>
-                    <span className="dt-note-outline-text">{subpage.title || "Untitled"}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        <ol>
+          {headings.map(heading => (
+            <li key={heading.id} data-level={heading.level - minLevel + 1}>
+              <button
+                aria-current={heading.id === current ? 'location' : undefined}
+                onClick={() => {
+                  setPeek(false)
+                  onJump(heading.id)
+                }}
+              >
+                <span className="dt-note-outline-mark" aria-hidden />
+                <span className="dt-note-outline-text">{heading.text}</span>
+              </button>
+            </li>
+          ))}
+        </ol>
       </nav>
     </div>
   )

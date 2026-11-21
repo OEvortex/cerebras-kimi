@@ -9,4 +9,7 @@ web-reff/
 web/dist
 video-ref2/
 .tmp-shots/
-.ruff_cache/
+.ruff_cache/noop/
+
+# local reference clone
+noop/

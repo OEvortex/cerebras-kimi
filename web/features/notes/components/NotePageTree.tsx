@@ -1,11 +1,119 @@
 'use client'
 
-import { useState, type MouseEvent } from 'react'
+import { useRef, useState, type MouseEvent } from 'react'
+import { createPortal } from 'react-dom'
 import Link from '@/shared/router/link'
-import { ChevronRight, FileText, Plus } from 'lucide-react'
+import { ChevronRight, Copy, FileText, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
 
 import Tooltip from '@/shared/ui/Tooltip'
+import { useMenuPopover } from '@/shared/ui/useMenuPopover'
 import type { NoteSummary } from '@/lib/notes-api'
+
+/** The ⋯ menu a Notion row reveals on hover: rename, duplicate, delete. */
+function RowMenu({
+  title,
+  childCount,
+  disabled,
+  onRename,
+  onDuplicate,
+  onDelete,
+}: {
+  title: string
+  childCount: number
+  disabled: boolean
+  onRename: () => void
+  onDuplicate: () => void
+  onDelete: () => void
+}) {
+  const [open, setOpenState] = useState(false)
+  const [confirming, setConfirming] = useState(false)
+  const setOpen = (value: boolean | ((current: boolean) => boolean)) => {
+    const next = typeof value === 'function' ? value(open) : value
+    setOpenState(next)
+    if (!next) setConfirming(false)
+  }
+  const menu = useMenuPopover<HTMLDivElement>(open, setOpen)
+  return (
+    <div className="dt-note-tree-actions">
+      <button
+        className="dt-note-tree-more"
+        aria-label={`Page actions for ${title}`}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        disabled={disabled}
+        onClick={event => {
+          event.preventDefault()
+          event.stopPropagation()
+          setOpen(!open)
+        }}
+      >
+        <MoreHorizontal size={15} strokeWidth={1.8} />
+      </button>
+      {open && (
+        <div ref={menu} className="dt-popover dt-note-tree-menu" role="menu">
+          {confirming ? (
+            <>
+              <p className="dt-note-tree-confirm">
+                {childCount > 0
+                  ? `Delete “${title}”? Its subpages move up one level.`
+                  : `Delete “${title}”? This cannot be undone.`}
+              </p>
+              <button
+                role="menuitem"
+                className="dt-menu-item is-danger"
+                disabled={disabled}
+                onClick={() => {
+                  setOpen(false)
+                  onDelete()
+                }}
+              >
+                <Trash2 size={14} />
+                {"Delete page"}
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                role="menuitem"
+                className="dt-menu-item"
+                disabled={disabled}
+                onClick={() => {
+                  setOpen(false)
+                  onRename()
+                }}
+              >
+                <Pencil size={14} />
+                <span className="flex-1">{"Rename"}</span>
+              </button>
+              <button
+                role="menuitem"
+                className="dt-menu-item"
+                disabled={disabled}
+                onClick={() => {
+                  setOpen(false)
+                  onDuplicate()
+                }}
+              >
+                <Copy size={14} />
+                <span className="flex-1">{"Duplicate"}</span>
+              </button>
+              <div className="dt-menu-divider" />
+              <button
+                role="menuitem"
+                className="dt-menu-item is-danger"
+                disabled={disabled}
+                onClick={() => setConfirming(true)}
+              >
+                <Trash2 size={14} />
+                <span className="flex-1">{"Delete"}</span>
+              </button>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function NotePageTree({
   pages,
@@ -15,6 +123,9 @@ export default function NotePageTree({
   onNavigate,
   onCreate,
   onMove,
+  onRename,
+  onDuplicate,
+  onDelete,
 }: {
   pages: NoteSummary[]
   currentId: string
@@ -24,11 +135,21 @@ export default function NotePageTree({
   onClose?: () => void
   onCreate: (parentId: string | null) => void
   onMove?: (pageId: string, parentId: string | null) => void
+  onRename?: (id: string, title: string) => void
+  onDuplicate?: (id: string) => void
+  onDelete?: (id: string) => void
 }) {
   
   const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set())
   const [dragId, setDragId] = useState<string | null>(null)
   const [dropId, setDropId] = useState<string | null | undefined>(undefined)
+  const [renamingId, setRenamingId] = useState<string | null>(null)
+  const [renameValue, setRenameValue] = useState('')
+  const commitRename = (id: string) => {
+    const value = renameValue.trim()
+    setRenamingId(null)
+    if (value) onRename?.(id, value)
+  }
 
   // Walking up from the drop target: reparenting is rejected when the target
   // is the dragged page itself or one of its descendants (a cycle).
@@ -54,7 +175,8 @@ export default function NotePageTree({
       <ul className={parent ? 'dt-note-tree-children' : 'dt-note-tree-roots'}>
         {children.map(page => {
           const title = page.title || "Untitled"
-          const hasChildren = pages.some(p => p.parent_id === page.id)
+          const childCount = pages.filter(p => p.parent_id === page.id).length
+          const hasChildren = childCount > 0
           const expanded = !collapsed.has(page.id)
           return (
             <li key={page.id}>
@@ -109,16 +231,37 @@ export default function NotePageTree({
                 ) : (
                   <span className="dt-note-tree-toggle" />
                 )}
-                <Link
-                  href={`/co-writer/${page.id}`}
-                  onClick={event => onNavigate(event, page.id)}
-                  aria-current={page.id === currentId ? 'page' : undefined}
-                >
-                  <span className="dt-note-tree-icon" aria-hidden>
-                    {page.icon || <FileText size={15} strokeWidth={1.6} />}
-                  </span>
-                  <span className="truncate">{title}</span>
-                </Link>
+                {renamingId === page.id ? (
+                  <input
+                    className="dt-note-tree-rename"
+                    aria-label={`Rename ${title}`}
+                    autoFocus
+                    value={renameValue}
+                    onClick={event => event.stopPropagation()}
+                    onChange={event => setRenameValue(event.target.value)}
+                    onBlur={() => commitRename(page.id)}
+                    onKeyDown={event => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault()
+                        commitRename(page.id)
+                      } else if (event.key === 'Escape') {
+                        event.preventDefault()
+                        setRenamingId(null)
+                      }
+                    }}
+                  />
+                ) : (
+                  <Link
+                    href={`/co-writer/${page.id}`}
+                    onClick={event => onNavigate(event, page.id)}
+                    aria-current={page.id === currentId ? 'page' : undefined}
+                  >
+                    <span className="dt-note-tree-icon" aria-hidden>
+                      {page.icon || <FileText size={15} strokeWidth={1.6} />}
+                    </span>
+                    <span className="truncate">{title}</span>
+                  </Link>
+                )}
                 <Tooltip label={"Add a page inside"}>
                   <button
                     className="dt-note-tree-add"
@@ -129,6 +272,19 @@ export default function NotePageTree({
                     <Plus size={14} />
                   </button>
                 </Tooltip>
+                {onRename || onDuplicate || onDelete ? (
+                  <RowMenu
+                    title={title}
+                    childCount={childCount}
+                    disabled={busy}
+                    onRename={() => {
+                      setRenameValue(page.title || '')
+                      setRenamingId(page.id)
+                    }}
+                    onDuplicate={() => onDuplicate?.(page.id)}
+                    onDelete={() => onDelete?.(page.id)}
+                  />
+                ) : null}
               </div>
               {expanded && rows(page.id, depth + 1, new Set([...ancestors, page.id]))}
             </li>

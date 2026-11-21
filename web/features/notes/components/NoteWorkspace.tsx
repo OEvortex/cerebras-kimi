@@ -21,7 +21,7 @@ import {
   type NoteSummary,
   type NoteSuggestion,
 } from '@/lib/notes-api'
-import { exportCoWriterDocx } from '@/lib/co-writer-api'
+import { deleteCoWriterDocument, exportCoWriterDocx } from '@/lib/co-writer-api'
 import { notifyCoWriterChanged } from '@/lib/co-writer-events'
 import { browserStorage } from '@/shared/storage'
 import { researchOutline } from '../model/research'
@@ -514,6 +514,60 @@ export default function NoteWorkspace({
       refreshPages()
     }
   }
+  // Row actions in the page tree: rename, duplicate and delete, Notion-style.
+  const renamePage = async (pageId: string, title: string) => {
+    const target = pages.find(p => p.id === pageId)
+    if (!target || target.title === title) return
+    setMutating(true)
+    try {
+      await flush()
+      const result = await saveNote(pageId, { title, expected_revision: target.revision })
+      refreshPages()
+      if (pageId === docId) {
+        latest.current = result
+        setPage(result)
+      }
+      notifyCoWriterChanged()
+    } catch (err) {
+      setError(String(err))
+    } finally {
+      setMutating(false)
+    }
+  }
+  const duplicatePage = async (pageId: string) => {
+    setMutating(true)
+    try {
+      await flush()
+      const source = await getNote(pageId)
+      const copy = await createNote(`${source.title || 'Untitled'} (copy)`, source.parent_id)
+      if (source.blocks?.length)
+        await saveNote(copy.id, { blocks: source.blocks, expected_revision: copy.revision })
+      refreshPages()
+      notifyCoWriterChanged()
+      router.push(`/co-writer/${copy.id}`)
+    } catch (err) {
+      setError(String(err))
+    } finally {
+      setMutating(false)
+    }
+  }
+  const deletePage = async (pageId: string) => {
+    const target = pages.find(p => p.id === pageId)
+    if (!target) return
+    setMutating(true)
+    try {
+      await flush()
+      await deleteCoWriterDocument(pageId)
+      refreshPages()
+      notifyCoWriterChanged()
+      if (pageId === docId)
+        router.push(target.parent_id ? `/co-writer/${target.parent_id}` : '/co-writer')
+    } catch (err) {
+      setError(String(err))
+    } finally {
+      setMutating(false)
+    }
+  }
   const exportFile = async (format: 'md' | 'docx' | 'anki') => {
     try {
       await flush()
@@ -707,6 +761,9 @@ export default function NoteWorkspace({
             onNavigate={navigate}
             onCreate={createPage}
             onMove={(id, parent) => void movePage(id, parent)}
+            onRename={(id, title) => void renamePage(id, title)}
+            onDuplicate={id => void duplicatePage(id)}
+            onDelete={id => void deletePage(id)}
           />
         )}
         <main className="dt-note-main" ref={setMainEl}>
@@ -718,9 +775,6 @@ export default function NoteWorkspace({
               roomy={margin === 'wide'}
               onToggle={() => setOutlineOpen(!outlineOpen)}
               onJump={id => scrollToBlock(id, false)}
-              subpages={subpages}
-              onNavigateSubpage={(event, id) => navigate(event, id)}
-              onCreateSubpage={() => void createPage(docId)}
             />
           )}
           {page && (
