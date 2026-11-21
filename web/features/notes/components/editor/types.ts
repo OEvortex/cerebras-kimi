@@ -24,6 +24,8 @@ export interface NoteEditorHandle {
   insertLearningAfter: (blockId: string, kind: string, prompt: string) => string | null
   /** Keep the request a learning block is regenerated from as its prompt. */
   updateLearningPrompt: (blockId: string, prompt: string) => void
+  /** Drop/insert a `pageLink` mention at the caret (Notion-style page drop). */
+  insertPageLink: (pageId: string, title: string) => void
   /** The block the caret is in, for "ask Dito" from outside the page. */
   cursorBlockId: () => string | null
   hasBlock: (id: string) => boolean

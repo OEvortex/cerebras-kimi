@@ -27,6 +27,8 @@ function RowMenu({
 }) {
   const [open, setOpenState] = useState(false)
   const [confirming, setConfirming] = useState(false)
+  const [position, setPosition] = useState({ top: 0, left: 0 })
+  const trigger = useRef<HTMLButtonElement>(null)
   const setOpen = (value: boolean | ((current: boolean) => boolean)) => {
     const next = typeof value === 'function' ? value(open) : value
     setOpenState(next)
@@ -36,6 +38,7 @@ function RowMenu({
   return (
     <div className="dt-note-tree-actions">
       <button
+        ref={trigger}
         className="dt-note-tree-more"
         aria-label={`Page actions for ${title}`}
         aria-haspopup="menu"
@@ -44,13 +47,24 @@ function RowMenu({
         onClick={event => {
           event.preventDefault()
           event.stopPropagation()
-          setOpen(!open)
+          if (open) return setOpen(false)
+          const rect = trigger.current?.getBoundingClientRect()
+          setPosition({
+            top: Math.min((rect?.bottom ?? 0) + 4, window.innerHeight - 180),
+            left: Math.max(8, (rect?.right ?? 0) - 220),
+          })
+          setOpen(true)
         }}
       >
         <MoreHorizontal size={15} strokeWidth={1.8} />
       </button>
-      {open && (
-        <div ref={menu} className="dt-popover dt-note-tree-menu" role="menu">
+      {open && createPortal(
+        <div
+          ref={menu}
+          className="dt-popover dt-note-tree-menu"
+          role="menu"
+          style={{ position: 'fixed', top: position.top, left: position.left }}
+        >
           {confirming ? (
             <>
               <p className="dt-note-tree-confirm">
@@ -109,7 +123,8 @@ function RowMenu({
               </button>
             </>
           )}
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   )

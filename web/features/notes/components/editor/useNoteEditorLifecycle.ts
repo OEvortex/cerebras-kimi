@@ -172,6 +172,13 @@ export default function useNoteEditorLifecycle({
           if (target?.type === 'learning' && target.props.prompt !== prompt)
             editor.updateBlock(target, { props: { prompt } })
         },
+        insertPageLink: (pageId, title) => {
+          editor.focus()
+          editor.insertInlineContent([
+            { type: 'pageLink', props: { pageId, title } },
+            ' ',
+          ])
+        },
         cursorBlockId: () => {
           try {
             return editor.getTextCursorPosition().block.id

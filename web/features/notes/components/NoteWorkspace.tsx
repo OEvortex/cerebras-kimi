@@ -507,12 +507,27 @@ export default function NoteWorkspace({
         parent_id: parentId,
         expected_revision: target.revision,
       })
-      refreshPages()
-      if (pageId === docId) await getNote(docId).then(setPage).catch(() => {})
     } catch (err) {
-      setError(String(err))
-      refreshPages()
+      // The list's revision may be stale — refetch once and retry the move.
+      const fresh = await getNote(pageId).catch(() => null)
+      if (!fresh) {
+        setError(String(err))
+        refreshPages()
+        return
+      }
+      try {
+        await saveNote(pageId, {
+          parent_id: parentId,
+          expected_revision: fresh.revision,
+        })
+      } catch (retryErr) {
+        setError(String(retryErr))
+        refreshPages()
+        return
+      }
     }
+    refreshPages()
+    if (pageId === docId) await getNote(docId).then(setPage).catch(() => {})
   }
   // Row actions in the page tree: rename, duplicate and delete, Notion-style.
   const renamePage = async (pageId: string, title: string) => {
@@ -778,7 +793,26 @@ export default function NoteWorkspace({
             />
           )}
           {page && (
-            <div className="dt-note-document">
+            <div
+              className="dt-note-document"
+              onDragOver={event => {
+                // Accept page drags from the tree so they insert a mention
+                // instead of navigating or reparenting.
+                if (event.dataTransfer.types.includes('text/plain')) {
+                  event.preventDefault()
+                  event.dataTransfer.dropEffect = 'copy'
+                }
+              }}
+              onDrop={event => {
+                const pageId = event.dataTransfer.getData('text/plain')
+                if (!pageId) return
+                const target = pages.find(p => p.id === pageId)
+                if (!target || pageId === docId) return
+                event.preventDefault()
+                event.stopPropagation()
+                editor.current?.insertPageLink(pageId, target.title || 'Untitled')
+              }}
+            >
               <NotePageHead
                 page={page}
                 disabled={mutating}

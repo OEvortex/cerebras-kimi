@@ -517,6 +517,63 @@ button.dt-note-tree-toggle:hover {
   color: var(--foreground);
 }
 
+/* Per-page actions, revealed on row hover like Notion's ⋯ menu. */
+.dt-note-tree-actions {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+}
+.dt-note-tree-more {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-right: 2px;
+  border-radius: 4px;
+  color: var(--muted-foreground);
+  opacity: 0;
+  transition: opacity 120ms, background-color 120ms, color 120ms;
+}
+.dt-note-tree-row:hover .dt-note-tree-more,
+.dt-note-tree-more:focus-visible,
+.dt-note-tree-more[aria-expanded='true'] {
+  opacity: 1;
+}
+.dt-note-tree-more:hover {
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+  color: var(--foreground);
+}
+.dt-note-tree-menu {
+  width: 220px;
+  padding: 6px;
+  font-size: 13px;
+}
+.dt-note-tree-menu .dt-menu-item {
+  min-height: 32px;
+  font-size: 13px;
+}
+.dt-note-tree-confirm {
+  margin: 0;
+  padding: 8px 8px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+.dt-note-tree-rename {
+  flex: 1;
+  min-width: 0;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: 5px;
+  background: var(--background);
+  outline: 1px solid var(--ring);
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--foreground);
+}
+
 /* ---- Companion slot, banners, backlinks -------------------------------- */
 /* The panel exists only while a conversation is open: a card that slides
    in beside the page and folds back into its orb when closed. */
