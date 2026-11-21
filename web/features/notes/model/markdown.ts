@@ -11,6 +11,19 @@ const MATH_SPAN =
   /\\\[([\s\S]*?)\\\]|\\\(([\s\S]*?)\\\)|\$\$([\s\S]*?)\$\$|(?<![\\$])\$(?!\s)(?:\\.|[^$\n])*?(?<!\s)\$/g
 const MATH_PLACEHOLDER = /%%DT_MATH_(\d+)%%/g
 
+/** Fenced-block info strings that become `learning` blocks (kind -> props.kind). */
+const FENCE_LEARNING_KINDS: Record<string, string> = {
+  quiz: 'quiz',
+  flashcards: 'flashcards',
+  flashcard: 'flashcards',
+  timeline: 'timeline',
+  conceptmap: 'concept_map',
+  concept_map: 'concept_map',
+  geogebra: 'geogebra',
+  research: 'research',
+  task: 'task',
+}
+
 /** Strip the delimiters off a matched math span, returning the formula. */
 function mathFormula(span: string): string {
   if (span.startsWith('\\[') || span.startsWith('\\(') || span.startsWith('$$'))
@@ -186,16 +199,25 @@ export function parseNoteMarkdown(
       let end = index + 1
       const close = new RegExp(`^\\s*${fence[1][0]}{${fence[1].length},}\\s*$`)
       while (end < lines.length && !close.test(lines[end])) end++
-      if (end < lines.length && ['mermaid', 'flow', 'seq'].includes(fence[2])) {
+      const fenceKind = FENCE_LEARNING_KINDS[fence[2]]
+      if (end < lines.length && (['mermaid', 'flow', 'seq'].includes(fence[2]) || fenceKind)) {
         flush()
+        const body = lines.slice(index + 1, end).join('\n')
+        let data = '{}'
+        try {
+          const parsed = JSON.parse(body)
+          if (parsed && typeof parsed === 'object') data = JSON.stringify(parsed)
+        } catch {
+          /* non-JSON fences keep their body as markdown only */
+        }
         result.push({
           id: crypto.randomUUID(),
           type: 'learning',
           props: {
-            kind: fence[2] === 'mermaid' ? 'mermaid' : 'legacy_diagram',
-            markdown: lines.slice(index, end + 1).join('\n'),
+            kind: fenceKind ?? (fence[2] === 'mermaid' ? 'mermaid' : 'legacy_diagram'),
+            markdown: fenceKind ? body : lines.slice(index, end + 1).join('\n'),
             prompt: '',
-            data: '{}',
+            data,
             sourceUrl: '',
           },
           children: [],

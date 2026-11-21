@@ -58,6 +58,22 @@ describe("chat activity status", () => {
     expect(screen.getByRole("button")).toHaveTextContent("Done");
   });
 
+  it("names the tool a live turn is calling", () => {
+    const events = [
+      {
+        type: "tool_call",
+        source: "chat",
+        stage: "responding",
+        content: "",
+        metadata: { tool_name: "nb_patch" },
+        timestamp: Date.now() / 1000,
+      },
+    ] as StreamEvent[];
+
+    render(<StreamingStatus events={events} isStreaming content="" />);
+    expect(screen.getByRole("status")).toHaveTextContent("Calling nb_patch…");
+  });
+
   it("shows the opaque reasoning-progress status until action starts", () => {
     const events = [
       {

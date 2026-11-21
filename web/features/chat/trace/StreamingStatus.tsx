@@ -297,7 +297,17 @@ export function StreamingStatus({
 
   const name = agentName?.trim() || "DeepTutor";
   let modeLabel = `${name} Reasoning…`;
-  if (mode === "tool_using") modeLabel = "Tool Calling…";
+  if (mode === "tool_using") {
+    // Name the tool being called so a live turn says what it is actually
+    // doing — e.g. "Calling nb_patch…" in the Co-writer panel — instead of a
+    // generic "Tool Calling…".
+    const call = [...events].reverse().find(event => event.type === "tool_call");
+    const meta = call ? getTraceMeta(call) : null;
+    const toolName = String(
+      meta?.tool_name ?? (call?.metadata?.tool as string | undefined) ?? ""
+    ).trim();
+    modeLabel = toolName ? `Calling ${toolName}…` : "Tool Calling…";
+  }
   else if (mode === "planning") modeLabel = `${name} Planning…`;
   // ``responding`` remains a useful transport/trace distinction, but it is
   // not a second user-facing phase. Keep the one continuous activity surface
