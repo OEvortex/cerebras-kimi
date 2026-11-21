@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { BlockNoteEditor } from "@blocknote/core";
 
+import { schema, fitSchema } from "@/features/notes/components/editor/schema";
 import {
   compileNotebookProgram,
   extractNotebookUI,
@@ -69,5 +71,26 @@ describe("notebook-ui-lang", () => {
 
   it("returns null for a program without a usable page", () => {
     expect(compileNotebookProgram("root = Notebook([])")).toBeNull();
+  });
+
+  it("emits tables BlockNote can open as initialContent", () => {
+    const program = `root = Notebook([p], "N")
+p = Page([t], "P")
+t = Table(["Stage", "Output"], [["Light", "ATP"], ["Dark", "Sugar"]])`;
+    const plan = compileNotebookProgram(program)!;
+    const table = plan.pages[0].blocks[0];
+    expect((table.content as any).type).toBe("tableContent");
+    for (const row of (table.content as any).rows) {
+      for (const cell of row.cells) expect(Array.isArray(cell)).toBe(true);
+    }
+
+    // The real regression: opening a page with this block used to throw
+    // "Error creating document from blocks passed as `initialContent`".
+    const editor = BlockNoteEditor.create({
+      schema,
+      initialContent: fitSchema(plan.pages[0].blocks) as any,
+    });
+    expect(editor.document.length).toBe(1);
+    editor._tiptapEditor.destroy();
   });
 });

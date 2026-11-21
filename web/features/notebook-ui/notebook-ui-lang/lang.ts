@@ -211,10 +211,23 @@ function blocksFor(node: ElementNode): NoteBlock[] {
         content: inlineContent(node.props.code),
       }];
     case "Table": {
+      // BlockNote's parser rejects tables unless: the content carries
+      // `type: "tableContent"` AND each cell is a plain inline-content array.
+      // A missing type throws "Unreachable case: undefined"; a cell shaped
+      // `{content: [...]}` throws "e is not iterable" — both surface to the
+      // user as "Error creating document from blocks passed as `initialContent`".
+      const cellContent = (cell: unknown): unknown[] => {
+        if (Array.isArray(cell)) return cell;
+        if (cell && typeof cell === "object" && "content" in cell) {
+          const inner = (cell as Record<string, unknown>).content;
+          return Array.isArray(inner) ? inner : inlineContent(String(inner ?? ""));
+        }
+        return inlineContent(cell);
+      };
       const rows = arrayValue(node.props.rows).map((row) => ({
-        cells: arrayValue(row).map((cell) => ({ content: inlineContent(cell) })),
+        cells: arrayValue(row).map(cellContent),
       }));
-      return [{ id: nextId(), type: "table", props: {}, content: { rows }, children: [] }];
+      return [{ id: nextId(), type: "table", props: {}, content: { type: "tableContent", rows }, children: [] }];
     }
     case "Divider":
       return [{ id: nextId(), type: "divider", props: {}, children: [] }];

@@ -193,14 +193,13 @@ def _table_block(lines: list[str]) -> dict[str, Any] | None:
         if _TABLE_SEP.match(line):
             continue
         cells = [c.strip() for c in line.strip().strip("|").split("|")]
-        rows.append({
-            "cells": [
-                {"content": _text_inline(c.replace("\\|", "|"))} for c in cells
-            ]
-        })
+        rows.append({"cells": [_text_inline(c.replace("\\|", "|")) for c in cells]})
     if len(rows) < 2:  # header + separator produced nothing usable
         return None
-    return _new_block("table", {}, {"rows": rows})
+    # BlockNote's client parser requires `type: "tableContent"` and plain
+    # inline-content arrays for cells. Anything else makes opening the page
+    # fail with "Error creating document from blocks passed as `initialContent`".
+    return _new_block("table", {}, {"type": "tableContent", "rows": rows})
 
 
 def _rich_text_blocks(text: str) -> list[dict[str, Any]]:

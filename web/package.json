@@ -53,6 +53,7 @@
     "maplibre-gl": "^6.19.0",
     "mdast-util-from-markdown": "^2.0.2",
     "mermaid": "^11.14.0",
+    "onnxruntime-web": "^1.31.1",
     "pdfjs-dist": "^6.2.108",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -63,6 +64,7 @@
     "remark-gfm": "^4.0.0",
     "remark-math": "^6.0.0",
     "tailwind-merge": "^3.4.0",
+    "tokenizers": "^0.23.2",
     "zod": "^4.6.7"
   },
   "overrides": {
