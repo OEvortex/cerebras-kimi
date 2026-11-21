@@ -3,6 +3,7 @@
   --bn-colors-editor-text: var(--foreground);
   color: var(--foreground);
   width: 100%;
+  position: relative;
 }
 .dt-note-editor .bn-editor {
   padding: 14px var(--note-gutter, 46px) 64px;

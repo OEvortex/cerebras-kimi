@@ -1,0 +1,182 @@
+/* Overlay handles for the notebook's tables. Ported from the standalone
+   editor's TableControls and adapted to BlockNote's DOM and colour tokens. */
+
+.dt-note-table-controls {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 30;
+}
+
+.dt-note-table-grip,
+.dt-note-table-add {
+  position: absolute;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--secondary);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.dt-note-table-grip:hover,
+.dt-note-table-add:hover {
+  background: var(--card);
+  color: var(--foreground);
+}
+
+.dt-note-table-grip {
+  min-width: 22px;
+  min-height: 22px;
+}
+
+.dt-note-table-add {
+  min-width: 24px;
+  min-height: 24px;
+  backdrop-filter: blur(4px);
+}
+
+.dt-note-table-active-cell {
+  position: absolute;
+  border: 2px solid var(--accent);
+  border-radius: 3px;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.dt-note-table-menu {
+  position: absolute;
+  width: 236px;
+  max-height: 360px;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px #00000026;
+  overflow: visible;
+  animation: dt-note-table-in 0.12s ease-out;
+}
+
+@keyframes dt-note-table-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.dt-note-table-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted-foreground);
+}
+
+.dt-note-table-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--foreground);
+  font-size: 12px;
+}
+
+.dt-note-table-menu-list {
+  padding: 4px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.dt-note-table-menu-list button,
+.dt-note-table-colors button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--foreground);
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dt-note-table-menu-list button:hover,
+.dt-note-table-colors button:hover {
+  background: var(--secondary);
+}
+
+.dt-note-table-menu-list button.is-danger {
+  color: #ef4444;
+}
+
+.dt-note-table-menu-list button > span {
+  flex: 1;
+}
+
+.dt-note-table-empty {
+  margin: 0;
+  padding: 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+.dt-note-table-colors {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  margin-left: 6px;
+  width: 160px;
+  padding: 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px #00000026;
+}
+
+.dt-note-table-colors > span {
+  display: block;
+  padding: 2px 8px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+}
+
+.dt-note-table-colors i {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: transparent;
+}
+
+.dt-note-table-colors i[data-color='gray'] { background: #9b9a97; }
+.dt-note-table-colors i[data-color='brown'] { background: #8c2e00; }
+.dt-note-table-colors i[data-color='red'] { background: #ff0000; }
+.dt-note-table-colors i[data-color='orange'] { background: #f55d00; }
+.dt-note-table-colors i[data-color='yellow'] { background: #e9a800; }
+.dt-note-table-colors i[data-color='green'] { background: #00876b; }
+.dt-note-table-colors i[data-color='blue'] { background: #0078df; }
+.dt-note-table-colors i[data-color='purple'] { background: #6724de; }
+.dt-note-table-colors i[data-color='pink'] { background: #dd0081; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dt-note-table-menu {
+    animation: none;
+  }
+}

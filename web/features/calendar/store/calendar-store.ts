@@ -85,6 +85,7 @@ export function startCalendarSync(): () => void {
         : null
     let fallback: ReturnType<typeof setInterval> | undefined
     const poll = () => {
+      if (typeof document !== 'undefined' && document.hidden) return
       if (!document.hidden) void refreshCalendars()
     }
     if (source) {

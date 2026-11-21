@@ -34,6 +34,8 @@ from ..services.documents.review import grade_card as grade_review_card
 from ..services.documents.storage import (
     CoWriterDocument,
     RevisionConflict,
+    VersionDetail,
+    VersionSummary,
     get_co_writer_storage,
 )
 
@@ -441,6 +443,75 @@ def delete_document(doc_id: str) -> dict[str, bool]:
     return {"deleted": deleted}
 
 
+# ── Page version history ─────────────────────────────────────────────────
+
+class CreateVersionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    source: str = Field(default="manual", max_length=40)
+
+
+class RestoreVersionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    expected_revision: int = Field(ge=0)
+
+
+def _version_id(raw: str) -> str:
+    if not re.fullmatch(r"[0-9a-f]{8,32}", raw or ""):
+        raise HTTPException(status_code=400, detail="Invalid version ID")
+    return raw
+
+
+@router.get("/api/documents/{doc_id}/versions")
+def list_document_versions(doc_id: str) -> dict[str, Any]:
+    storage = get_co_writer_storage()
+    page_id = _doc_id(doc_id)
+    if not storage.doc_exists(page_id):
+        raise HTTPException(status_code=404, detail="Page not found")
+    versions = storage.list_versions(page_id)
+    return {"versions": [v.model_dump() for v in versions], "total": len(versions)}
+
+
+@router.post("/api/documents/{doc_id}/versions")
+def create_document_version(
+    doc_id: str, payload: CreateVersionRequest
+) -> dict[str, Any]:
+    version = get_co_writer_storage().create_version(
+        _doc_id(doc_id), source=payload.source or "manual"
+    )
+    if version is None:
+        raise HTTPException(status_code=404, detail="Page not found")
+    return version.model_dump()
+
+
+@router.get("/api/documents/{doc_id}/versions/{version_id}")
+def get_document_version(doc_id: str, version_id: str) -> dict[str, Any]:
+    version = get_co_writer_storage().get_version(
+        _doc_id(doc_id), _version_id(version_id)
+    )
+    if version is None:
+        raise HTTPException(status_code=404, detail="Version not found")
+    return version.model_dump()
+
+
+@router.post("/api/documents/{doc_id}/versions/{version_id}/restore")
+def restore_document_version(
+    doc_id: str, version_id: str, payload: RestoreVersionRequest
+) -> dict[str, Any]:
+    try:
+        doc = get_co_writer_storage().restore_version(
+            _doc_id(doc_id), _version_id(version_id), payload.expected_revision
+        )
+    except RevisionConflict as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if doc is None:
+        raise HTTPException(status_code=404, detail="Version not found")
+    return doc.model_dump()
+
+
 @router.get("/api/documents/{doc_id}/backlinks")
 def note_backlinks(doc_id: str) -> dict[str, list[dict[str, Any]]]:
     """Pages whose text mentions this page's title or id."""
@@ -628,7 +699,7 @@ def append_note_clip(doc_id: str, payload: ClipRequest) -> dict[str, Any]:
         doc.content = blocks_to_markdown(doc.blocks)
         doc.revision += 1
         doc.updated_at = time.time()
-        storage._write(doc)
+        storage._write(doc, source="clip")
         return doc.model_dump()
 
 

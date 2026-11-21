@@ -132,6 +132,28 @@ class RevisionConflict(ValueError):
 
 _STORE_LOCK = threading.RLock()
 
+# Page snapshots: coalesce rapid saves from one continuous editing session and
+# keep a bounded tail per page. Mirrors the document-version strategy of the
+# standalone editor this feature was ported from.
+MAX_VERSIONS_PER_DOCUMENT = 100
+VERSION_COALESCE_SECONDS = 300
+
+
+class VersionSummary(BaseModel):
+    id: str
+    doc_id: str
+    revision: int
+    created_at: float
+    source: str
+    title: str
+    char_count: int = 0
+    word_count: int = 0
+
+
+class VersionDetail(VersionSummary):
+    content: str = ""
+    blocks: list[dict[str, Any]] | None = None
+
 
 class CoWriterStorage:
     """SQLite-backed store for note pages and everything attached to them."""
@@ -224,7 +246,7 @@ class CoWriterStorage:
                 created_at=now,
                 updated_at=now,
             )
-            self._write(document)
+            self._write(document, source="create")
             return document
 
     def ensure_block_document(self, doc_id: str) -> CoWriterDocument | None:
@@ -238,7 +260,7 @@ class CoWriterStorage:
             if doc is None or doc.blocks is not None:
                 return doc
             doc.blocks = coarse_markdown_to_blocks(doc.content)
-            self._write(doc)
+            self._write(doc, source="migrate")
             return doc
 
     def load_document(self, doc_id: str) -> CoWriterDocument | None:
@@ -295,6 +317,183 @@ class CoWriterStorage:
                 (doc_id, kind, json.dumps(payload, ensure_ascii=False), time.time()),
             )
 
+    # ── Page versions ────────────────────────────────────────────────────
+
+    @staticmethod
+    def _version_counts(content: str) -> tuple[int, int]:
+        return len(content), len(content.split())
+
+    def _snapshot(self, document: CoWriterDocument, source: str) -> None:
+        """Store a complete snapshot of ``document``, coalescing a live session.
+
+        Called from :meth:`_write` inside its connection and lock. A snapshot is
+        skipped when the page's text and title did not change, so pinning or
+        moving a page does not pollute its history.
+        """
+        now = time.time()
+        payload = json.dumps(document.model_dump(mode="json"), ensure_ascii=False, default=str)
+        with database.connect(self._settings) as connection:
+            row = connection.execute(
+                """
+                SELECT id, created_at, source, title, content, revision,
+                       char_count, word_count
+                FROM document_versions WHERE doc_id = ? ORDER BY created_at DESC LIMIT 1
+                """,
+                (document.id,),
+            ).fetchone()
+            if row is not None:
+                same_state = (
+                    row["title"] == document.title
+                    and row["content"] == document.content
+                    and row["revision"] == document.revision - 1
+                )
+                coalesce = (
+                    row["source"] == source
+                    and now - float(row["created_at"]) <= VERSION_COALESCE_SECONDS
+                )
+                if same_state:
+                    # The text is unchanged (metadata-only write): keep the tail.
+                    return
+                if coalesce:
+                    char_count, word_count = self._version_counts(document.content)
+                    connection.execute(
+                        """
+                        UPDATE document_versions
+                        SET revision = ?, created_at = ?, title = ?, content = ?,
+                            payload = ?, char_count = ?, word_count = ?
+                        WHERE id = ?
+                        """,
+                        (
+                            document.revision,
+                            now,
+                            document.title,
+                            document.content,
+                            payload,
+                            char_count,
+                            word_count,
+                            row["id"],
+                        ),
+                    )
+                    return
+            char_count, word_count = self._version_counts(document.content)
+            connection.execute(
+                """
+                INSERT INTO document_versions
+                    (id, doc_id, revision, created_at, source, title, content,
+                     payload, char_count, word_count)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    uuid.uuid4().hex,
+                    document.id,
+                    document.revision,
+                    now,
+                    source,
+                    document.title,
+                    document.content,
+                    payload,
+                    char_count,
+                    word_count,
+                ),
+            )
+            connection.execute(
+                """
+                DELETE FROM document_versions WHERE doc_id = ? AND id NOT IN (
+                    SELECT id FROM document_versions WHERE doc_id = ?
+                    ORDER BY created_at DESC LIMIT ?
+                )
+                """,
+                (document.id, document.id, MAX_VERSIONS_PER_DOCUMENT),
+            )
+
+    def list_versions(self, doc_id: str) -> list[VersionSummary]:
+        doc_id = self._check_id(doc_id)
+        with database.connect(self._settings) as connection:
+            rows = connection.execute(
+                """
+                SELECT id, doc_id, revision, created_at, source, title,
+                       char_count, word_count
+                FROM document_versions WHERE doc_id = ? ORDER BY created_at DESC
+                """,
+                (doc_id,),
+            ).fetchall()
+        return [VersionSummary(**dict(row)) for row in rows]
+
+    def create_version(self, doc_id: str, source: str = "manual") -> VersionSummary | None:
+        """Snapshot the current page explicitly (e.g. from a "Save version" action)."""
+        with self.locked():
+            document = self.load_document(doc_id)
+            if document is None:
+                return None
+            self._snapshot(document, source)
+            versions = self.list_versions(doc_id)
+            return versions[0] if versions else None
+
+    def get_version(self, doc_id: str, version_id: str) -> VersionDetail | None:
+        doc_id = self._check_id(doc_id)
+        if not re.fullmatch(r"[0-9a-f]{8,32}", version_id or ""):
+            return None
+        with database.connect(self._settings) as connection:
+            row = connection.execute(
+                """
+                SELECT id, doc_id, revision, created_at, source, title, content,
+                       payload, char_count, word_count
+                FROM document_versions WHERE doc_id = ? AND id = ?
+                """,
+                (doc_id, version_id),
+            ).fetchone()
+        if row is None:
+            return None
+        data = dict(row)
+        payload = data.pop("payload", None)
+        blocks = None
+        if payload:
+            try:
+                blocks = json.loads(payload).get("blocks")
+            except (TypeError, ValueError):
+                blocks = None
+        return VersionDetail(**data, blocks=blocks)
+
+    def restore_version(
+        self, doc_id: str, version_id: str, expected_revision: int
+    ) -> CoWriterDocument | None:
+        """Restore a snapshot as a *new* revision, never rolling time back."""
+        with self.locked():
+            version = self.get_version(doc_id, version_id)
+            current = self.load_document(doc_id)
+            if version is None or current is None:
+                return None
+            if current.revision != expected_revision:
+                raise RevisionConflict("This page changed elsewhere. Reload before restoring.")
+            # Keep the state being left behind available as its own version.
+            self._snapshot(current, "before-restore")
+            with database.connect(self._settings) as connection:
+                row = connection.execute(
+                    "SELECT payload FROM document_versions WHERE id = ?", (version.id,)
+                ).fetchone()
+            if row is None:
+                return None
+            try:
+                snapshot = CoWriterDocument.model_validate(json.loads(row["payload"]))
+            except (TypeError, ValueError):
+                return None
+            for key in (
+                "title",
+                "content",
+                "blocks",
+                "tags",
+                "applied_suggestion_ids",
+                "parent_id",
+                "icon",
+                "cover",
+                "pinned",
+            ):
+                setattr(current, key, getattr(snapshot, key))
+            current.revision += 1
+            current.updated_at = time.time()
+            self._write(current, source="restore")
+            return current
+
     # ── Assets ───────────────────────────────────────────────────────────
 
     def save_asset(
@@ -331,6 +530,7 @@ class CoWriterStorage:
         content: str | None = None,
         blocks: list[dict[str, Any]] | None = None,
         expected_revision: int | None = None,
+        source: str = "save",
         **metadata,
     ) -> CoWriterDocument | None:
         with self.locked():
@@ -376,7 +576,7 @@ class CoWriterStorage:
                     setattr(document, key, metadata[key])
             document.revision += 1
             document.updated_at = time.time()
-            self._write(document)
+            self._write(document, source=source)
             if blocks is not None:
                 from .proposals import refresh_review_anchors
 
@@ -396,16 +596,17 @@ class CoWriterStorage:
                         continue
                     child.parent_id = document.parent_id
                     child.revision += 1
-                    self._write(child)
+                    self._write(child, source="move")
             with database.connect(self._settings) as connection:
                 connection.execute("DELETE FROM documents WHERE id = ?", (doc_id,))
                 connection.execute("DELETE FROM doc_extras WHERE doc_id = ?", (doc_id,))
                 connection.execute("DELETE FROM doc_assets WHERE doc_id = ?", (doc_id,))
+                connection.execute("DELETE FROM document_versions WHERE doc_id = ?", (doc_id,))
             return True
 
     # ── Internal ─────────────────────────────────────────────────────────
 
-    def _write(self, document: CoWriterDocument) -> None:
+    def _write(self, document: CoWriterDocument, source: str = "edit") -> None:
         with database.connect(self._settings) as connection:
             connection.execute(
                 """
@@ -424,6 +625,10 @@ class CoWriterStorage:
                     float(document.updated_at or 0),
                 ),
             )
+        # A saved page always leaves a restorable trail. Coalescing inside
+        # _snapshot keeps a fast typist from filling the list with one row per
+        # debounced save.
+        self._snapshot(document, source)
 
 
 _storages: dict[str, CoWriterStorage] = {}

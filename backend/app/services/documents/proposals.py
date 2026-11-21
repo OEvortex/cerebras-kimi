@@ -205,7 +205,7 @@ def review(storage, doc_id, proposal_id, *, accept, blocks=None):
             doc.revision += 1
             doc.updated_at = time.time()
             doc.applied_suggestion_ids = (doc.applied_suggestion_ids + [proposal_id])[-1000:]
-            storage._write(doc)
+            storage._write(doc, source="suggestion")
         proposal["status"] = "accepted" if accept else "dismissed"
         storage.save_extra(doc_id, "suggestions", proposals)
         return doc

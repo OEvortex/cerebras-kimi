@@ -71,9 +71,14 @@ export default function CalendarRuntime({ children }: { children: ReactNode }) {
         running = false
       }
     }
-    void check()
-    const timer = setInterval(() => void check(), 30_000)
-    const focus = () => void check()
+    const tick = () => {
+      if (!document.hidden) void check()
+    }
+    tick()
+    const timer = setInterval(tick, 30_000)
+    const focus = () => {
+      if (!document.hidden) void check()
+    }
     window.addEventListener('focus', focus)
     return () => {
       controller.abort()
@@ -147,9 +152,14 @@ export default function CalendarRuntime({ children }: { children: ReactNode }) {
         running = false
       }
     }
-    void check()
-    const timer = setInterval(() => void check(), 30_000)
-    const focus = () => void check()
+    const tick = () => {
+      if (!document.hidden) void check()
+    }
+    tick()
+    const timer = setInterval(tick, 30_000)
+    const focus = () => {
+      if (!document.hidden) void check()
+    }
     window.addEventListener('focus', focus)
     return () => {
       controller.abort()

@@ -68,6 +68,26 @@ CREATE TABLE IF NOT EXISTS doc_assets (
     PRIMARY KEY (doc_id, name)
 );
 
+-- Notebook page snapshots. One row is a complete, restorable state of a page.
+-- Rows are written on save (coalesced while the same kind of edit continues)
+-- and pruned to a bounded number per page.
+CREATE TABLE IF NOT EXISTS document_versions (
+    id TEXT PRIMARY KEY,
+    doc_id TEXT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+    revision INTEGER NOT NULL,
+    created_at REAL NOT NULL,
+    source TEXT NOT NULL DEFAULT 'edit',
+    title TEXT NOT NULL DEFAULT '',
+    content TEXT NOT NULL DEFAULT '',
+    payload TEXT NOT NULL,
+    char_count INTEGER NOT NULL DEFAULT 0,
+    word_count INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_document_versions_doc
+    ON document_versions(doc_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_document_versions_doc_rev
+    ON document_versions(doc_id, revision DESC);
+
 CREATE TABLE IF NOT EXISTS kb_meta (
     name TEXT PRIMARY KEY,
     payload TEXT NOT NULL,

@@ -1596,6 +1596,55 @@ def settings_test_cancel(service: str, run_id: str) -> dict[str, Any]:
     return {"message": "Cancelled"}
 
 
+
+
+@router.get("/dashboard/source-library/{kind}")
+def dashboard_source_library(kind: str, request: Request) -> dict[str, Any]:
+    """Items for the note "Reference a source" picker.
+
+    The picker asks for six kinds; this backend only has chats (sessions),
+    drafts (co-writer documents) and knowledge bases. The rest return empty.
+    """
+    settings = _settings(request)
+    items: list[dict[str, Any]] = []
+
+    if kind == "chats":
+        sessions = _store(request).all()
+        sessions.sort(key=_session_updated_key, reverse=True)
+        items = [
+            {
+                "session_id": s["id"],
+                "title": s.get("title") or "Untitled",
+                "last_message": "",
+                "content_workspace_id": (s.get("preferences") or {}).get("workspace_id"),
+            }
+            for s in sessions[:100]
+        ]
+    elif kind == "drafts":
+        from ..services.documents.storage import get_co_writer_storage
+
+        storage = get_co_writer_storage()
+        for doc in storage.list_documents()[:100]:
+            full = storage.load_document(doc.id)
+            content = getattr(full, "content", "") or ""
+            items.append(
+                {
+                    "id": doc.id,
+                    "title": doc.title or "Untitled",
+                    "preview": " ".join(content.split())[:200],
+                }
+            )
+    elif kind == "knowledge":
+        for kb in request.app.state.kb.list():
+            name = kb.get("name") or kb.get("id") or ""
+            if not name:
+                continue
+            items.append({"id": name, "name": name, "metadata": {}})
+    # books / notebooks / practice: no such stores in this deployment.
+
+    return {"items": items, "unavailable_workspaces": [], "total": len(items)}
+
+
 # Catch-all for settings sub-pages/extensions the UI probes (GET/PUT/POST).
 # Registered last so specific settings routes (tests, presets, preview, ...)
 # always win — an earlier catch-all silently swallowed them and returned {}.

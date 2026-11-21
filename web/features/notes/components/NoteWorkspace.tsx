@@ -37,6 +37,8 @@ import { useNoteThreads } from './useNoteThreads'
 import { pageDescendants } from '../model/page-tree'
 import { inlineText } from '../model/threads'
 import { learningKind } from '../model/learning-kinds'
+import { restoreNoteVersion, type NoteVersion } from '../model/note-versions'
+const HistoryPanel = dynamic(() => import('./NoteHistoryPanel'), { ssr: false })
 const Editor = dynamic(() => import('./NoteEditor'), {
   ssr: false,
   loading: () => <div className="dt-note-editor-loading" aria-hidden />,
@@ -82,6 +84,7 @@ export default function NoteWorkspace({
   }
   const [sources, setSources] = useState(false)
   const [favorites, setFavorites] = useState(false)
+  const [history, setHistoryOpen] = useState(false)
   const [suggestions, setSuggestions] = useState<NoteSuggestion[]>([])
   const [backlinks, setBacklinks] = useState<NoteSummary[]>([])
   const [recovery, setRecovery] = useState<{ title: string; blocks: NoteBlock[] } | null>(null)
@@ -603,6 +606,48 @@ export default function NoteWorkspace({
       setError(String(err))
     }
   }
+  const openHistory = async () => {
+    try {
+      await flush()
+      setHistoryOpen(true)
+    } catch {
+      /* The save error banner stays visible; history can still be opened. */
+      setHistoryOpen(true)
+    }
+  }
+  const restoreVersion = async (snapshot: NoteVersion) => {
+    setMutating(true)
+    editor.current?.setEditable(false)
+    try {
+      await flush()
+      const current = latest.current
+      if (!current) throw new Error('This page is not loaded yet.')
+      const result = await restoreNoteVersion(docId, snapshot.id, current.revision)
+      latest.current = result
+      setPage(result)
+      setPages((previous) =>
+        previous.map((entry) =>
+          entry.id === docId
+            ? { ...entry, title: result.title, revision: result.revision }
+            : entry
+        )
+      )
+      // The editor holds no pending changes after a restore: both counters
+      // move together so the next edit starts from a clean baseline.
+      version.current += 1
+      savedVersion.current = version.current
+      editor.current?.replace(
+        result.blocks || editor.current.parse(result.content)
+      )
+      refreshPages()
+      refreshSuggestions()
+      notifyCoWriterChanged()
+      setError('')
+    } finally {
+      setMutating(false)
+      editor.current?.setEditable(true)
+    }
+  }
   const invalidParents = pageDescendants(pages, docId)
   // Direct child pages of the current page: the pages a reader most often
   // wants to jump to while reading its parent.
@@ -717,6 +762,7 @@ export default function NoteWorkspace({
         onMetadata={patch => void metadata(patch)}
         onInsertFavorite={() => setFavorites(true)}
         onExport={format => void exportFile(format)}
+        onHistory={() => void openHistory()}
       />
       {error && (
         <div role="alert" className="dt-note-banner is-error">
@@ -962,6 +1008,15 @@ export default function NoteWorkspace({
           </div>
         )}
       </div>
+      {history && page && (
+        <HistoryPanel
+          docId={docId}
+          page={page}
+          open={history}
+          onClose={() => setHistoryOpen(false)}
+          onRestore={restoreVersion}
+        />
+      )}
       {sources && (
         <SourcePicker
           onClose={() => setSources(false)}

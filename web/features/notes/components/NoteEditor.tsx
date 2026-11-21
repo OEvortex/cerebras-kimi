@@ -22,6 +22,7 @@ import NoteThreadMarkers from './NoteThreadMarkers'
 import './notes.css'
 import NoteEditorHandles, { SIDE_MENU_FLOATING } from './editor/NoteEditorHandles'
 import NoteFormattingToolbar from './editor/NoteFormattingToolbar'
+import NoteTableControls from './editor/NoteTableControls'
 import { fitSchema, noteInputRules, parseLegacyNoteContent, schema, type NotesEditor } from './editor/schema'
 import type { NoteAsk, NoteEditorHandle, NoteEditorProps } from './editor/types'
 import useNoteEditorLifecycle from './editor/useNoteEditorLifecycle'
@@ -313,6 +314,7 @@ export default function NoteEditor({
           />
         ))}
       </BlockNoteViewRaw>
+      <NoteTableControls editor={editor} />
     </div>
   )
 }

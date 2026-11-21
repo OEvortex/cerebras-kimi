@@ -187,7 +187,7 @@ export function useNoteThreads({
   const remoteRunning = threads.some(t => t.status === 'running' && !running.has(t.session_id))
   useEffect(() => {
     if (!remoteRunning) return
-    const timer = setInterval(() => void refresh(), 4000)
+    const timer = setInterval(() => void refresh(), 15_000)
     return () => clearInterval(timer)
   }, [refresh, remoteRunning])
 

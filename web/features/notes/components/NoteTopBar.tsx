@@ -11,6 +11,7 @@ import {
   CornerUpRight,
   FileDown,
   FileText,
+  History,
   MoreHorizontal,
   PanelLeft,
   Pin,
@@ -63,6 +64,7 @@ export default function NoteTopBar({
   onMetadata,
   onInsertFavorite,
   onExport,
+  onHistory,
 }: {
   page: NotePage | null
   pages: NoteSummary[]
@@ -81,6 +83,7 @@ export default function NoteTopBar({
   onMetadata: (patch: Partial<NotePage>) => void
   onInsertFavorite: () => void
   onExport: (format: 'md' | 'docx' | 'anki') => void
+  onHistory: () => void
 }) {
   
   const feature = useShelfFeature('/co-writer')
@@ -255,6 +258,18 @@ export default function NoteTopBar({
               </>
             ) : (
               <>
+                <button
+                  role="menuitem"
+                  className="dt-menu-item"
+                  onClick={() => {
+                    setOpen(false)
+                    onHistory()
+                  }}
+                >
+                  <History size={14} />
+                  {"Version history"}
+                </button>
+                <div className="dt-menu-divider" />
                 <button
                   role="menuitem"
                   className="dt-menu-item"
