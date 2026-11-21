@@ -14,7 +14,14 @@
 const STATEMENT = /^\s*(?:\$?[A-Za-z_][\w$]*)\s*=/;
 /** `root = Component(` — a program must define root this way. */
 const ROOT = /\broot\s*=\s*[A-Za-z_$][\w$]*\s*\(/;
-const OPENUI_FENCE = /```(?:openui-lang|openui)\s*\n([\s\S]*?)```/i;
+/**
+ * A fenced block wrapping the program. The prompt asks for a bare program, but
+ * models routinely wrap it in ``` — sometimes with an `openui-lang` tag, often
+ * with no tag at all. Any fence is accepted here and its body is then verified
+ * as a program below, so a plain fence is not mistaken for prose: left in the
+ * preamble it rendered as an empty code block, a stray strip above the answer.
+ */
+const OPENUI_FENCE = /```[ \t]*(?:[\w+-]+)?[ \t]*\r?\n([\s\S]*?)```/i;
 
 export type OpenUILangExtraction = {
   /** The program text, or "" when the reply contains none. */

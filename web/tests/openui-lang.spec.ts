@@ -68,6 +68,29 @@ describe("locating an OpenUI Lang program in a model reply", () => {
     expect(hasOpenUILang(reply)).toBe(true);
   });
 
+  it("does not leave a bare fence behind as a preamble", () => {
+    // Models often wrap the whole reply in a plain ``` fence instead of an
+    // `openui-lang` one. The opening fence used to survive as the preamble and
+    // render as an empty code block — a dark strip above every answer.
+    const reply = `\`\`\`\n${PROGRAM}\n\`\`\``;
+    const extraction = extractOpenUILang(reply);
+
+    expect(extraction.found).toBe(true);
+    expect(extraction.program).toBe(PROGRAM);
+    expect(extraction.preamble).toBe("");
+    expect(extraction.trailing).toBe("");
+    expect(hasOpenUILang(reply)).toBe(true);
+    expect(toOpenUIProgram(reply)).toBe(PROGRAM);
+  });
+
+  it("keeps real prose before a bare fence as the preamble", () => {
+    const reply = `Here you go:\n\n\`\`\`\n${PROGRAM}\n\`\`\``;
+    const extraction = extractOpenUILang(reply);
+
+    expect(extraction.program).toBe(PROGRAM);
+    expect(extraction.preamble).toBe("Here you go:");
+  });
+
   it("keeps a reply with no program renderable as a Markdown node", () => {
     const prose = "The gradient points in the direction of greatest increase.";
 

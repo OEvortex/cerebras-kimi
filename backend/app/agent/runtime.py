@@ -132,6 +132,9 @@ class TurnHandle:
     # as they are emitted so a client that misses live frames (short turn,
     # late pump subscription, reconnect) can replay them from the store.
     session_ref: dict[str, Any] | None = None
+    # Title request fired at turn start, in parallel with the reply. The
+    # result is published as ``session_meta`` only if the turn completes.
+    title_task: asyncio.Task[str | None] | None = None
 
     def next_seq(self) -> int:
         self.seq += 1
@@ -327,15 +330,41 @@ class AgentRuntime:
         if window_estimated:
             window = 200_000
 
-        input_tokens = int(getattr(usage, "input_tokens", 0) or 0) if usage is not None else 0
-        used = input_tokens if input_tokens > 0 else estimated_used
+        # Cached prompt tokens are billed separately from ``input_tokens``.
+        # On a cached turn the provider can report only a few hundred input
+        # tokens while the window actually holds tens of thousands of cached
+        # ones. Counting just input_tokens is what made the bar read
+        # "374 / 200k (0%)" beside segments summing to ~12k. All three fields
+        # are prompt-side tokens and all occupy the context window.
+        prompt_tokens = 0
+        if usage is not None:
+            for field in ("input_tokens", "cache_read_tokens", "cache_write_tokens"):
+                prompt_tokens += int(getattr(usage, field, 0) or 0)
+        used = prompt_tokens if prompt_tokens > 0 else estimated_used
+
+        # The breakdown is a character-based estimate, so on its own it never
+        # adds up to the provider's measured total. Scale the segments to
+        # ``used`` (keeping their relative shares) so the stacked bar, the
+        # segment rows and free space all describe the same budget. The final
+        # segment absorbs the rounding so the sum matches exactly.
+        if 0 < estimated_used and used != estimated_used:
+            remaining = used
+            for index, segment in enumerate(segments):
+                if index == len(segments) - 1:
+                    value = remaining
+                else:
+                    value = min(remaining, round(segment["tokens"] * used / estimated_used))
+                value = max(0, value)
+                segment["tokens"] = value
+                remaining -= value
+
         return {
             "window": window,
             "window_estimated": window_estimated,
             "used_tokens": used,
             "free_tokens": max(0, window - used),
             "model": f"{getattr(runtime, 'model_provider', '')}/{getattr(runtime, 'model', '')}".strip("/"),
-            "counter": "provider_usage" if input_tokens > 0 else "heuristic",
+            "counter": "provider_usage" if prompt_tokens > 0 else "heuristic",
             "segments": segments,
         }
 
@@ -407,6 +436,14 @@ class AgentRuntime:
             "session",
             metadata={"session_id": session["id"], "turn_id": turn_id},
         )
+
+        # Fire the title request now, in parallel with the turn: it only
+        # needs the user's first message, so by the time ``done`` lands the
+        # HTTP call has usually already finished and publishing costs nothing.
+        # ``title_auto`` stays set until the turn completes — a failed or
+        # cancelled first turn must not consume the one-shot title attempt.
+        if session.get("title_auto"):
+            handle.title_task = self._start_title_request(content)
 
         # Tools that need to know who is asking (cron) read these; the turn
         # task copies this context, so each turn sees only its own values.
@@ -837,14 +874,30 @@ class AgentRuntime:
         # Persist the recorded turn (incl. done) before the done callback drops
         # the in-memory handle — replay must find these frames in the store.
         self._finalize_turn(handle, session, status)
-        # Only now start the title, so its frame can never precede ``done``.
-        # Everything else marks the turn settled here: a pump waiting on it must
-        # not sit idle for a turn that will never publish anything.
+        # Publish the title only now, so its frame can never precede ``done``
+        # (the request itself already ran in parallel since turn start).
+        # Everything else marks the turn settled here: a pump waiting on it
+        # must not sit idle for a turn that will never publish anything.
         if status == "completed" and session.get("title_auto"):
             self._spawn_title_update(handle, session, user_message, assistant_text)
         else:
             handle.settled.set()
         return True
+
+    def _start_title_request(self, user_text: str) -> asyncio.Task[str | None]:
+        """Kick off title generation without blocking the turn.
+
+        Called at turn start so the request overlaps the assistant reply;
+        the title is published after ``done`` by ``_update_title``.
+        """
+        from ..services.title_gen import generate_title
+
+        task = asyncio.create_task(
+            generate_title(user_text, settings=self._settings)
+        )
+        self._background_tasks.add(task)
+        task.add_done_callback(self._background_tasks.discard)
+        return task
 
     def _spawn_title_update(
         self,
@@ -853,14 +906,14 @@ class AgentRuntime:
         user_message: dict[str, Any],
         assistant_text: str,
     ) -> None:
-        """Generate the conversation title without holding up the turn.
+        """Publish the conversation title once the first turn completes.
 
-        Title generation is a second model call to a third-party endpoint, so
-        awaiting it here made every first turn sit on it — up to the HTTP
-        timeout after the answer was already on screen. It now runs as its own
-        task: ``done`` reaches the client immediately, the title arrives a
-        moment later as a ``session_meta`` frame, and the pumps keep the socket
-        open on ``handle.settled`` until the attempt finishes either way.
+        The request itself was fired at turn start (``handle.title_task``),
+        so this usually just awaits an already-finished call. It runs as its
+        own task either way: ``done`` reaches the client immediately, the
+        title arrives a moment later as a ``session_meta`` frame, and the
+        pumps keep the socket open on ``handle.settled`` until the attempt
+        finishes either way.
         """
         task = asyncio.create_task(
             self._update_title(handle, session, user_message, assistant_text)
@@ -886,13 +939,19 @@ class AgentRuntime:
         so ``record_turn_event`` can persist it with the rest of the turn.
         """
         try:
-            from ..services.title_gen import generate_title
+            early = handle.title_task
+            if early is not None:
+                # Fired at turn start with the user's message only; by now it
+                # has almost always already resolved.
+                title = await early
+            else:
+                from ..services.title_gen import generate_title
 
-            title = await generate_title(
-                str(user_message.get("content") or ""),
-                assistant_text,
-                settings=self._settings,
-            )
+                title = await generate_title(
+                    str(user_message.get("content") or ""),
+                    assistant_text,
+                    settings=self._settings,
+                )
             if not title:
                 return
             session["title"] = title

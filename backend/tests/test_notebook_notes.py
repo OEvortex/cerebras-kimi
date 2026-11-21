@@ -8,7 +8,12 @@ two, including migration of notes saved before the fix.
 import asyncio
 
 from app.agent.dt_tools import notes
-from app.services.documents.notes import list_notes, search_notes, write_note
+from app.services.documents.notes import (
+    list_notes,
+    search_notes,
+    update_note,
+    write_note,
+)
 from app.services.documents.storage import get_co_writer_storage
 
 
@@ -72,3 +77,49 @@ def test_legacy_notes_are_imported_once_and_are_searchable(tmp_path, monkeypatch
     write_note("New note", "Body", "physics")
     list_notes()
     assert len(storage.list_documents()) == 2
+
+
+def test_update_note_patches_body_in_place(tmp_path, monkeypatch):
+    monkeypatch.setenv("DT_DATA_DIR", str(tmp_path))
+    note_id = write_note("Fix me", "teh quick brown fox\n\nteh end", "misc")
+
+    result = update_note(note_id, "teh", "the")
+    assert "not found" not in result
+    assert "matches 2 places" in result
+
+    result = update_note(note_id, "teh quick", "the quick")
+    assert "Updated note 'Fix me'" in result
+
+    page = get_co_writer_storage().load_document(note_id)
+    assert page is not None
+    assert page.content == "the quick brown fox\n\nteh end"
+
+    result = update_note(note_id, "teh", "the", replace_all=True)
+    page = get_co_writer_storage().load_document(note_id)
+    assert page is not None
+    assert page.content == "the quick brown fox\n\nthe end"
+
+
+def test_update_note_rejects_bad_input(tmp_path, monkeypatch):
+    monkeypatch.setenv("DT_DATA_DIR", str(tmp_path))
+    note_id = write_note("Guard", "body text", "misc")
+
+    assert "needs a note_id" in update_note("", "a", "b")
+    assert "needs old_string" in update_note(note_id, "", "b")
+    assert "differ" in update_note(note_id, "body", "body")
+    assert "Note not found" in update_note("doc_missing", "a", "b")
+    assert "old_string not found" in update_note(note_id, "missing", "x")
+
+
+def test_notes_tool_dispatches_update(tmp_path, monkeypatch):
+    monkeypatch.setenv("DT_DATA_DIR", str(tmp_path))
+    note_id = write_note("Via tool", "alpha beta", "misc")
+
+    result = _run(notes, action="update", note_id=note_id,
+                  old_string="beta", new_string="gamma")
+    assert result.success, result.result
+    assert "Updated note 'Via tool'" in result.result
+
+    page = get_co_writer_storage().load_document(note_id)
+    assert page is not None
+    assert page.content == "alpha gamma"

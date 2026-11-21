@@ -14,7 +14,7 @@ import shutil
 import time
 import uuid
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 import httpx
 from .toolkit import tool
@@ -24,37 +24,56 @@ _HEADERS = {"User-Agent": "DeepTutor/0.1 (+https://deeptutor.info)"}
 
 
 @tool(mutating=True, tool_icon="📝")
-def notes(action: str, title: str = "", content: str = "", tags: str = "",
-          query: str = "") -> str:
-    """The user's notebook — one tool for write, list, and search.
+def notes(action: Literal["write", "list", "search", "update"],
+          title: str = "", content: str = "", tags: str = "", query: str = "",
+          note_id: str = "", old_string: str = "", new_string: str = "",
+          replace_all: bool = False) -> str:
+    """Read and write the user's notebook — notes are Co-Writer pages,
+    visible in the app's Notebook tab.
 
-    Notes are Co-Writer notebook pages, so anything saved here is visible in
-    the Notebook tab.
+    Exactly one action per call; only fill the params that action uses:
 
-    Actions:
-    - ``write``: save a notebook page (``title``, ``content``, optional
-      comma-separated ``tags``).
-    - ``list``: list all notes (id | title | tags).
-    - ``search``: full-text search across notes (``query``).
+    - ``write`` — create a notebook page. ``title`` is required, ``content``
+      is the Markdown body, ``tags`` is an optional comma-separated list.
+    - ``list`` — return all notes as ``id | title | tags``. No params needed.
+    - ``search`` — full-text search; put the search terms in ``query``.
+    - ``update`` — patch an existing note in place. ``note_id`` comes from
+      ``list``/``search``/``write``. ``old_string`` must match the note body
+      exactly, including whitespace; ``new_string`` replaces it (first
+      occurrence, or every occurrence when ``replace_all`` is true).
+      ``old_string`` and ``new_string`` must differ.
 
-    :param action: write|list|search.
-    :param title: Note title (write).
-    :param content: Markdown body (write).
-    :param tags: Comma-separated tags (write).
-    :param query: Search terms (search).
+    Example: notes(action="write", title="Photosynthesis",
+    content="# Photosynthesis\\nPlants convert light...", tags="biology")
+    Example: notes(action="update", note_id="doc_abc", old_string="teh",
+    new_string="the", replace_all=true)
+
+    :param action: write|list|search|update — required.
+    :param title: Note title (write only).
+    :param content: Markdown body (write only).
+    :param tags: Comma-separated tags (write only).
+    :param query: Search terms (search only).
+    :param note_id: Target note id (update only).
+    :param old_string: Exact text to replace (update only).
+    :param new_string: Replacement text (update only).
+    :param replace_all: Replace every occurrence (update only).
     """
     from ..services.documents import notes as note_store
 
-    action = (action or "list").lower()
+    op = (action or "list").lower()
 
-    if action == "write":
+    if op == "write":
         if not title:
             return "notes write needs a title."
-        note_id = note_store.write_note(title, content, tags)
-        return f"Saved note '{title}' to your notebook as {note_id}"
+        note_id_out = note_store.write_note(title, content, tags)
+        return f"Saved note '{title}' to your notebook as {note_id_out}"
 
-    if action == "search":
+    if op == "search":
         return note_store.search_notes(query)
+
+    if op == "update":
+        return note_store.update_note(
+            note_id, old_string, new_string, replace_all=replace_all)
 
     return note_store.list_notes()
 
