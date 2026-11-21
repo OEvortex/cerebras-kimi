@@ -33,6 +33,7 @@ export const MODE_BADGE_LABELS: Record<string, string> = {
   deep_research: "Deep Research",
   math_animator: "Math Animator",
   video_lesson: "Video Lesson",
+  notebook: "Notebook",
   visualize: "Visualize",
   mastery_path: "Mastery Path",
   immersive_reading: "Immersive Reading",

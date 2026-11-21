@@ -11,6 +11,7 @@ import {
   Image as ImageIcon,
   Lightbulb,
   MessageSquare,
+  NotebookPen,
   Microscope,
   Sparkles,
   type LucideIcon,
@@ -132,6 +133,14 @@ export const CHAT_CAPABILITIES: ChatCapabilityDef[] = [
     icon: Clapperboard,
     allowedTools: [],
     defaultTools: [],
+  },
+  {
+    value: "notebook",
+    label: "Notebook",
+    description: "Build a study notebook with pages, quizzes and flashcards",
+    icon: NotebookPen,
+    allowedTools: ["notebook"],
+    defaultTools: ["notebook"],
   },
   {
     value: "mastery_path",

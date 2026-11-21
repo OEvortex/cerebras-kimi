@@ -872,6 +872,16 @@ def workspace_resources(request: Request, workspace_id: str = "") -> dict[str, A
     return {"skills": [], "mcp": [], "knowledge_bases": knowledge_bases}
 
 
+@router.get("/settings/usage")
+def settings_usage(request: Request, year: int = 0, timezone: str = "UTC") -> dict[str, Any]:
+    from ..services import usage_stats
+
+    current_year = time.gmtime().tm_year
+    if not year or year < 1970 or year > current_year + 1:
+        year = current_year
+    return usage_stats.usage_for_year(_settings(request), year, timezone)
+
+
 @router.get("/settings/workspace/resource-usage")
 def workspace_resource_usage(request: Request, kind: str, resource_id: str) -> dict[str, Any]:
     return {"workspaces": _workspaces(request).resource_usage(kind, resource_id)}

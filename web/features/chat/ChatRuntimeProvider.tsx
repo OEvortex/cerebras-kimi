@@ -2,6 +2,8 @@
 
 import { createContext, useContext, type ReactNode } from "react";
 
+import NotebookNotifications from "@/features/notebook-ui/NotebookNotifications";
+
 import { ChatStateAdapterProvider } from "./ChatStateAdapter";
 
 const ChatRuntimeContext = createContext(false);
@@ -16,6 +18,7 @@ export function ChatRuntimeProvider({ children }: { children: ReactNode }) {
 
   return (
     <ChatRuntimeContext.Provider value>
+      <NotebookNotifications />
       <ChatStateAdapterProvider>{children}</ChatStateAdapterProvider>
     </ChatRuntimeContext.Provider>
   );

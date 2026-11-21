@@ -14,6 +14,7 @@ import HyperframesPlayer from "@/components/chat/preview/HyperframesPlayer";
 import { HYPERFRAMES_MIME } from "@/components/chat/preview/previewerFor";
 import { PlayAudioButton } from "@/components/voice/SpeechButton";
 import { useVoicePlaybackRate, VOICE_PLAYBACK_RATES } from "@/hooks/useVoicePlaybackRate";
+import { extractNotebookTask } from "@/lib/notebook-live-types";
 import { extractMathAnimatorResult } from "@/lib/math-animator-types";
 import { extractVideoLessonResult } from "@/lib/video-lesson-types";
 import { extractVisualizeResult } from "@/lib/visualize-types";
@@ -72,6 +73,10 @@ const VisualizationViewer = dynamic(
 );
 const VideoLessonViewer = dynamic(
   () => import("@/components/video-lesson/VideoLessonViewer"),
+  { ssr: false },
+);
+const NotebookLivePanel = dynamic(
+  () => import("@/features/notebook-ui/NotebookLivePanel"),
   { ssr: false },
 );
 
@@ -254,6 +259,8 @@ export const AssistantMessage = memo(function AssistantMessage({
     return extractVisualizeResult(resultEvent.metadata);
   }, [msg.capability, resultEvent]);
 
+  const notebookTask = useMemo(() => extractNotebookTask(events), [events]);
+
   const videoLessonResult = useMemo(() => {
     // A one-turn capability or a resumed turn may still have the composer's
     // chat label. The capability that emitted the result is authoritative.
@@ -374,7 +381,8 @@ export const AssistantMessage = memo(function AssistantMessage({
     !outlinePreview &&
     !mathAnimatorResult &&
     !visualizeResult &&
-    !videoLessonResult;
+    !videoLessonResult &&
+    !notebookTask;
   const messageSegments = useMemo(
     () =>
       useInlineSegments
@@ -581,6 +589,23 @@ export const AssistantMessage = memo(function AssistantMessage({
             status={outlineStatus}
           />
           {showResearchBody ? (
+            <ReplyBody
+              content={msg.content}
+              isStreaming={isStreaming}
+              language={turnLanguage}
+              onSendFollowUp={onSendFollowUp}
+              renderMarkdown={renderMarkdown}
+            />
+          ) : null}
+        </>
+      ) : notebookTask ? (
+        <>
+          <NotebookLivePanel
+            task={notebookTask}
+            events={events}
+            isStreaming={isStreaming}
+          />
+          {msg.content ? (
             <ReplyBody
               content={msg.content}
               isStreaming={isStreaming}

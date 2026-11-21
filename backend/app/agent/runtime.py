@@ -555,6 +555,11 @@ class AgentRuntime:
                 from .tools import builtin_tools as _bt
                 fns = _bt(self._settings, command.get("tools"))
                 tools = [_SdkToolAdapter(t) for t in fns] + ext_tools
+                # Forward the notebook writer's sub-agent events (text deltas,
+                # tool calls, turn counts) into this turn's SSE stream.
+                from .notebook_agent import events as notebook_events
+
+                notebook_events.set_runtime(self)
 
                 runtime = ConversationRuntime(
                     cwd=cwd, model=model, model_provider=provider,
@@ -567,6 +572,7 @@ class AgentRuntime:
                     agent_extensions=list(loaded_extensions.extensions),
                 )
                 runtime.set_loaded_extensions(loaded_extensions)
+                runtime.set_progress_callback(notebook_events.progress_callback)
                 # Bind this DeepTutor record while vtx builds its Session, so
                 # the session's entries are loaded from / saved to our JSON
                 # document instead of ~/.vtx/sessions/*.jsonl.
@@ -630,6 +636,7 @@ class AgentRuntime:
         status = "completed"
         assistant_parts: list[str] = []
         usage: Any = None
+        turn_started_at = time.time()
         # Some OpenAI-compatible gateways forget to move a model's scratchpad
         # into `reasoning`/`reasoning_content` and leave it inline in the text
         # stream. vtx only knows the ` thinking` spelling, so split the other
@@ -655,6 +662,9 @@ class AgentRuntime:
                 handle, "content", content=piece,
                 source=capability, stage="responding"))
 
+        # The sync progress callback vtx calls from the notebook writer needs
+        # to know which turn to write progress events into.
+        turn_token = notebook_events.set_current_turn(handle)
         try:
             async for event in agent.run(
                 prompt,
@@ -804,6 +814,35 @@ class AgentRuntime:
                                 "generated": True,
                             }]
                             text = readable.strip() or "Video ready."
+
+                    # Notebook: open a live writer panel in the chat. The
+                    # tool result carries a JSON marker with the background
+                    # task id; mirroring video's `result` event is what makes
+                    # the frontend mount a custom viewer for this turn.
+                    if (
+                        event.tool_name == "notebook"
+                        and "NOTEBOOK_TASK:" in text
+                        and not getattr(out, "is_error", False)
+                    ):
+                        try:
+                            marker = text.split("NOTEBOOK_TASK:", 1)[1].strip().splitlines()[0]
+                            task_info = json.loads(marker)
+                        except (ValueError, IndexError):
+                            task_info = {}
+                        if task_info.get("task_id"):
+                            tool_meta["notebook_task"] = task_info
+                            await self._emit(handle, self._stream_event(
+                                handle, "result", source="notebook",
+                                stage="responding",
+                                metadata={
+                                    "response": (
+                                        "The notebook writer is building the "
+                                        "pages. You will see the result here "
+                                        "when it finishes."
+                                    ),
+                                    "notebook_task": task_info,
+                                }))
+                            text = text.split("NOTEBOOK_TASK:", 1)[0].strip()
                     await self._emit(handle, self._stream_event(
                         handle, "tool_result", content=text,
                         source=capability, stage="responding",
@@ -863,6 +902,8 @@ class AgentRuntime:
             await self._emit(handle, self._stream_event(
                 handle, "error", content=str(exc), source=capability,
                 stage="responding"))
+        finally:
+            notebook_events.reset_current_turn(turn_token)
         # Emit the context-window readout the composer's context bar consumes.
         # The UI reads metadata.metadata.context_budget from a `result` event;
         # without it the bar never renders, even though vtx measures usage.
@@ -870,6 +911,21 @@ class AgentRuntime:
             handle, "result", source=capability, stage="responding",
             metadata={"metadata": {"context_budget": self._context_budget(
                 runtime, session, usage)}}))
+        try:
+            from ..config import get_settings
+            from ..services import usage_stats
+
+            usage_stats.record_turn(
+                get_settings(),
+                session_id=handle.session_id,
+                model=str(getattr(runtime, "model", "") or ""),
+                provider=str(getattr(runtime, "model_provider", "") or ""),
+                usage=usage,
+                started_at=turn_started_at,
+                finished_at=time.time(),
+            )
+        except Exception:  # noqa: BLE001
+            pass
         assistant_text = "".join(assistant_parts).strip()
         assistant_message: dict[str, Any] | None = None
         if assistant_text:

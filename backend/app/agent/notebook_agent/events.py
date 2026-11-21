@@ -55,6 +55,17 @@ def reset_current_turn(token: Any) -> None:
         pass
 
 
+def current_turn(session_id: str = "") -> Any:
+    """Prefer the turn bound to this call, else the session's active turn."""
+    turn = _current_turn.get()
+    if turn is not None and (not session_id or turn.session_id == session_id):
+        return turn
+    runtime = _runtime
+    if runtime is not None and session_id:
+        return runtime.active_turn_for_session(session_id)
+    return None
+
+
 def progress_callback(tool_call_id: str, payload: dict[str, Any]) -> None:
     """Sync vtx callback: ``callback(tool_call_id, {kind, subagent, ...})``."""
     turn = _current_turn.get()

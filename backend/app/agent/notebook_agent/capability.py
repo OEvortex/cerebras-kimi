@@ -15,6 +15,7 @@ compiled report is delivered automatically on a later turn.
 
 from __future__ import annotations
 
+import json
 import uuid
 from typing import Any
 
@@ -152,11 +153,62 @@ async def launch_notebook_job(
     prompt = _build_prompt(request, title, parent_page_id)
     tool_call_id = tool_call_id or f"notebook_{uuid.uuid4().hex[:12]}"
 
+    # Populated after register() returns so the factory can mark the record
+    # notified (vtx's between-turn drain must not inject the same report twice).
+    record_holder: dict[str, Any] = {}
+
     async def _factory() -> Any:
-        return await _run_and_compile(
-            ctx, spec, prompt, tool_call_id, label,
-            parent_page_id=parent_page_id, fallback_title=title,
-        )
+        from . import events as notebook_events
+
+        status = "completed"
+        report = ""
+        try:
+            result = await _run_and_compile(
+                ctx, spec, prompt, tool_call_id, label,
+                parent_page_id=parent_page_id, fallback_title=title,
+            )
+            report = result.final_text or ""
+            return result
+        except Exception as exc:  # noqa: BLE001 - still notify on failure
+            status = "error"
+            report = f"Notebook writer failed: {exc}"
+            raise
+        finally:
+            record = record_holder.get("record")
+            if record is not None:
+                record.notified = True
+
+            session_id = (
+                getattr(ctx, "session_id", None)
+                or getattr(getattr(ctx, "session", None), "id", None)
+                or ""
+            )
+            handle = notebook_events.current_turn(session_id)
+            await notebook_events.notify_completion(
+                session_id=session_id,
+                turn_id=handle.turn_id if handle is not None else "",
+                task_id=record.task_id if record else tool_call_id,
+                label=label,
+                report=report,
+                status=status,
+                error=report if status == "error" else "",
+            )
+            # Main agent: put the finished report in the session history now,
+            # so it is part of context on the next turn even if the learner
+            # never comes back to this notebook thread.
+            session = getattr(ctx, "session", None)
+            if session is not None and hasattr(session, "append_message"):
+                try:
+                    from vtx.core import UserMessage
+
+                    session.append_message(UserMessage(content=(
+                        f"<vtx:background-task-completion> Background task "
+                        f"'{label}' (notebook-writer) finished with status "
+                        f"{status}. Final answer:\n{report}"
+                        "</vtx:background-task-completion>"
+                    )))
+                except Exception:  # noqa: BLE001 - notification is best effort
+                    pass
 
     if not background:
         result = await _factory()
@@ -179,6 +231,17 @@ async def launch_notebook_job(
         or getattr(getattr(ctx, "session", None), "id", None),
         run_coro_factory=_factory,
     )
+    # register() starts the coroutine immediately; the writer awaits the LLM
+    # for minutes before it needs the record, so this assignment lands first.
+    record_holder["record"] = record
+    marker = json.dumps({
+        "task_id": record.task_id,
+        "label": label,
+        "request": request,
+        "title": title,
+        "parent_page_id": parent_page_id,
+        "tool_call_id": tool_call_id,
+    }, ensure_ascii=False)
     return (
         "Notebook job launched in the background.\n"
         f"  task_id: {record.task_id}\n"
@@ -186,7 +249,8 @@ async def launch_notebook_job(
         "The notebook-writer sub-agent is building the pages now (this can "
         "take several minutes). Its report will be delivered automatically "
         "when it finishes — tell the learner the notebook is being built and "
-        "they will see the result soon; do not claim the pages already exist."
+        "they will see the result soon; do not claim the pages already exist.\n"
+        f"NOTEBOOK_TASK:{marker}"
     )
 
 
