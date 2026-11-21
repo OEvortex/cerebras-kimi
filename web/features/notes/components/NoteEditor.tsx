@@ -30,6 +30,18 @@ import useNoteSlashItems from './editor/useNoteSlashItems'
 export { fitSchema, parseLegacyNoteContent, type NotesEditor }
 export type { NoteAsk, NoteEditorHandle, NoteEditorProps }
 
+
+/** Coarse-imported pages keep markdown as literal text inside blocks; when the
+ *  stored markdown still carries syntax the blocks never parsed, rebuild them
+ *  through the real markdown parser instead of showing raw `**`/`$`. */
+function blocksNeedMarkdownParse(blocks: NoteBlock[] | null, content: string): boolean {
+  if (!blocks?.length || !content) return false
+  const hasMarkdown = /(^|\n)\s{0,3}(#{1,6}\s|[-*+]\s|\d+[.)]\s|>|```|\$\$?|\*\*|__)/.test(content)
+  if (!hasMarkdown) return false
+  const raw = JSON.stringify(blocks)
+  return raw.includes('**') || raw.includes('$')
+}
+
 export default function NoteEditor({
   page,
   onChange,
@@ -66,13 +78,22 @@ export default function NoteEditor({
           },
         }
       })(),
-      initialContent: page.blocks?.length
-        ? (fitSchema(page.blocks) as PartialBlock<
+      initialContent: (() => {
+        if (blocksNeedMarkdownParse(page.blocks, page.content)) {
+          return parseLegacyNoteContent(page.content) as PartialBlock<
             typeof schema.blockSchema,
             typeof schema.inlineContentSchema,
             typeof schema.styleSchema
-          >[])
-        : undefined,
+          >[]
+        }
+        return page.blocks?.length
+          ? (fitSchema(page.blocks) as PartialBlock<
+              typeof schema.blockSchema,
+              typeof schema.inlineContentSchema,
+              typeof schema.styleSchema
+            >[])
+          : undefined
+      })(),
       uploadFile: async file => {
         const body = new FormData()
         body.append('file', file)

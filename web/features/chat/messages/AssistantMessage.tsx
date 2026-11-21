@@ -421,6 +421,24 @@ export const AssistantMessage = memo(function AssistantMessage({
       useSegmentLayout ? leadingTraceEvents(events, messageSegments) : undefined,
     [useSegmentLayout, messageSegments, events],
   );
+  // The live notebook card replaces the raw "Calling notebook" / tool-result
+  // rows — otherwise the same job appears twice in one message.
+  const activityEvents = useMemo(() => {
+    if (!notebookTask) return events;
+    const toolId = notebookTask.tool_call_id || notebookTask.task_id;
+    return events.filter((event) => {
+      const meta = event.metadata as {
+        tool_name?: string;
+        tool_call_id?: string;
+        notebook_progress?: unknown;
+        notebook_task?: unknown;
+      } | null;
+      if (meta?.notebook_progress || meta?.notebook_task) return false;
+      if (meta?.tool_name === "notebook") return false;
+      if (toolId && meta?.tool_call_id === toolId) return false;
+      return true;
+    });
+  }, [events, notebookTask]);
 
   // Where the working-out stops and the answer starts.
   //
@@ -526,7 +544,7 @@ export const AssistantMessage = memo(function AssistantMessage({
           the exploring trace nested beneath it — expanded while DeepTutor is
           still working, collapsed once it settles into the final answer. */}
       <AssistantActivity
-        events={events}
+        events={activityEvents}
         answerer={answerer}
         traceEvents={headerTraceEvents}
         isStreaming={isStreaming}

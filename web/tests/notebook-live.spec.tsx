@@ -46,12 +46,12 @@ describe("NotebookLivePanel", () => {
     expect(screen.getByText("Water cycle")).toBeTruthy();
     expect(screen.getByText(/nb_search/)).toBeTruthy();
     expect(screen.getByText(/root = Notebook\(/)).toBeTruthy();
-    expect(screen.getByText(/Drafting · turn 2/)).toBeTruthy();
+    expect(screen.getByText("Turn 2")).toBeTruthy();
   });
 
   it("shows a loading state before the first token", () => {
     render(<NotebookLivePanel task={TASK} events={[]} isStreaming />);
-    expect(screen.getByText(/Streaming the notebook as it is written/)).toBeTruthy();
+    expect(screen.getByText(/Starting the writer/)).toBeTruthy();
   });
 
   it("shows completion links and the report when the job finishes", async () => {
