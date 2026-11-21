@@ -14,11 +14,21 @@ function getWorker(): Worker {
       type: "module",
     });
     worker.onmessage = (event: MessageEvent) => {
-      const msg = event.data as { type: string; id?: number; text?: string };
+      const msg = event.data as { type: string; id?: number; text?: string; error?: string };
       if (msg.type === "suggestion" && typeof msg.id === "number") {
+        if (msg.error && process.env.NODE_ENV !== "production") {
+          console.warn("[ghost-text]", msg.error);
+        }
         pending.get(msg.id)?.(msg.text ?? "");
         pending.delete(msg.id);
       }
+    };
+    worker.onerror = (event) => {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("[ghost-text] worker error", event.message);
+      }
+      for (const resolve of pending.values()) resolve("");
+      pending.clear();
     };
     worker.postMessage({ type: "warmup" });
   }

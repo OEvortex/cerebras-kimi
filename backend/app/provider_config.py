@@ -398,6 +398,25 @@ def _option(
         opt["declared_reasoning"] = True
     if is_recent:
         opt["is_recent"] = True
+
+    # vtx's models.dev metadata is authoritative for limits and effort levels.
+    # Keep it under distinct keys so the UI can prefer it while a manually
+    # entered catalog value remains an explicit override.
+    vtx = vtx_model_metadata(str(model or model_id))
+    if vtx:
+        opt["vtx_context_window"] = vtx["context_window"]
+        opt["vtx_max_tokens"] = vtx["max_tokens"]
+        opt["vtx_supported_reasoning_efforts"] = vtx["supported_reasoning_efforts"]
+        opt["vtx_capabilities"] = {
+            "reasoning": vtx["supports_reasoning"],
+            "vision": vtx["supports_vision"],
+            "tools": vtx["supports_tools"],
+            "audio": vtx["supports_audio"],
+        }
+        if not opt.get("context_window"):
+            opt["context_window"] = vtx["context_window"]
+        if not opt.get("supported_reasoning_efforts"):
+            opt["supported_reasoning_efforts"] = vtx["supported_reasoning_efforts"]
     return opt
 
 
@@ -587,6 +606,40 @@ def connection_targets(settings: Settings) -> list[dict[str, Any]]:
             list(preset.get("known_models") or []),
             tuple(preset.get("services") or ("llm",)))
     return targets
+
+
+def vtx_model_metadata(model_id: str) -> dict[str, Any] | None:
+    """Authoritative model limits/efforts from vtx's models.dev metadata.
+
+    Returns ``None`` when vtx has no verified limits for this id. Local catalog
+    values remain explicit user overrides; everything else comes from vtx.
+    """
+    if not model_id:
+        return None
+    try:
+        from vtx.ai.context_length import context_length_manager
+        from vtx.ai.thinking import get_supported_thinking_levels
+
+        limits = context_length_manager.get_limits(model_id)
+        if not limits or not getattr(limits, "context", 0):
+            return None
+        try:
+            efforts = get_supported_thinking_levels(limits)  # ty:ignore[missing-argument, too-many-positional-arguments]
+        except Exception:  # noqa: BLE001 - effort metadata is optional
+            efforts = []
+        return {
+            "context_window": int(limits.context),
+            "max_tokens": int(getattr(limits, "output", 0) or 0),
+            "supports_reasoning": bool(getattr(limits, "supports_reasoning", False)),
+            "supports_vision": bool(getattr(limits, "supports_vision", False)),
+            "supports_tools": bool(getattr(limits, "supports_tools", False)),
+            "supports_audio": bool(getattr(limits, "supports_audio", False)),
+            "supported_reasoning_efforts": [
+                "none" if level == "off" else level for level in efforts
+            ],
+        }
+    except Exception:  # noqa: BLE001 - metadata lookup is best effort
+        return None
 
 
 def context_window_for(profile_id: str, model_id: str) -> int:

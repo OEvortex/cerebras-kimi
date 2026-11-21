@@ -62,7 +62,9 @@ export default function NoteWorkspace({
   const [error, setError] = useState('')
   const [reviewErrors, setReviewErrors] = useState<Record<string, string>>({})
   const [status, setStatus] = useState<NoteSaveStatus>('Saved')
-  const [tree, setTreeOpen] = useState(false)
+  // The page tree is the notebook's subpage navigator. Show it by default so
+  // a reader can always see and switch to the pages nested under this one.
+  const [tree, setTreeOpen] = useState(true)
   const [outlineOpen, setOutlineOpenState] = useState(true)
   const setOutlineOpen = (open: boolean) => {
     setOutlineOpenState(open)
@@ -205,7 +207,9 @@ export default function NoteWorkspace({
         latest.current = doc
         setPage(doc)
         setMissing(false)
-        setTreeOpen(browserStorage.readRaw('local', `deeptutor.notes.tree:${owner}`) === 'true')
+        // Only an explicit "hide" turns the tree off; a first-time visitor
+        // gets the subpage navigator open.
+        setTreeOpen(browserStorage.readRaw('local', `deeptutor.notes.tree:${owner}`) !== 'false')
         setOutlineOpenState(
           browserStorage.readRaw('local', `deeptutor.notes.outline:${owner}`) !== 'false'
         )
@@ -513,6 +517,9 @@ export default function NoteWorkspace({
     }
   }
   const invalidParents = pageDescendants(pages, docId)
+  // Direct child pages of the current page: the pages a reader most often
+  // wants to jump to while reading its parent.
+  const subpages = pages.filter(item => item.parent_id === docId)
   const createPage = async (parentId: string | null = null) => {
     setMutating(true)
     try {
@@ -692,6 +699,9 @@ export default function NoteWorkspace({
               roomy={margin === 'wide'}
               onToggle={() => setOutlineOpen(!outlineOpen)}
               onJump={id => scrollToBlock(id, false)}
+              subpages={subpages}
+              onNavigateSubpage={(event, id) => navigate(event, id)}
+              onCreateSubpage={() => void createPage(docId)}
             />
           )}
           {page && (

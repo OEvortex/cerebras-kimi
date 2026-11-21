@@ -286,6 +286,8 @@ export interface ReasoningEffortModelOption {
   provider?: string | null;
   model?: string | null;
   supported_reasoning_efforts?: string[];
+  /** vtx/models.dev effort levels — authoritative when present. */
+  vtx_supported_reasoning_efforts?: string[];
   declared_reasoning?: boolean | null;
 }
 
@@ -303,11 +305,12 @@ export function supportedReasoningEffortValues(
   option: ReasoningEffortModelOption | null | undefined,
 ): string[] {
   if (!option) return [];
+  const authoritative = option.vtx_supported_reasoning_efforts?.length
+    ? option.vtx_supported_reasoning_efforts
+    : option.supported_reasoning_efforts;
   const offered =
-    option.supported_reasoning_efforts !== undefined
-      ? reasoningEffortOptionsFromSupportedLevels(
-          option.supported_reasoning_efforts,
-        )
+    authoritative !== undefined
+      ? reasoningEffortOptionsFromSupportedLevels(authoritative)
       : reasoningEffortOptions(
           option.provider,
           option.model,

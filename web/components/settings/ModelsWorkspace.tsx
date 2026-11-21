@@ -28,6 +28,7 @@ import {
   type ProviderSource,
 } from "@/lib/provider-registry";
 import { voiceModelOptions } from "@/lib/voice-settings";
+import { ModelLimitsNote } from "./ModelLimitsNote";
 import { BulkModelImport } from "./BulkModelImport";
 import { VoiceDiscoveryField } from "./VoiceDiscoveryField";
 import { VoiceModelFields } from "./VoiceModelFields";
@@ -1105,6 +1106,7 @@ function ModelParameters({
               <p className="text-[13px] leading-relaxed text-[var(--muted-foreground)]">
                 {"Keep the default, enter a custom value, or use the detected value after testing. Testing does not overwrite your choice."}
               </p>
+              <ModelLimitsNote model={model} />
             </div>
             <div className="space-y-1.5">
               <p className="flex min-h-5 items-center text-[13px] font-medium">
@@ -1119,15 +1121,22 @@ function ModelParameters({
                 <option value="">{"Default"}</option>
                 {[
                   ...new Set([
-                    ...(model.codex_supported_reasoning_levels || [
-                      "none",
-                      "minimal",
-                      "low",
-                      "medium",
-                      "high",
-                      "xhigh",
-                      "max",
-                    ]),
+                    ...((model as { vtx_supported_reasoning_efforts?: string[] })
+                      .vtx_supported_reasoning_efforts?.length
+                      ? (
+                          model as unknown as {
+                            vtx_supported_reasoning_efforts: string[];
+                          }
+                        ).vtx_supported_reasoning_efforts
+                      : model.codex_supported_reasoning_levels || [
+                          "none",
+                          "minimal",
+                          "low",
+                          "medium",
+                          "high",
+                          "xhigh",
+                          "max",
+                        ]),
                     ...(model.reasoning_effort ? [model.reasoning_effort] : []),
                   ]),
                 ].map((v) => (

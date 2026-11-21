@@ -115,10 +115,10 @@ export default function NoteTopBar({
   }
   return (
     <header className="dt-note-topbar">
-      <Tooltip label={(treeOpen ? 'Hide pages' : 'Show pages')} side="bottom">
+      <Tooltip label={(treeOpen ? 'Hide pages & subpages' : 'Show pages & subpages')} side="bottom">
         <button
           className="dt-note-icon-button"
-          aria-label={"Page tree"}
+          aria-label={"Pages and subpages"}
           aria-expanded={treeOpen}
           aria-controls="note-page-tree"
           onClick={onToggleTree}

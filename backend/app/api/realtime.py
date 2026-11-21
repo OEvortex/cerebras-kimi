@@ -88,12 +88,14 @@ def _event_to_update(event: dict[str, Any]) -> dict[str, Any] | None:
             "rawOutput": {"output": str(event.get("content") or "")[:4000]},
         }
     if etype == "result":
-        usage = (event.get("metadata") or {}).get("usage") or {}
+        meta = event.get("metadata") or {}
+        usage = meta.get("usage") or {}
         if usage:
+            budget = (meta.get("metadata") or {}).get("context_budget") or {}
             return {
                 "sessionUpdate": "usage_update",
                 "used": usage.get("total_tokens") or usage.get("input_tokens"),
-                "size": usage.get("context_window"),
+                "size": budget.get("window") or usage.get("context_window"),
             }
     return None
 

@@ -6,12 +6,16 @@
  * levels, the one you are reading in ink — that opens into the titles under
  * the pointer. Open, the titles stay in the margin. H1 to H4, toggle headings
  * included. Built from the live blocks, so it follows typing.
+ *
+ * The open panel also lists this page's subpages, so a reader can switch to a
+ * child page without hunting for the page tree or the page switcher.
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type MouseEvent } from 'react'
+import Link from '@/shared/router/link'
 
-import { PanelLeftClose, TableOfContents } from 'lucide-react'
+import { FileText, PanelLeftClose, Plus, TableOfContents } from 'lucide-react'
 import Tooltip from '@/shared/ui/Tooltip'
-import type { NoteBlock } from '@/lib/notes-api'
+import type { NoteBlock, NoteSummary } from '@/lib/notes-api'
 import { inlineText } from '../model/threads'
 
 interface Heading {
@@ -42,6 +46,9 @@ export default function NoteOutline({
   roomy,
   onToggle,
   onJump,
+  subpages = [],
+  onNavigateSubpage,
+  onCreateSubpage,
 }: {
   blocks: NoteBlock[] | null | undefined
   /** The scrolling page column; the reading position is measured in it. */
@@ -51,6 +58,10 @@ export default function NoteOutline({
   roomy: boolean
   onToggle: () => void
   onJump: (id: string) => void
+  /** Direct child pages of the current page, shown for quick switching. */
+  subpages?: NoteSummary[]
+  onNavigateSubpage?: (event: MouseEvent<HTMLAnchorElement>, id: string) => void
+  onCreateSubpage?: () => void
 }) {
   
   const headings = useMemo(() => pageHeadings(blocks), [blocks])
@@ -83,7 +94,7 @@ export default function NoteOutline({
     }
   }, [headings, scroller])
 
-  if (!headings.length) return null
+  if (!headings.length && !subpages.length) return null
   const expanded = (open && roomy) || peek
   return (
     <div className="dt-note-outline-anchor">
@@ -117,22 +128,63 @@ export default function NoteOutline({
             </Tooltip>
           )}
         </div>
-        <ol>
-          {headings.map(heading => (
-            <li key={heading.id} data-level={heading.level - minLevel + 1}>
-              <button
-                aria-current={heading.id === current ? 'location' : undefined}
-                onClick={() => {
-                  setPeek(false)
-                  onJump(heading.id)
-                }}
-              >
-                <span className="dt-note-outline-mark" aria-hidden />
-                <span className="dt-note-outline-text">{heading.text}</span>
-              </button>
-            </li>
-          ))}
-        </ol>
+        {!!headings.length && (
+          <ol>
+            {headings.map(heading => (
+              <li key={heading.id} data-level={heading.level - minLevel + 1}>
+                <button
+                  aria-current={heading.id === current ? 'location' : undefined}
+                  onClick={() => {
+                    setPeek(false)
+                    onJump(heading.id)
+                  }}
+                >
+                  <span className="dt-note-outline-mark" aria-hidden />
+                  <span className="dt-note-outline-text">{heading.text}</span>
+                </button>
+              </li>
+            ))}
+          </ol>
+        )}
+        {!!subpages.length && (
+          <div className="dt-note-outline-subpages">
+            <div className="dt-note-outline-subhead">
+              <span>{"Subpages"}</span>
+              {onCreateSubpage && (
+                <Tooltip label={"New subpage"} side="right">
+                  <button
+                    className="dt-note-icon-button"
+                    aria-label={"New subpage"}
+                    onClick={() => {
+                      setPeek(false)
+                      onCreateSubpage()
+                    }}
+                  >
+                    <Plus size={14} strokeWidth={1.7} />
+                  </button>
+                </Tooltip>
+              )}
+            </div>
+            <ul>
+              {subpages.map(subpage => (
+                <li key={subpage.id}>
+                  <Link
+                    href={`/co-writer/${subpage.id}`}
+                    onClick={event => {
+                      setPeek(false)
+                      onNavigateSubpage?.(event, subpage.id)
+                    }}
+                  >
+                    <span className="dt-note-outline-subpage-icon" aria-hidden>
+                      {subpage.icon || <FileText size={13} strokeWidth={1.7} />}
+                    </span>
+                    <span className="dt-note-outline-text">{subpage.title || "Untitled"}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </nav>
     </div>
   )

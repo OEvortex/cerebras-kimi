@@ -1039,3 +1039,58 @@ button.dt-note-tree-toggle:hover {
 .dt-note-outline li[data-level='1'] .dt-note-outline-text {
   color: var(--foreground);
 }
+
+/* The subpage switcher sits below the headings in the same margin panel. */
+.dt-note-outline:not([data-expanded]) .dt-note-outline-subpages {
+  display: none;
+}
+.dt-note-outline-subpages {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.dt-note-outline-subhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 24px;
+  padding: 0 4px 0 6px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+.dt-note-outline-subhead .dt-note-icon-button {
+  width: 22px;
+  height: 22px;
+}
+.dt-note-outline-subpages ul {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.dt-note-outline-subpages li a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: 6px;
+  color: inherit;
+  text-decoration: none;
+}
+.dt-note-outline-subpages li a:hover {
+  background: var(--secondary);
+}
+.dt-note-outline-subpage-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}

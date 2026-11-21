@@ -3,8 +3,8 @@
     "vtx.defaultMode": "bypass",
     "vtx.defaultModel": "kilo:reflection/beam-free",
     "devin.defaultModel": "swe-2-flash-medium",
-    "devin.defaultThoughtLevel": "high",
-    "devin.defaultSpeed": "standard",
+    "devin.defaultThoughtLevel": "",
+    "devin.defaultSpeed": "",
     "devin.defaultMode": "bypass",
     "devin.implicitContext.enabled": false
 }

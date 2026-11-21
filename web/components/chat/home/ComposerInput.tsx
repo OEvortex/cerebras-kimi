@@ -261,14 +261,15 @@ export const ComposerInput = memo(
     const handleInputChange = useCallback(
       (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.target.value;
-        const cursorPos = e.target.selectionStart ?? value.length;
+        const nextCursor = e.target.selectionStart ?? value.length;
+        setCursorPos(nextCursor);
         setArmed(false);
         setInputBoth(value);
         onInputChange(value);
-        const atOpen = shouldOpenAtPopup(value, cursorPos);
+        const atOpen = shouldOpenAtPopup(value, nextCursor);
         setShowAtPopup(atOpen);
-        setAtQuery(atOpen ? atMentionQuery(value, cursorPos) : "");
-        updateSlashPopup(value, cursorPos);
+        setAtQuery(atOpen ? atMentionQuery(value, nextCursor) : "");
+        updateSlashPopup(value, nextCursor);
       },
       [setInputBoth, onInputChange, updateSlashPopup],
     );

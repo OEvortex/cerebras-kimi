@@ -322,6 +322,7 @@ class AgentRuntime:
         })
         estimated_used = sum(seg["tokens"] for seg in segments)
 
+        model_id = ""
         window = 0
         try:
             from ..config import get_settings
@@ -329,24 +330,31 @@ class AgentRuntime:
             selection = provider_config.get_selection(get_settings())
             profile_id = (selection or {}).get("profile_id") or ""
             model_id = (selection or {}).get("model_id") or ""
-            window = provider_config.context_window_for(profile_id, model_id)
+            # vtx's models.dev metadata is authoritative. The local catalog is
+            # only an explicit override (manually entered context length).
+            metadata = provider_config.vtx_model_metadata(model_id)
+            if metadata:
+                window = metadata["context_window"]
+            if not window:
+                window = provider_config.context_window_for(profile_id, model_id)
         except Exception:  # noqa: BLE001
             pass
         window_estimated = window <= 0
         if window_estimated:
+            # vtx's own last-resort UI default (core/defaults/config.yml).
             window = 200_000
 
-        # Cached prompt tokens are billed separately from ``input_tokens``.
-        # On a cached turn the provider can report only a few hundred input
-        # tokens while the window actually holds tens of thousands of cached
-        # ones. Counting just input_tokens is what made the bar read
-        # "374 / 200k (0%)" beside segments summing to ~12k. All three fields
-        # are prompt-side tokens and all occupy the context window.
-        prompt_tokens = 0
+        # vtx counts every reported token against the context window:
+        # input + output + cache reads + cache writes (agent/session.py and
+        # core/compaction.py). Counting only the prompt-side fields understated
+        # the bar, which is why it read 39% when the real usage was higher.
+        reported_tokens = 0
         if usage is not None:
-            for field in ("input_tokens", "cache_read_tokens", "cache_write_tokens"):
-                prompt_tokens += int(getattr(usage, field, 0) or 0)
-        used = prompt_tokens if prompt_tokens > 0 else estimated_used
+            for field in (
+                "input_tokens", "output_tokens", "cache_read_tokens", "cache_write_tokens"
+            ):
+                reported_tokens += int(getattr(usage, field, 0) or 0)
+        used = reported_tokens if reported_tokens > 0 else estimated_used
 
         # The breakdown is a character-based estimate, so on its own it never
         # adds up to the provider's measured total. Scale the segments to
@@ -370,7 +378,7 @@ class AgentRuntime:
             "used_tokens": used,
             "free_tokens": max(0, window - used),
             "model": f"{getattr(runtime, 'model_provider', '')}/{getattr(runtime, 'model', '')}".strip("/"),
-            "counter": "provider_usage" if prompt_tokens > 0 else "heuristic",
+            "counter": "provider_usage" if reported_tokens > 0 else "heuristic",
             "segments": segments,
         }
 

@@ -43,10 +43,11 @@ export class TinyTokenizer {
   private idToToken: string[];
   private merges: Map<string, number>;
   private specialIds: Set<number>;
+  private specialTokens: { token: string; id: number }[];
 
   constructor(json: TokenizerJson) {
     this.vocab = new Map(Object.entries(json.model.vocab));
-    this.idToToken = new Array(Object.keys(json.model.vocab).length).fill("");
+    this.idToToken = Array.from({ length: Object.keys(json.model.vocab).length }, () => "");
     for (const [token, id] of this.vocab) this.idToToken[id] = token;
     this.merges = new Map();
     const merges = json.model.merges || [];
@@ -54,11 +55,11 @@ export class TinyTokenizer {
       const pair = Array.isArray(merge) ? merge.join(" ") : merge;
       this.merges.set(pair, rank);
     });
-    this.specialIds = new Set(
-      Object.entries(json.model.vocab)
-        .filter(([token]) => token.startsWith("<|") && token.endsWith("|>"))
-        .map(([, id]) => id),
-    );
+    this.specialTokens = Object.entries(json.model.vocab)
+      .filter(([token]) => token.startsWith("<|") && token.endsWith("|>"))
+      .map(([token, id]) => ({ token, id }))
+      .sort((left, right) => right.token.length - left.token.length);
+    this.specialIds = new Set(this.specialTokens.map(({ id }) => id));
   }
 
   get specials(): Set<number> {
@@ -77,7 +78,28 @@ export class TinyTokenizer {
 
   encode(text: string): number[] {
     const ids: number[] = [];
-    for (const match of text.matchAll(BYTE_PATTERN)) {
+    // Special tokens are matched literally, never passed through byte-level BPE.
+    let cursor = 0;
+    while (cursor < text.length) {
+      const special = this.specialTokens.find(({ token }) => text.startsWith(token, cursor));
+      if (special) {
+        ids.push(special.id);
+        cursor += special.token.length;
+        continue;
+      }
+      const next = this.specialTokens
+        .map(({ token }) => text.indexOf(token, cursor))
+        .filter((index) => index >= 0)
+        .sort((left, right) => left - right)[0];
+      const end = next ?? text.length;
+      this.encodeSegment(text.slice(cursor, end), ids);
+      cursor = end;
+    }
+    return ids;
+  }
+
+  private encodeSegment(segment: string, ids: number[]): void {
+    for (const match of segment.matchAll(BYTE_PATTERN)) {
       const piece = match[0];
       const unicode = Array.from(piece)
         .flatMap((char) => Array.from(char))
@@ -90,7 +112,6 @@ export class TinyTokenizer {
         ids.push(id);
       }
     }
-    return ids;
   }
 
   private bpe(piece: string): string[] {

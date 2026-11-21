@@ -13,6 +13,11 @@ export interface LLMOption extends LLMSelection {
   /** Human-readable provider name from the registry ("OpenRouter"). */
   provider_label?: string;
   context_window?: number;
+  /** Context window / max output from vtx's models.dev metadata. */
+  vtx_context_window?: number;
+  vtx_max_tokens?: number;
+  vtx_supported_reasoning_efforts?: string[];
+  vtx_capabilities?: { reasoning?: boolean; vision?: boolean; tools?: boolean; audio?: boolean };
   reasoning_effort?: string;
   supported_reasoning_efforts?: string[];
   /** The model's own Settings declaration of reasoning support, when present. */

@@ -41,7 +41,11 @@ function ModelOptionRow({
   // Official model ID as the primary label (what gets sent to the API),
   // per design. The user-given nickname and profile live in the tooltip.
   const modelLabel = option.model || option.model_name;
-  const contextWindow = formatContextWindow(option.context_window);
+  // vtx's models.dev metadata is authoritative; a manual catalog value is an
+  // explicit override and wins when present.
+  const contextWindow = formatContextWindow(
+    option.context_window || option.vtx_context_window,
+  );
   // Long model ids ("google/gemini-3-flash-preview") get ellipsized by the
   // inline layout; hovering the row reveals the full id as an overlay. The
   // scrollWidth check at mouseenter time keeps the overlay away from rows

@@ -423,9 +423,12 @@ def context_window_for(config: dict[str, Any]) -> dict[str, Any]:
         if window:
             source = "metadata"
     if not window:
+        # Match vtx's own last-resort UI default instead of an unrelated 8192.
+        from vtx.core.config import config as vtx_config
+
         source = "default"
-        window = 8192
-        detail = detail or "No declared context window; using a conservative default."
+        window = int(vtx_config.agent.default_context_window)
+        detail = detail or "No declared context window; using the vtx default."
     return {
         "context_window": window,
         "source": source,

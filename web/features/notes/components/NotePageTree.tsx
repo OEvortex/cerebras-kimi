@@ -45,7 +45,7 @@ export default function NotePageTree({
                 {hasChildren ? (
                   <button
                     className="dt-note-tree-toggle"
-                    aria-label={(expanded ? 'Collapse {{page}}' : 'Expand {{page}}')}
+                    aria-label={(expanded ? `Collapse ${title}` : `Expand ${title}`)}
                     aria-expanded={expanded}
                     onClick={() =>
                       setCollapsed(previous => {
