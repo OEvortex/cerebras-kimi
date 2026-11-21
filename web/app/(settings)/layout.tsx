@@ -1,5 +1,4 @@
-import { CapabilityAccessProvider } from "@/components/access/CapabilityAccessContext";
-import CapabilityGate from "@/components/access/CapabilityGate";
+import ModuleGate from "@/components/layout/ModuleGate";
 
 /** Settings owns its navigation, independently of the conversation sidebar. */
 export default function SettingsRouteLayout({
@@ -7,9 +6,5 @@ export default function SettingsRouteLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <CapabilityAccessProvider>
-      <CapabilityGate>{children}</CapabilityGate>
-    </CapabilityAccessProvider>
-  );
+  return <ModuleGate>{children}</ModuleGate>;
 }

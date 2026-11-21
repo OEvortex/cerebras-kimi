@@ -8,7 +8,6 @@ import {
   useImperativeHandle,
   useRef,
   useState,
-  useSyncExternalStore,
 } from "react";
 
 import dynamic from "@/shared/router/dynamic";
@@ -27,7 +26,6 @@ import type { MessageAttachment } from "@/features/chat/ChatStateAdapter";
 import type { StreamEvent } from "@/features/chat/model/protocol";
 import { usePartnerGroups } from "@/hooks/usePartnerGroups";
 import { usePartnerRoster } from "@/hooks/usePartnerRoster";
-import { recoveryPrincipal, RECOVERY_PRINCIPAL_CHANGED } from "@/lib/recovery-principal";
 import { normalizeSelectedText } from "@/lib/selection-text";
 import { listSessionThreads, type SessionSummary } from "@/lib/session-api";
 import { subscribeSessionChanges } from "@/lib/session-events";
@@ -198,7 +196,7 @@ function SessionViewerPanelInner(
   }
 
   useEffect(() => {
-    if (!recoveryPrincipal() || hydratedTabsKey === tabsKey) return;
+    if (hydratedTabsKey === tabsKey) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setHydratedTabsKey(tabsKey);
     if (tabs.length > 0 || activeTabId !== null) return;
@@ -211,7 +209,7 @@ function SessionViewerPanelInner(
   }, [activeTabId, hydratedTabsKey, sessionId, tabs.length, tabsKey]);
 
   useEffect(() => {
-    if (recoveryPrincipal() && reboundFromKey && reboundFromKey !== tabsKey) {
+    if (reboundFromKey && reboundFromKey !== tabsKey) {
       browserStorage.removeRaw("local", viewerTabsStorageKey(reboundFromKey));
     }
   }, [reboundFromKey, tabsKey]);
@@ -740,7 +738,7 @@ function SessionViewerPanelInner(
   );
 
   useEffect(() => {
-    if (!recoveryPrincipal() || hydratedTabsKey !== tabsKey) return;
+    if (hydratedTabsKey !== tabsKey) return;
     const persistable: PersistedSideChatTab[] = [];
     for (const tab of tabs) {
       if (tab.kind !== "side-chat" || !tab.context.sideChat) continue;
@@ -990,21 +988,12 @@ function SessionViewerPanelInner(
 }
 
 const ScopedViewerPanel = forwardRef(SessionViewerPanelInner);
-const subscribePrincipal = (listener: () => void) => {
-  window.addEventListener(RECOVERY_PRINCIPAL_CHANGED, listener);
-  return () => window.removeEventListener(RECOVERY_PRINCIPAL_CHANGED, listener);
-};
 const SessionViewerPanel = memo(
   forwardRef<SessionViewerPanelHandle, SessionViewerPanelProps>(
     function SessionViewerPanel(props, ref) {
-      const principal = useSyncExternalStore(
-        subscribePrincipal,
-        recoveryPrincipal,
-        () => null,
-      );
       return (
         <ScopedViewerPanel
-          key={principal ?? "unresolved"}
+          key="single-user"
           ref={ref}
           {...props}
         />

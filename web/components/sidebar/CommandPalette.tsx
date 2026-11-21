@@ -17,7 +17,6 @@ import { navigateTask } from '@/lib/workspace-scope'
 import type { SessionSummary } from '@/lib/session-api'
 import { isNoteSession } from '@/lib/mastery-session'
 import { learningSurface } from '@/components/learning/surfaces'
-import { navVisibleUnderPolicy } from './nav-entries'
 
 interface PaletteItem {
   id: string
@@ -43,7 +42,6 @@ export function CommandPalette({
   open,
   onClose,
   categories,
-  allowedSurfaces,
   sessions,
   onSelectSession,
   onNewChat,
@@ -51,7 +49,6 @@ export function CommandPalette({
   open: boolean
   onClose: () => void
   categories: readonly { id: string; label: string; icon: LucideIcon; href: string }[]
-  allowedSurfaces: string[] | null
   sessions: SessionSummary[]
   onSelectSession?: (sessionId: string) => void | Promise<void>
   onNewChat: () => void
@@ -84,16 +81,13 @@ export function CommandPalette({
       ...[
         { href: '/calendar', label: 'Calendar', icon: CalendarDays },
         { href: '/co-writer', label: 'Co-Writer', icon: PenLine },
-      ]
-        .filter(item => navVisibleUnderPolicy(item.href, allowedSurfaces))
-        .map(item => ({ id: item.href, label: (item.label), icon: glyph(item.icon), run: go(item.href) })),
+      ].map(item => ({ id: item.href, label: (item.label), icon: glyph(item.icon), run: go(item.href) })),
       ...[
         { groups: DASHBOARD_GROUPS, detail: "Resources" },
         { groups: PERSONALIZATION_GROUPS, detail: "Personalization" },
       ].flatMap(({ groups, detail }) =>
         visibleGroups(groups, available).flatMap(group =>
           group.items
-            .filter(row => row.href !== '/agents' || navVisibleUnderPolicy(row.href, allowedSurfaces))
             .map(row => ({
               id: `resource:${row.key}`,
               label: row.title,
@@ -176,7 +170,7 @@ export function CommandPalette({
       { title: "Learning", items: pick(learning, q ? 6 : 0) },
       { title: "Partners", items: pick(partners, q ? 6 : 0) },
     ].filter(group => group.items.length > 0)
-  }, [query, categories, allowedSurfaces, available, sessions, sources, partnerData, onSelectSession, onNewChat, router.push])
+  }, [query, categories, available, sessions, sources, partnerData, onSelectSession, onNewChat, router.push])
 
   const flat = groups.flatMap(group => group.items)
   const current = Math.min(activeIndex, Math.max(0, flat.length - 1))

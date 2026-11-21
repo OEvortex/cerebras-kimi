@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { setRuntimeAuthEnabled } from "@/shared/api/client";
 import {
   connectImaKnowledgeBase,
   listImaKnowledgeBases,
@@ -77,7 +76,6 @@ test("listImaKnowledgeBases sends credentials and preserves pagination", async (
 });
 
 test("IMA credential rejection stays inline instead of redirecting login", async () => {
-  setRuntimeAuthEnabled(true);
   const windowState = installWindow();
   const restore = stubFetch(async () =>
     jsonResponse(401, { detail: "IMA rejected the supplied credentials." }),
@@ -91,7 +89,6 @@ test("IMA credential rejection stays inline instead of redirecting login", async
   } finally {
     restore();
     clearWindow();
-    setRuntimeAuthEnabled(false);
   }
 });
 

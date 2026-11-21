@@ -11,7 +11,6 @@ import {
 } from "@/contracts/parse/turn-command";
 import { parseTurnEvent } from "@/contracts/parse/turn-event";
 import { scopedUrl } from "@/lib/workspace-scope";
-import { NO_LLM_ACCESS } from "../model/protocol";
 import { apiUrl } from "@/shared/api/client";
 
 import {
@@ -431,7 +430,7 @@ export class TurnRuntimeClient {
     }
     if (event.type === "protocol_error") {
       if (!this.turnId &&
-          (event.error_code === "start_turn_rejected" || event.error_code === NO_LLM_ACCESS))
+          event.error_code === "start_turn_rejected")
         this.finishCancellation(true);
       this.options.onDiagnostic?.(
         `turn protocol error; code=${event.error_code}; retryable=${String(event.retryable)}`,

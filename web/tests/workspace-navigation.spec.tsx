@@ -99,7 +99,6 @@ it('does not let invalidated in-flight requests overwrite fresh cache entries', 
 
 it('keeps navigation snapshots during refresh and clears them on account changes', async () => {
   const { readClientCache } = await import('@/lib/client-cache')
-  const { invalidateAuthStatusCache } = await import('@/lib/auth')
   const key = 'navigation:retained-view'
   window.history.replaceState(null, '', '/learning?dt_workspace=first')
   await withClientCache(key, async () => 'first account')
@@ -109,7 +108,6 @@ it('keeps navigation snapshots during refresh and clears them on account changes
   window.history.replaceState(null, '', '/learning?dt_workspace=second')
   expect(readClientCache(key)).toBeUndefined()
   window.history.replaceState(null, '', '/learning?dt_workspace=first')
-  invalidateAuthStatusCache()
   expect(readClientCache(key)).toBeUndefined()
   finish('outdated account response')
   await refresh

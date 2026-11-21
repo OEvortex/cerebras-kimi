@@ -7,8 +7,8 @@ import { Renderer, type ActionEvent } from "@openuidev/react-lang";
 import { ThemeProvider } from "@openuidev/intelligent-ui-library";
 
 import { resolveTheme, getStoredThemePreference, subscribeToThemeChanges } from "@/lib/theme";
-import { notebookLibrary } from "@/lib/notebook-ui/library";
-import { toNotebookUIProgram } from "@/lib/notebook-ui/lang";
+import { notebookLibrary } from "./notebook-ui-lang/library";
+import { toNotebookUIProgram } from "./notebook-ui-lang/lang";
 
 /**
  * Renders a streamed notebook-ui-lang program with the same incremental

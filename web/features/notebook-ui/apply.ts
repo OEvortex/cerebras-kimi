@@ -2,7 +2,7 @@
 
 import { notifyCoWriterChanged } from "@/lib/co-writer-events";
 import { noteRequest, type NotePage } from "@/lib/notes-api";
-import { compileNotebookProgram, type NotebookPlan } from "@/lib/notebook-ui/lang";
+import { compileNotebookProgram, type NotebookPlan } from "./notebook-ui-lang/lang";
 
 export type ApplyResult = {
   pages: { id: string; title: string }[];

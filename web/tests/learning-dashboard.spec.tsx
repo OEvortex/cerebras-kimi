@@ -5,8 +5,6 @@ import { LearningWays } from '@/components/learning/LearningWays'
 import { LearningDashboard } from '@/components/learning/LearningDashboard'
 
 vi.mock('@/shared/router/navigation', () => ({ usePathname: () => '/learning', useRouter: () => ({ push: vi.fn() }), useSearchParams: () => new URLSearchParams() }))
-vi.mock('@/hooks/useAuthStatus', () => ({ useAuthStatus: () => ({ learningPolicy: null }) }))
-
 const mock = vi.hoisted(() => ({
   books: vi.fn(),
   topics: vi.fn(),

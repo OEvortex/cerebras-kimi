@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import type { ReadingAgeMode } from "@/lib/reading-age-presentation";
 import type {
   ReadingExtensionManifest,
   ReadingExtensionResult,
@@ -40,7 +39,6 @@ export interface ReadingActionCard {
 }
 
 export interface ReadingActionsValue {
-  ageMode: ReadingAgeMode;
   actions: ReadingActionEntry[];
   /** Permission-filtered helpers for quiz cards, separate from chat-routed menus. */
   helpActions: ReadingActionEntry[];

@@ -14,7 +14,6 @@ import {
 } from '@/components/space/dashboard-groups'
 import { LEARNING_SURFACES } from '@/components/learning/surfaces'
 import { categoryForPath } from '@/lib/navigation'
-import { navVisibleUnderPolicy } from './nav-entries'
 
 export interface PageEntry {
   href: string
@@ -34,7 +33,7 @@ export interface PageSection {
 }
 
 /**
- * The sidebar's shelves as one page tree — the same entries, policy and
+ * The sidebar's shelves as one page tree — the same entries and
  * capability gates the shelves apply — so the page bar and the sidebar can
  * never disagree about where a page lives or what sits beside it.
  *
@@ -42,14 +41,10 @@ export interface PageSection {
  * personalization are the account's and look the same in every workspace.
  */
 export function pageSections({
-  allowedSurfaces,
   isAvailable,
 }: {
-  allowedSurfaces: readonly string[] | null
   isAvailable: ((name: string) => boolean) | null
 }): PageSection[] {
-  const surfaceAllowed = (kind: string) =>
-    !allowedSurfaces || allowedSurfaces.includes(kind === 'mastery' || kind === 'practice' ? 'chat' : kind)
   const shelf = (groups: DashboardGroup[]) =>
     visibleGroups(groups, isAvailable).flatMap(group =>
       group.items.map(item => ({ href: item.href, label: item.title, icon: item.icon }))
@@ -63,7 +58,7 @@ export function pageSections({
         { href: '/chat', label: "Chat", icon: MessageCircle },
         { href: '/calendar', label: "Calendar", icon: CalendarDays, account: true },
         { href: '/co-writer', label: "Notebook", icon: PenLine },
-      ].filter(page => navVisibleUnderPolicy(page.href, allowedSurfaces)),
+      ],
     },
     {
       id: 'learning',
@@ -72,7 +67,7 @@ export function pageSections({
       pages: [
         { href: '/learning/new', label: "New learning activity", icon: Plus },
         { href: '/learning', label: "All learning", icon: LayoutGrid },
-        ...LEARNING_SURFACES.filter(surface => surfaceAllowed(surface.kind)).map(surface => ({
+        ...LEARNING_SURFACES.map(surface => ({
           href: surface.href,
           label: (surface.title),
           icon: surface.icon,
@@ -92,7 +87,7 @@ export function pageSections({
       account: true,
       pages: [
         { href: '/personalization', label: "All personalization", icon: PersonalizationShelfIcon },
-        ...shelf(PERSONALIZATION_GROUPS).filter(page => page.href !== '/agents' || navVisibleUnderPolicy(page.href, allowedSurfaces)),
+        ...shelf(PERSONALIZATION_GROUPS),
       ],
     },
   ]
@@ -139,7 +134,7 @@ function ownerOf(pathname: string, sections: PageSection[], workspaceOnly = fals
   return owner
 }
 
-const EVERY_PAGE = pageSections({ allowedSurfaces: null, isAvailable: () => true })
+const EVERY_PAGE = pageSections({ isAvailable: () => true })
 
 /**
  * Where a workspace switch lands: the same page, or the index page the

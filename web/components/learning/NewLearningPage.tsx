@@ -4,7 +4,6 @@ import { useRouter } from '@/shared/router/navigation'
 import { ArrowUpRight, Plus, Settings2 } from 'lucide-react'
 import { m, useReducedMotion } from 'framer-motion'
 
-import { useAuthStatus } from '@/hooks/useAuthStatus'
 import { useModules } from '@/hooks/useModules'
 import { usePageCustomization } from '@/context/PageCustomizationContext'
 import { PageCustomizeButton } from '@/components/customization/PageCustomizeButton'
@@ -21,22 +20,14 @@ export default function NewLearningPage() {
   
   const router = useRouter()
   const reduced = useReducedMotion()
-  const auth = useAuthStatus()
   const inventory = useModules()
   const preferences = usePageCustomization()
-  const eligible = LEARNING_SURFACES.filter(
-    item =>
-      inventory.available(item.href) &&
-      (!auth.learningPolicy ||
-        auth.learningPolicy.allowedSurfaces.includes(
-          item.kind === 'mastery' || item.kind === 'practice' ? 'chat' : item.kind
-        ))
-  )
+  const eligible = LEARNING_SURFACES.filter(item => inventory.available(item.href))
   const surfaces = eligible.filter(
     item => !preferences.value.learning.hidden_features.includes(item.kind)
   )
   const learningKinds = eligible.map(item => item.kind)
-  const loading = auth.loading || preferences.loading || (!inventory.modules && !inventory.error)
+  const loading = preferences.loading || (!inventory.modules && !inventory.error)
   return (
     <LearningShell
       title={"New learning activity"}

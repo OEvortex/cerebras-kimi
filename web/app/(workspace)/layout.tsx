@@ -3,8 +3,7 @@ import CalendarRuntime from "@/features/calendar/components/CalendarRuntime";
 import WorkspaceSidebar from "@/components/sidebar/WorkspaceSidebar";
 import AppShell from "@/components/layout/AppShell";
 import { LayoutPageBar } from "@/features/ui-layout/slots";
-import { CapabilityAccessProvider } from "@/components/access/CapabilityAccessContext";
-import CapabilityGate from "@/components/access/CapabilityGate";
+import ModuleGate from "@/components/layout/ModuleGate";
 import { ChatRuntimeProvider } from "@/features/chat/ChatRuntimeProvider";
 import { ReadingProvider } from "@/context/ReadingContext";
 import { Suspense } from "react";
@@ -16,8 +15,7 @@ export default function WorkspaceLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <CapabilityAccessProvider>
-      <PageCustomizationProvider>
+          <PageCustomizationProvider>
       <Suspense>
         <WorkspaceRuntimeBoundary>
           <CalendarRuntime>
@@ -28,7 +26,7 @@ export default function WorkspaceLayout({
             must not die with it. */}
               <ReadingProvider>
                   <AppShell sidebar={<WorkspaceSidebar />} pageBar={<LayoutPageBar />}>
-                    <CapabilityGate>{children}</CapabilityGate>
+                    <ModuleGate>{children}</ModuleGate>
                   </AppShell>
               </ReadingProvider>
             </ChatRuntimeProvider>
@@ -36,6 +34,5 @@ export default function WorkspaceLayout({
         </WorkspaceRuntimeBoundary>
       </Suspense>
     </PageCustomizationProvider>
-    </CapabilityAccessProvider>
   );
 }

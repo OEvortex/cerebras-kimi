@@ -94,7 +94,6 @@ import {
 } from "@/lib/ask-user-state";
 import { notify } from "@/lib/notifications";
 import { copyText } from "@/lib/clipboard";
-import { CAPABILITY_LABEL } from "@/lib/capability-routes";
 import { useChatAutoScroll } from "@/hooks/useChatAutoScroll";
 import { useContextBudget } from "@/hooks/useContextBudget";
 import { useMeasuredHeight } from "@/hooks/useMeasuredHeight";
@@ -2485,17 +2484,10 @@ export default function ChatWorkspace() {
                       aria-hidden="true"
                     />
                     <span className="min-w-0 flex-1 text-[12px] leading-[1.5] text-[var(--foreground)]">
-                      {state.submissionNoLlmAccess
-                        ? `Your account doesn't have ${(CAPABILITY_LABEL.llm)} assigned yet. Please contact your administrator to get access.`
-                        : null}
-                      {state.submissionNoLlmAccess &&
-                        (state.submissionNotSaved || state.submissionNeedsReview) ? " " : null}
                       {state.submissionNotSaved
                         ? "This unsent message could not be saved in your browser. Copy it before leaving this page."
                         : state.submissionNeedsReview
                         ? "Message text was saved, but its attachments or settings could not be restored. Copy it and send again."
-                        : state.submissionNoLlmAccess
-                        ? null
                         // An admission rejection carries the server's own
                         // reason (#2637): show it rather than claiming a
                         // network failure the server never reported.

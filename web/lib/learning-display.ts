@@ -1,5 +1,3 @@
-import { recoveryPrincipal } from "@/lib/recovery-principal";
-
 /** Server-authoritative learning typography. No browser persistence. */
 export const CONTENT_FONT_SCALES = [90, 100, 110, 125, 150] as const;
 export type ContentFontScale = (typeof CONTENT_FONT_SCALES)[number];
@@ -35,13 +33,10 @@ export function normalizeLearningDisplay(
       : "normal",
   };
 }
-export function publishLearningDisplay(
-  value: LearningDisplay,
-  principal = recoveryPrincipal(),
-): void {
+export function publishLearningDisplay(value: LearningDisplay): void {
   window.dispatchEvent(
     new CustomEvent(LEARNING_DISPLAY_APPLIED, {
-      detail: { preferences: normalizeLearningDisplay(value), principal },
+      detail: { preferences: normalizeLearningDisplay(value) },
     }),
   );
 }

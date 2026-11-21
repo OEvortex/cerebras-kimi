@@ -33,10 +33,6 @@ vi.mock("@/components/reading/PdfDocumentView", () => ({
   },
 }));
 
-vi.mock("@/lib/auth", () => ({
-  fetchAuthStatus: vi.fn(async () => null),
-}));
-
 vi.mock("@/components/reading/EpubDocumentView", () => ({
   EpubDocumentView: () => null,
 }));

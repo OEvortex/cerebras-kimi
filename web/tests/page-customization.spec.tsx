@@ -42,12 +42,6 @@ vi.mock('@/shared/api/client', () => ({
 vi.mock('@/components/customization/PageCustomizeButton', () => ({
   PageCustomizeButton: () => <button>Customize page</button>,
 }))
-vi.mock('@/hooks/useAuthStatus', () => ({
-  useAuthStatus: () => ({
-    loading: false,
-    learningPolicy: harness.allowed ? { allowedSurfaces: harness.allowed } : null,
-  }),
-}))
 vi.mock('@/hooks/useModules', () => ({
   useModules: () => ({ modules: [], available: harness.available, error: false }),
 }))

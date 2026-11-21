@@ -20,14 +20,6 @@ const fixture = vi.hoisted(() => ({
   modelId: "",
   save: vi.fn(),
 }));
-vi.mock("@/hooks/useAuthStatus", () => ({
-  useAuthStatus: () => ({
-    statusAvailable: true,
-    enabled: false,
-    isAdmin: true,
-    loading: false,
-  }),
-}));
 vi.mock("@/hooks/useLLMOptions", () => ({
   useLLMOptions: () => ({
     loading: false,

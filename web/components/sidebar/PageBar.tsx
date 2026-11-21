@@ -2,7 +2,6 @@
 
 import { usePathname } from '@/shared/router/navigation'
 
-import { useAuthStatus } from '@/hooks/useAuthStatus'
 import { useDevice } from '@/hooks/useDevice'
 import { useCapabilityFilter } from '@/features/capabilities/useCapabilityCatalog'
 import { usePageSlotRef } from '@/components/layout/PageChrome'
@@ -11,12 +10,8 @@ import { locatePage, pageSections } from './page-sections'
 
 function useShelves() {
   
-  const { learningPolicy } = useAuthStatus()
   const isAvailable = useCapabilityFilter()
-  return pageSections({
-    allowedSurfaces: learningPolicy?.allowedSurfaces ?? null,
-    isAvailable,
-  })
+  return pageSections({ isAvailable })
 }
 
 /**

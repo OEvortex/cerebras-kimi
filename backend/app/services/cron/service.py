@@ -12,6 +12,7 @@ executor lives in :mod:`app.services.cron.executor`.
 from __future__ import annotations
 
 import asyncio
+import dataclasses
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 import logging
@@ -50,8 +51,6 @@ class CronOwner:
     """Who scheduled the job and where its output goes."""
 
     kind: str  # "chat" | "partner"
-    user_id: str = ""  # chat: owning user
-    is_admin: bool = True  # chat: scope restore
     session_id: str = ""  # chat: reply lands in this session
     workspace_id: str = ""  # chat: the content workspace that stores the session
     language: str = "en"
@@ -65,7 +64,10 @@ class CronOwner:
     def key(self) -> str:
         if self.kind == "partner":
             return f"partner:{self.partner_id}"
-        return f"chat:{self.user_id or 'local-admin'}"
+        return "chat:local-admin"
+
+
+_OWNER_FIELDS = frozenset(field.name for field in dataclasses.fields(CronOwner))
 
 
 @dataclass
@@ -113,7 +115,15 @@ class CronJob:
                 else CronSchedule(kind="every")
             ),
             owner=(
-                CronOwner(**raw_owner) if isinstance(raw_owner, dict) else CronOwner(kind="chat")
+                CronOwner(
+                    **{
+                        key: value
+                        for key, value in raw_owner.items()
+                        if key in _OWNER_FIELDS
+                    }
+                )
+                if isinstance(raw_owner, dict)
+                else CronOwner(kind="chat")
             ),
             enabled=bool(data.get("enabled", True)),
             delete_after_run=bool(data.get("delete_after_run", False)),

@@ -65,7 +65,6 @@ export function createSessionEntry(
     lastTurnFailed: false,
     submissionFailed: false,
     submissionErrorMessage: "",
-    submissionNoLlmAccess: false,
     submissionNeedsReview: false,
     submissionNotSaved: false,
     queuedMessages: [],
@@ -116,7 +115,6 @@ export function restoredFailedMessage(
       : {}),
     requestSnapshot: snapshot,
     failedSubmission: true,
-    failedSubmissionNoLlmAccess: record.noLlmAccess === true,
     failedSubmissionNeedsReview: record.retryRequiresReview,
     failedSubmissionId: record.submissionId,
   };
@@ -296,7 +294,6 @@ export function reducer(state: ProviderState, action: Action): ProviderState {
 }
 
 function reduce(state: ProviderState, action: Action): ProviderState {
-  if (action.type === "RESET_ACCOUNT") return initialState;
   switch (action.type) {
     case "SET_TOOLS":
       return updateSelectedSession(state, (session) => ({
@@ -717,7 +714,6 @@ function reduce(state: ProviderState, action: Action): ProviderState {
             ...(action.errorMessage
               ? { failedSubmissionMessage: action.errorMessage }
               : {}),
-            failedSubmissionNoLlmAccess: action.submissionNoLlmAccess,
           };
           return {
             ...state,

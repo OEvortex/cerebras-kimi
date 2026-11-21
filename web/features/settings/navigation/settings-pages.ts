@@ -17,7 +17,7 @@ export const SETTINGS_PAGE_GROUPS: { label: string; keys: string[] }[] = [
   },
   {
     label: 'Learning & conversation',
-    keys: ['starters', 'attachments', 'video-learning', 'learner-profile', 'progress', 'guardian', 'memory'],
+    keys: ['starters', 'attachments', 'video-learning', 'progress', 'memory'],
   },
   {
     label: 'Features & integrations',

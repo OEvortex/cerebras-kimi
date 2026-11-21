@@ -6,7 +6,7 @@ import { usePathname } from '@/shared/router/navigation'
 import { Search, X } from 'lucide-react'
 
 import Tooltip from '@/shared/ui/Tooltip'
-import { useSettingsAccess } from '@/features/settings/navigation/SettingsAccessProvider'
+import { SETTINGS_ACCESS } from '@/features/settings/navigation/settings-access'
 import { settingsAnchorHref } from '@/features/settings/navigation/settings-nav'
 import {
   SETTINGS_PAGE_GROUPS,
@@ -18,7 +18,7 @@ import {
 
 export default function SettingsNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
-  const access = useSettingsAccess()
+  const access = SETTINGS_ACCESS
   const pages = visibleSettingsPages(access)
   const [query, setQuery] = useState('')
   const needle = query.trim().toLocaleLowerCase()

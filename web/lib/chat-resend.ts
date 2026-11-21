@@ -9,7 +9,6 @@ interface ChatBranchMessage extends BranchMessage {
   failedSubmission?: boolean;
   /** A quota fallback kept the text but not enough context for safe resend. */
   failedSubmissionNeedsReview?: boolean;
-  failedSubmissionNoLlmAccess?: boolean;
   orphanedFailedTurn?: { retryable: boolean };
 }
 

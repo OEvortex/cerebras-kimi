@@ -23,7 +23,6 @@ import {
 import { exportCoWriterDocx } from '@/lib/co-writer-api'
 import { notifyCoWriterChanged } from '@/lib/co-writer-events'
 import { browserStorage } from '@/shared/storage'
-import { useAuthStatus } from '@/hooks/useAuthStatus'
 import { researchOutline } from '../model/research'
 import type { NoteAsk, NoteEditorHandle } from './NoteEditor'
 import NotePageTree from './NotePageTree'
@@ -55,9 +54,7 @@ export default function NoteWorkspace({
 }) {
   
   const router = useRouter()
-  const auth = useAuthStatus()
-  const owner =
-    auth.statusAvailable && !auth.loading ? (auth.enabled ? auth.userId : 'local') : null
+  const owner = 'local'
   const [mutating, setMutating] = useState(false)
   const [page, setPage] = useState<NotePage | null>(null)
   const [pages, setPages] = useState<NoteSummary[]>([])

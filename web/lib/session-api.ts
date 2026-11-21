@@ -4,7 +4,6 @@ import { notifySessionsChanged } from "@/lib/session-events";
 import { apiFetch, apiUrl } from "@/shared/api/client";
 import { invalidateClientCache, withClientCache } from "@/lib/client-cache";
 import type { LLMSelection, StreamEvent } from "@/features/chat/model/protocol";
-import { browserReturnPath, loginHref } from "@/shared/auth/return-url";
 
 /** Fail closed when the configured backend cannot fence an uncertain send. */
 export async function supportsSubmissionReplacement(): Promise<boolean> {
@@ -223,10 +222,6 @@ export interface QuizResultItem {
 }
 
 async function expectJson<T>(response: Response): Promise<T> {
-  if (response.status === 401 && typeof window !== "undefined") {
-    window.location.href = loginHref(browserReturnPath(window.location));
-    return new Promise(() => {});
-  }
   if (!response.ok) {
     throw new Error(`Request failed: ${response.status}`);
   }

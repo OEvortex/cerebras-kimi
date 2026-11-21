@@ -93,12 +93,6 @@ export interface SidebarShellProps {
     sessionId: string,
     patch: SessionOrganizationPatch,
   ) => void | Promise<void>;
-  /**
-   * Footer content rendered below the nav. Pass a render function to receive
-   * the current ``collapsed`` state so footer items (e.g. Admin / Sign out) can
-   * switch to their icon-only variant when the rail is collapsed.
-   */
-  footerSlot?: ReactNode | ((collapsed: boolean) => ReactNode);
 }
 
 export function SidebarShell({
@@ -120,7 +114,6 @@ export function SidebarShell({
   masteryTopics = [],
   readingCollections = [],
   onOrganizeSession,
-  footerSlot,
 }: SidebarShellProps) {
   const categoryNav = useCategoryNavigation();
   const router = useRouter();
@@ -139,10 +132,6 @@ export function SidebarShell({
   const collapsed = sidebarCollapsed && !isMobile;
   const resize = useSidebarResize(collapsed || isMobile, initialWidth, widthStorageKey);
 
-  // The account links live in the workspace menu, which always shows them in
-  // full, open sidebar or rail.
-  const renderedFooter =
-    typeof footerSlot === "function" ? footerSlot(false) : footerSlot;
   // Conversations read like the learning and partner records: by day, in
   // the order the learner picked, searchable in place.
   const chatView = useRecordView("deeptutor.navigation.chats.sort");
@@ -200,7 +189,6 @@ export function SidebarShell({
         open
         onClose={() => setPaletteOpen(false)}
         categories={categoryNav.categories}
-        allowedSurfaces={categoryNav.allowedSurfaces}
         sessions={sessions}
         onSelectSession={onSelectSession}
         onNewChat={startNewChat}
@@ -308,7 +296,7 @@ export function SidebarShell({
             <Image src="/brand/color-logo.png" alt="DeepTutor" width={22} height={22} className="h-[22px] w-[22px] rounded-md" />
           </Link>
         ) : (
-          <WorkspaceMenu compact accountSlot={renderedFooter} onNavigate={() => drawer?.close()} />
+          <WorkspaceMenu compact onNavigate={() => drawer?.close()} />
         )}
         <Tooltip label={"Expand sidebar"} side="right">
           <button
@@ -391,7 +379,7 @@ export function SidebarShell({
         </div>
       ) : (
         <div className="dt-sidebar-header">
-          <WorkspaceMenu accountSlot={renderedFooter} onNavigate={() => drawer?.close()} />
+          <WorkspaceMenu onNavigate={() => drawer?.close()} />
           <Tooltip label={"Search"} side="bottom" shortcut={SHORTCUTS.search}>
             <button
               type="button"

@@ -24,7 +24,6 @@ import { formatDate } from "@/lib/datetime";
 import BrandIcon, { TrademarkNote } from "@/components/common/BrandIcon";
 import SpaceSectionHeader from "@/components/space/SpaceSectionHeader";
 import { chipClass } from "@/components/mcp/styles";
-import { useAuthStatus } from "@/hooks/useAuthStatus";
 import {
   CliAppError,
   type CliApp,
@@ -52,7 +51,8 @@ type Tab = "installed" | "store";
  * store read-only and the page says so rather than offering a button that 403s.
  */
 export default function CliAppsSection() {
-  const { isAdmin, loading: authLoading } = useAuthStatus();
+  const isAdmin = true;
+  const authLoading = false;
 
   const [state, setState] = useState<CliAppState | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);

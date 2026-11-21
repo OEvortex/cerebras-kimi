@@ -48,7 +48,6 @@ import {
   type JumpRequest,
   type SelectionPayload,
 } from "./PdfDocumentView";
-import { ReadingExtensionBar } from "./ReadingExtensionBar";
 import {
   READER_ASK_EVENT,
   useReadingActions,
@@ -836,7 +835,7 @@ export function ReaderPane({
   // extension's own selection actions follow them and answer as cards.
   const readingActions = useReadingActions();
   const aiActions = useMemo<PopoverAiAction[] | undefined>(() => {
-    if (!readingActions || readingActions.ageMode !== "default") return undefined;
+    if (!readingActions) return undefined;
     if (!selection || !material) return undefined;
     const target = { locator: selection.locator, selection: selectionText };
     const prompts = passagePrompts(selectionText, "en").map(
@@ -1194,17 +1193,6 @@ export function ReaderPane({
             <X size={12} />
           </button>
         </div>
-      )}
-
-      {material && (
-        <ReadingExtensionBar
-          materialId={material.material_id}
-          locator={currentLocator}
-          selectionLocator={selection?.locator}
-          selection={selection?.quote}
-          sessionId={sessionId}
-          onError={setError}
-        />
       )}
 
       <div className="relative flex min-h-0 flex-1">

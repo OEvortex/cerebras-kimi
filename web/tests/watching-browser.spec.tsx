@@ -10,13 +10,6 @@ const mock = vi.hoisted(() => ({
 }));
 vi.mock("@/shared/router/navigation", () => ({ usePathname: () => "/learning/reading", useRouter: () => ({ push: mock.push }) }));
 const translate = (key: string) => key;
-vi.mock("@/hooks/useAuthStatus", () => ({
-  useAuthStatus: () => ({
-    loading: false,
-    statusAvailable: true,
-    userId: "owner-a",
-  }),
-}));
 vi.mock("@/lib/video-learning-api", () => ({
   invidiousAccount: mock.account,
   browseInvidious: mock.browse,

@@ -31,22 +31,18 @@ import {
   ArrowDownToLine,
   ArrowUpFromLine,
   ChevronDown,
-  Lock,
   MoreHorizontal,
   RotateCcw,
 } from "lucide-react";
 
 
-import { useCapabilityAccess } from "@/components/access/CapabilityAccessContext";
 import {
   NAV_BY_HREF,
   DEFAULT_COLLAPSED_NAV,
   PRIMARY_NAV_HREFS,
   isNavActive,
-  navVisibleUnderPolicy,
 } from "@/components/sidebar/nav-entries";
 import { useModules, moduleRouteAvailable } from "@/hooks/useModules";
-import { useAuthStatus } from "@/hooks/useAuthStatus";
 import { Tooltip } from "@/shared/ui/Tooltip";
 import { useDragSort, type DragSort } from "@/hooks/useDragSort";
 import { placeMenu, type FloatingMenuPosition } from "@/lib/floating-menu";
@@ -94,8 +90,6 @@ export function SidebarNav({
 }: SidebarNavProps) {
   const pathname = usePathname();
   
-  const { has } = useCapabilityAccess();
-
   const [layout, setLayout] = useState<SidebarNavLayout | null>(null);
   const [moreExpanded, setMoreExpanded] = useState(false);
   const [menu, setMenu] = useState<RowMenu | null>(null);
@@ -112,15 +106,13 @@ export function SidebarNav({
     setMoreExpanded(browserStorage.readRaw("local", MORE_EXPANDED_KEY) === "1");
   }, []);
 
-  const { learningPolicy } = useAuthStatus();
   const { modules } = useModules();
   const moduleHrefs = useMemo(
     () =>
       MODULE_NAV_HREFS.filter((href) =>
-        modules !== null && moduleRouteAvailable(href, modules) &&
-        navVisibleUnderPolicy(href, learningPolicy?.allowedSurfaces ?? null),
+        modules !== null && moduleRouteAvailable(href, modules),
       ),
-    [learningPolicy, modules],
+    [modules],
   );
   const resolved = useMemo(
     () => resolveNavLayout(moduleHrefs, layout, DEFAULT_COLLAPSED_NAV),
@@ -197,12 +189,6 @@ export function SidebarNav({
     };
   }, [closeMenus, menu, railMenu]);
 
-  const lockedTooltip = "Locked — contact your administrator to get access.";
-  const isLocked = (href: string) => {
-    const requires = NAV_BY_HREF.get(href)?.requires;
-    return requires ? !has(requires) : false;
-  };
-
   /* ---- Icon-only rail ----
    * No arranging here: the rail is 60px of icons with no room for a menu or a
    * drop target. It honours the order and the folding, and reaches the folded
@@ -215,8 +201,6 @@ export function SidebarNav({
             key={href}
             href={href}
             active={isNavActive(pathname, href)}
-            locked={isLocked(href)}
-            lockedTooltip={lockedTooltip}
             onHomeClick={onHomeClick}
           />
         ))}
@@ -260,21 +244,8 @@ export function SidebarNav({
                 {resolved.collapsed.map((href) => {
                   const entry = NAV_BY_HREF.get(href);
                   if (!entry) return null;
-                  const locked = isLocked(href);
                   const Icon = entry.icon;
-                  return locked ? (
-                    <span
-                      key={href}
-                      aria-disabled
-                      className="flex cursor-not-allowed items-center gap-2 rounded-lg px-2 py-1.5 text-muted-foreground/45"
-                    >
-                      <Icon size={14} strokeWidth={1.6} />
-                      <span className="min-w-0 flex-1 truncate">
-                        {(entry.label)}
-                      </span>
-                      <Lock size={11} strokeWidth={1.8} />
-                    </span>
-                  ) : (
+                  return (
                     <Link
                       key={href}
                       href={href}
@@ -325,7 +296,6 @@ export function SidebarNav({
     const entry = NAV_BY_HREF.get(href);
     if (!entry) return null;
     const active = isNavActive(pathname, href);
-    const locked = isLocked(href);
     const dragging = drag.draggingId === href;
     const menuOpen = menu?.href === href;
     const Icon = entry.icon;
@@ -335,9 +305,6 @@ export function SidebarNav({
       <Fragment key={`${href}-content`}>
         <Icon size={15} strokeWidth={active ? 1.9 : 1.6} className="shrink-0" />
         <span className="min-w-0 flex-1 truncate">{label}</span>
-        {locked ? (
-          <Lock size={13} strokeWidth={1.8} className="shrink-0" />
-        ) : null}
       </Fragment>
     );
     const rowClass =
@@ -354,37 +321,20 @@ export function SidebarNav({
             : ""
         }`}
       >
-        {locked ? (
-          <Tooltip
-            key={`${href}-destination`}
-            label={label}
-            description={lockedTooltip}
-            side="right"
-          >
-            <div
-              aria-label={`${label} — ${lockedTooltip}`}
-              aria-disabled
-              className={`${rowClass} cursor-not-allowed text-muted-foreground/40`}
-            >
-              {body}
-            </div>
-          </Tooltip>
-        ) : (
-          <Link
-            key={`${href}-destination`}
-            href={href}
-            prefetch={false}
-            draggable={false}
-            onClick={href === "/chat" ? onHomeClick : onNavigate}
-            className={`${rowClass} ${
-              active
-                ? "bg-[var(--accent)] font-medium text-[var(--foreground)]"
-                : "text-foreground/85 hover:bg-background/60 hover:text-[var(--foreground)]"
-            }`}
-          >
-            {body}
-          </Link>
-        )}
+        <Link
+          key={`${href}-destination`}
+          href={href}
+          prefetch={false}
+          draggable={false}
+          onClick={href === "/chat" ? onHomeClick : onNavigate}
+          className={`${rowClass} ${
+            active
+              ? "bg-[var(--accent)] font-medium text-[var(--foreground)]"
+              : "text-foreground/85 hover:bg-background/60 hover:text-[var(--foreground)]"
+          }`}
+        >
+          {body}
+        </Link>
         <button
           key={`${href}-arrange`}
           type="button"
@@ -539,29 +489,12 @@ export function SidebarHome({
 }) {
   
   const pathname = usePathname();
-  const { has } = useCapabilityAccess();
-  const { learningPolicy } = useAuthStatus();
-  const { modules } = useModules();
   const entry = NAV_BY_HREF.get("/chat")!;
-  if (
-    learningPolicy &&
-    !navVisibleUnderPolicy("/chat", learningPolicy.allowedSurfaces)
-  ) {
-    return null;
-  }
   const active = isNavActive(pathname, entry.href);
-  const locked = entry.requires ? !has(entry.requires) : false;
-  const lockedTooltip = "Locked — contact your administrator to get access.";
   if (collapsed) {
     return (
       <div className="mt-1 flex shrink-0 justify-center">
-        <RailRow
-          href="/chat"
-          active={active}
-          locked={locked}
-          lockedTooltip={lockedTooltip}
-          onHomeClick={onHomeClick}
-        />
+        <RailRow href="/chat" active={active} onHomeClick={onHomeClick} />
       </div>
     );
   }
@@ -576,35 +509,18 @@ export function SidebarHome({
     "flex min-h-8 items-center gap-2 rounded-md px-2.5 py-1.5 text-[13px] transition-colors";
   return (
     <div className="shrink-0 px-2 pb-1 pt-1">
-      {locked ? (
-        <Tooltip
-          label={(entry.label)}
-          description={lockedTooltip}
-          side="right"
-        >
-          <div
-            aria-disabled
-            aria-label={`${(entry.label)} — ${lockedTooltip}`}
-            className={`${className} cursor-not-allowed text-muted-foreground/40`}
-          >
-            {content}
-            <Lock size={13} className="ml-auto" />
-          </div>
-        </Tooltip>
-      ) : (
-        <Link
-          href="/chat"
-          prefetch={false}
-          onClick={onHomeClick}
-          className={`${className} ${
-            active
-              ? "bg-[var(--accent)] font-medium text-[var(--foreground)]"
-              : "text-foreground/85 hover:bg-background/60 hover:text-[var(--foreground)]"
-          }`}
-        >
-          {content}
-        </Link>
-      )}
+      <Link
+        href="/chat"
+        prefetch={false}
+        onClick={onHomeClick}
+        className={`${className} ${
+          active
+            ? "bg-[var(--accent)] font-medium text-[var(--foreground)]"
+            : "text-foreground/85 hover:bg-background/60 hover:text-[var(--foreground)]"
+        }`}
+      >
+        {content}
+      </Link>
     </div>
   );
 }
@@ -612,14 +528,10 @@ export function SidebarHome({
 function RailRow({
   href,
   active,
-  locked,
-  lockedTooltip,
   onHomeClick,
 }: {
   href: string;
   active: boolean;
-  locked: boolean;
-  lockedTooltip: string;
   onHomeClick: (event: React.MouseEvent) => void;
 }) {
   
@@ -627,30 +539,9 @@ function RailRow({
   if (!entry) return null;
   const Icon = entry.icon;
   const label = (entry.label);
-  const description = locked
-    ? lockedTooltip
-    : entry.tooltipKey
-      ? (entry.tooltipKey)
-      : undefined;
-
-  if (locked) {
-    return (
-      <Tooltip label={label} description={description} side="right">
-        <div
-          aria-label={`${label} — ${lockedTooltip}`}
-          aria-disabled
-          className="relative flex h-9 w-9 cursor-not-allowed items-center justify-center rounded-xl text-muted-foreground/40"
-        >
-          <Icon size={18} strokeWidth={1.6} />
-          <Lock
-            size={10}
-            strokeWidth={2}
-            className="absolute bottom-1 right-1 text-muted-foreground/70"
-          />
-        </div>
-      </Tooltip>
-    );
-  }
+  const description = entry.tooltipKey
+    ? (entry.tooltipKey)
+    : undefined;
 
   return (
     <Tooltip label={label} description={description} side="right">

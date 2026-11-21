@@ -2,13 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { fetchAuthStatus } from "@/lib/auth";
-import { getOwnLearnerProfile } from "@/lib/profile-api";
-import {
-  primaryReadingActionRank,
-  resolveReadingAgeMode,
-  type ReadingAgeMode,
-} from "@/lib/reading-age-presentation";
+import { primaryReadingActionRank } from "@/lib/reading-age-presentation";
 import {
   listReadingExtensions,
   runReadingExtension,
@@ -51,7 +45,6 @@ export function ReadingActionsProvider({
 }) {
   
   const [extensions, setExtensions] = useState<ReadingExtensionManifest[]>([]);
-  const [ageMode, setAgeMode] = useState<ReadingAgeMode>("default");
   const [cards, setCards] = useState<ReadingActionCard[]>([]);
   const [busyKey, setBusyKey] = useState("");
   const { speak, speaking, stop: stopSpeaking } = useReadAloudSpeech();
@@ -72,27 +65,6 @@ export function ReadingActionsProvider({
     };
   }, []);
 
-  useEffect(() => {
-    let active = true;
-    void fetchAuthStatus().then(async (status) => {
-      const learnerMode =
-        status?.preset === "learner" || Boolean(status?.learning_policy);
-      if (!learnerMode) return;
-      const profile = await getOwnLearnerProfile().catch(() => null);
-      if (active) {
-        setAgeMode(
-          resolveReadingAgeMode({
-            learnerMode,
-            profileAge: profile?.age,
-            policyAgeBand: status?.learning_policy?.age_band,
-          }),
-        );
-      }
-    });
-    return () => {
-      active = false;
-    };
-  }, []);
 
   // A card answers a question about one document; switching documents leaves
   // it describing a page that is no longer on screen.
@@ -220,7 +192,6 @@ export function ReadingActionsProvider({
 
   const value = useMemo<ReadingActionsValue>(
     () => ({
-      ageMode,
       actions,
       helpActions,
       cards,
@@ -230,7 +201,7 @@ export function ReadingActionsProvider({
       stopSpeaking,
       dismiss,
     }),
-    [actions, helpActions, ageMode, busyKey, cards, dismiss, run, speaking, stopSpeaking],
+    [actions, helpActions, busyKey, cards, dismiss, run, speaking, stopSpeaking],
   );
 
   return (

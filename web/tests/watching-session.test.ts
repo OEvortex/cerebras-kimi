@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { sessionRoute } from "../lib/mastery-session";
 import { normalizeWorkspaceMode } from "../lib/workspace-mode";
-import { capabilityForPath } from "../lib/capability-routes";
 import type { SessionSummary } from "../lib/session-api";
 
 test("Watching links retain their owning workspace, including legacy sessions", () => {
@@ -26,6 +25,4 @@ test("Watching links retain their owning workspace, including legacy sessions", 
     normalizeWorkspaceMode("", "immersive_watching"),
     "immersive_reading",
   );
-  assert.equal(capabilityForPath("/learning/watching/lesson"), "llm");
-  assert.equal(capabilityForPath("/watching-other"), null);
 });

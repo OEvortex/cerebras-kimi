@@ -5,7 +5,6 @@ import type {
 } from "@/contracts/generated/turn-protocol";
 
 import {
-  NO_LLM_ACCESS,
   type ChatMessage,
   type StreamEvent,
   type StreamEventType,
@@ -41,7 +40,7 @@ function toStreamEvent(event: ServerEvent): StreamEvent | null {
     // Translate them for the chat reducer instead of leaving STREAM_START
     // pending forever. A failed subscription can still recover its live turn.
     const terminal = new Set([
-      "start_turn_rejected", NO_LLM_ACCESS, "regenerate_rejected", "invalid_command",
+      "start_turn_rejected", "regenerate_rejected", "invalid_command",
       "invalid_json", "unsupported_protocol_version", "unknown_message_type",
     ]).has(event.error_code);
     return {

@@ -49,12 +49,6 @@ class Settings:
             "DT_TITLE_API_URL", "https://chatjimmy.ai/api/chat"
         )
     )
-    # When true, /api/auth/status reports auth enabled and unauthenticated
-    # requests are rejected. Login itself is not implemented yet — keep false
-    # for local single-user deployments.
-    auth_enabled: bool = field(
-        default_factory=lambda: _env_bool("DT_AUTH_ENABLED", False)
-    )
     cors_origins: tuple[str, ...] = field(
         default_factory=lambda: tuple(
             o.strip()

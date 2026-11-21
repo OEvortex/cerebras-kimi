@@ -1,9 +1,8 @@
 import type React from "react";
-import { NO_LLM_ACCESS, type StreamEvent } from "@/features/chat/model/protocol";
+import type { StreamEvent } from "@/features/chat/model/protocol";
 import type { UnifiedTurnClient } from "@/features/chat/transport/UnifiedTurnClient";
 import {
   clearFailedSubmission,
-  markFailedSubmissionNoLlmAccess,
   moveFailedSubmissions,
 } from "@/lib/failed-submissions";
 import { notify } from "@/lib/notifications";
@@ -45,7 +44,6 @@ export interface RunnerEventDeps {
 
 const REJECTED_REASONS = new Set([
   "start_turn_rejected",
-  NO_LLM_ACCESS,
   "invalid_command",
   "invalid_json",
   "unsupported_protocol_version",
@@ -243,18 +241,10 @@ export function processRunnerEvent(
   const reason = terminalError
     ? String((event.metadata as { reason?: string } | undefined)?.reason || "")
     : "";
-  const submissionNoLlmAccess = reason === NO_LLM_ACCESS;
-  const pendingSubmission = pendingSubmissionIdsRef.current.get(effectiveKey);
   const submissionRejected = REJECTED_REASONS.has(reason);
 
   if (!submissionRejected) {
     dispatch({ type: "STREAM_EVENT", key: effectiveKey, event });
-  } else if (submissionNoLlmAccess && pendingSubmission) {
-    const { storageKey, sourceStorageKey, submissionId } = pendingSubmission;
-    markFailedSubmissionNoLlmAccess(storageKey, submissionId);
-    if (sourceStorageKey) {
-      markFailedSubmissionNoLlmAccess(sourceStorageKey, submissionId);
-    }
   } else {
     notify(event.content, { tone: "error", durationMs: 10_000 });
   }
@@ -264,8 +254,7 @@ export function processRunnerEvent(
       reason === "regenerate_busy" ||
       reason === "regenerate_rejected" ||
       reason === "nothing_to_regenerate" ||
-      reason === "start_turn_rejected" ||
-      submissionNoLlmAccess
+      reason === "start_turn_rejected"
     ) {
       const stash =
         pendingRegenerateRef.current.get(effectiveKey) ??
@@ -291,7 +280,6 @@ export function processRunnerEvent(
       turnId: event.turn_id || null,
       submissionFailed: submissionRejected,
       errorMessage: submissionRejected ? event.content : undefined,
-      submissionNoLlmAccess,
     });
   }
 }

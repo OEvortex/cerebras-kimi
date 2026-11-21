@@ -19,7 +19,6 @@ import {
   probeLightRagServer,
   type LightRagServerProbe,
 } from "@/features/knowledge/api/connectors";
-import { useAuthStatus } from "@/hooks/useAuthStatus";
 import { useLLMOptions } from "@/hooks/useLLMOptions";
 import LightRagRoleModelsEditor, {
   newRoleModels,
@@ -104,8 +103,6 @@ export function LightRagForm({
   onError: (message: string) => void;
 }) {
   
-  const auth = useAuthStatus();
-  const canEdit = auth.statusAvailable && (!auth.enabled || auth.isAdmin);
   const { form, setLoaded, setForm, saving, setSaving, dirty, patch } =
     useEngineForm<LightRagConfig>(
       () => getLightRagConfig({ force: true }),
@@ -135,14 +132,9 @@ export function LightRagForm({
 
   return (
     <fieldset
-      disabled={!canEdit || saving}
+      disabled={saving}
       className="space-y-5 rounded-2xl border border-[var(--border)] p-4"
     >
-      {!auth.loading && !canEdit && (
-        <p className="text-xs text-[var(--muted-foreground)]">
-          {"Only administrators can change shared LightRAG engine settings."}
-        </p>
-      )}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <NumberField
           label={"Results per query"}
@@ -211,8 +203,6 @@ export function LightRagModelsForm({
 }) {
   
   const catalog = useLLMOptions(getLightRagModelOptions);
-  const auth = useAuthStatus();
-  const canEdit = auth.statusAvailable && (!auth.enabled || auth.isAdmin);
   const { form, setLoaded, setForm, saving, setSaving, dirty, patch } =
     useEngineForm<LightRagConfig>(
       () => getLightRagConfig({ force: true }),
@@ -264,14 +254,9 @@ export function LightRagModelsForm({
 
   return (
     <fieldset
-      disabled={!canEdit || saving}
+      disabled={saving}
       className="space-y-4 rounded-2xl border border-[var(--border)] p-4"
     >
-      {!auth.loading && !canEdit && (
-        <p className="text-xs text-[var(--muted-foreground)]">
-          {"Only administrators can change shared LightRAG engine settings."}
-        </p>
-      )}
       <LightRagRoleModelsEditor
         models={roleModels}
         options={catalog.options}

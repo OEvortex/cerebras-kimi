@@ -6,11 +6,8 @@ import {
   redirect,
 } from "@tanstack/react-router";
 import { READING_HOME } from "@/lib/learning-routes";
-import { requireAuth } from "./router/auth";
 import {
-  AdminLayoutWrapper,
   AgentsLayoutWrapper,
-  AuthLayoutWrapper,
   CoWriterLayoutWrapper,
   LearningLayoutWrapper,
   MasteryLayoutWrapper,
@@ -40,7 +37,6 @@ const LazyLegacyWatchingSession = React.lazy(
 );
 
 const rootRoute = createRootRoute({
-  beforeLoad: requireAuth,
   component: RootShell,
   notFoundComponent: () => (
     <div className="flex min-h-screen items-center justify-center bg-[var(--background)] text-[var(--foreground)]">
@@ -52,41 +48,6 @@ const rootRoute = createRootRoute({
       </div>
     </div>
   ),
-});
-
-const handoffRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/handoff",
-  component: lazyPage(() => import("@/app/handoff/page")),
-});
-
-// (admin) group
-const adminLayoutRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  id: "admin",
-  component: AdminLayoutWrapper,
-});
-const adminUsersRoute = createRoute({
-  getParentRoute: () => adminLayoutRoute,
-  path: "/admin/users",
-  component: lazyPage(() => import("@/app/(admin)/admin/users/page")),
-});
-
-// (auth) group
-const authLayoutRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  id: "auth",
-  component: AuthLayoutWrapper,
-});
-const loginRoute = createRoute({
-  getParentRoute: () => authLayoutRoute,
-  path: "/login",
-  component: lazyPage(() => import("@/app/(auth)/login/page")),
-});
-const registerRoute = createRoute({
-  getParentRoute: () => authLayoutRoute,
-  path: "/register",
-  component: lazyPage(() => import("@/app/(auth)/register/page")),
 });
 
 // (settings) group
@@ -216,16 +177,6 @@ const personalizationRoute = createRoute({
   getParentRoute: () => utilityLayoutRoute,
   path: "/personalization",
   component: lazyPage(() => import("@/app/(utility)/personalization/page")),
-});
-const profileRoute = createRoute({
-  getParentRoute: () => utilityLayoutRoute,
-  path: "/profile",
-  component: lazyPage(() => import("@/app/(utility)/profile/page")),
-});
-const sessionHandoffRoute = createRoute({
-  getParentRoute: () => utilityLayoutRoute,
-  path: "/session-handoff",
-  component: lazyPage(() => import("@/app/(utility)/session-handoff/page")),
 });
 const settingsProgressRoute = createRoute({
   getParentRoute: () => utilityLayoutRoute,
@@ -473,9 +424,6 @@ const watchingSessionRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   ...createRedirectRoutes(rootRoute),
-  handoffRoute,
-  adminLayoutRoute.addChildren([adminUsersRoute]),
-  authLayoutRoute.addChildren([loginRoute, registerRoute]),
   settingsGroupLayoutRoute.addChildren([
     settingsLayoutRoute.addChildren([settingsIndexRoute, settingsSectionRoute]),
   ]),
@@ -497,8 +445,6 @@ const routeTree = rootRoute.addChildren([
     notebooksIndexRoute,
     notebooksDetailRoute,
     personalizationRoute,
-    profileRoute,
-    sessionHandoffRoute,
     settingsProgressRoute,
     spaceLayoutRoute.addChildren([
       spaceIndexRoute,

@@ -21,7 +21,6 @@ import {
   type ModelTestState,
 } from "@/lib/model-settings";
 import { reconcileRegistrySave, type RegistryEdit } from "@/lib/provider-registry";
-import { recoveryPrincipal } from "@/lib/recovery-principal";
 import { applyExtensionPayload } from "@/lib/settings-extensions";
 import { cloneCatalog } from "./catalog-helpers";
 import type {
@@ -348,7 +347,7 @@ export function useDraftLifecycle({
   );
 
   const applyCatalog = useCallback(async () => {
-    const displayOwner = recoveryPrincipal();
+    const displayOwner = "single-user";
     const isCurrent = captureSettingsOwnership();
     if (catalogEditable) {
       const incomplete = firstIncompleteModel(draft);
@@ -441,7 +440,7 @@ export function useDraftLifecycle({
       const appliedUi = applyingExtensions.find(({ key }) => key === "ui")
         ?.payload as Partial<UiSettings> | undefined;
       if (
-        displayOwner === recoveryPrincipal() &&
+        displayOwner === "single-user" &&
         appliedUi &&
         ("content_font_scale" in appliedUi ||
           "content_line_spacing" in appliedUi)
@@ -458,7 +457,7 @@ export function useDraftLifecycle({
           serverDisplayLoadedRef.current = true;
         }
         setLearningDisplay(display);
-        publishLearningDisplay(display, displayOwner);
+        publishLearningDisplay(display);
       }
       if (!isCurrent()) return;
       clearPending(

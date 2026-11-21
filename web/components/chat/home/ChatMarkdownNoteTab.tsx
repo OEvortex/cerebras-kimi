@@ -2,7 +2,6 @@
 import dynamic from '@/shared/router/dynamic'
 import { useEffect, useState } from 'react'
 
-import { useAuthStatus } from '@/hooks/useAuthStatus'
 import { createNote } from '@/lib/notes-api'
 import { loadChatMarkdownNoteDraft, saveChatMarkdownNoteDraft } from '@/lib/chat-markdown-note'
 const NoteWorkspace = dynamic(() => import('@/features/notes/components/NoteWorkspace'), {
@@ -10,9 +9,7 @@ const NoteWorkspace = dynamic(() => import('@/features/notes/components/NoteWork
 })
 export default function ChatMarkdownNoteTab({ sessionId }: { sessionId: string | null }) {
   
-  const auth = useAuthStatus()
-  const owner =
-    !auth.loading && auth.statusAvailable ? (auth.enabled ? auth.userId : 'local') : null
+  const owner = 'local'
   const [recoverable, setRecoverable] = useState(false)
   const [docId, setDocId] = useState<string | null>(null)
   const [error, setError] = useState('')

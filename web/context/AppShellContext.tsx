@@ -48,11 +48,6 @@ import {
   writeStoredSidebarCollapsed,
   type AppLanguage,
 } from "@/context/app-shell-storage";
-import { fetchAuthStatus } from "@/lib/auth";
-import {
-  recoveryPrincipal,
-  RECOVERY_PRINCIPAL_CHANGED,
-} from "@/lib/recovery-principal";
 import {
   DEFAULT_LEARNING_DISPLAY,
   CONTENT_LINE_SPACING,
@@ -111,47 +106,31 @@ export function AppShellProvider({ children }: { children: React.ReactNode }) {
     let alive = true;
     const reload = async () => {
       const request = ++generation;
-      setLearningDisplay(DEFAULT_LEARNING_DISPLAY);
-      // The existing auth boundary is authoritative, including cross-tab logout.
-      const owner = recoveryPrincipal();
-      if (!owner) return;
       try {
-        const response = await apiFetch(apiUrl("/api/settings/display"), {
-          skipAuthRedirect: true,
-        });
-        if (!response.ok) return;
+        const response = await apiFetch(apiUrl("/api/settings/display"));
+        if (!response.ok || !alive || request !== generation) return;
         const payload = await response.json();
-        if (alive && request === generation && recoveryPrincipal() === owner) {
-          setLearningDisplay(normalizeLearningDisplay(payload));
-        }
+        setLearningDisplay(normalizeLearningDisplay(payload));
       } catch {
-        /* Offline: retain defaults, never another account's preferences. */
+        /* Offline: retain defaults. */
       }
-    };
-    const onBoundary = () => {
-      void reload();
     };
     const onApplied = (event: Event) => {
       const detail = (
         event as CustomEvent<{
           preferences: LearningDisplay;
-          principal: string | null;
         }>
       ).detail;
-      if (!recoveryPrincipal() || detail?.principal !== recoveryPrincipal())
-        return;
+      if (!detail?.preferences) return;
       // A successful Apply supersedes any in-flight bootstrap response.
       generation += 1;
       setLearningDisplay(normalizeLearningDisplay(detail.preferences));
     };
-    window.addEventListener(RECOVERY_PRINCIPAL_CHANGED, onBoundary);
     window.addEventListener(LEARNING_DISPLAY_APPLIED, onApplied);
-    if (recoveryPrincipal()) void reload();
-    else void fetchAuthStatus();
+    void reload();
     return () => {
       alive = false;
       generation += 1;
-      window.removeEventListener(RECOVERY_PRINCIPAL_CHANGED, onBoundary);
       window.removeEventListener(LEARNING_DISPLAY_APPLIED, onApplied);
     };
   }, []);

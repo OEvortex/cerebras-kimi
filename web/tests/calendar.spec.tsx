@@ -12,14 +12,6 @@ import type { Occurrence } from '@/features/calendar/transport/api'
 const language = { language: 'en' }
 const translate = (key: string, values?: Record<string, unknown>) =>
   key.replace(/{{(\w+)}}/g, (_, k) => String(values?.[k] ?? k))
-vi.mock('@/hooks/useAuthStatus', () => ({
-  useAuthStatus: () => ({
-    loading: false,
-    learningPolicy: null,
-    enabled: false,
-    authenticated: true,
-  }),
-}))
 vi.mock('@/hooks/useActiveWorkspaceId', () => ({ useActiveWorkspaceId: () => '' }))
 
 let events: Occurrence[]

@@ -20,7 +20,7 @@ export function ReadAloudButton({ disabled }: { disabled?: boolean }) {
   
   const shared = useReadingActions();
   const entry = shared?.actions.find((row) => row.key === READ_ALOUD_KEY);
-  if (!shared || !entry || shared.ageMode !== "default") return null;
+  if (!shared || !entry) return null;
 
   const busy = shared.busyKey === READ_ALOUD_KEY;
   const label = shared.speaking
@@ -71,7 +71,7 @@ export function PageToolButtons({
 }) {
   
   const shared = useReadingActions();
-  if (!shared || shared.ageMode !== "default") return null;
+  if (!shared) return null;
   const buttonClass =
     "flex size-7 shrink-0 items-center justify-center rounded-md text-[var(--muted-foreground)] transition hover:bg-[var(--muted)] hover:text-[var(--foreground)] disabled:cursor-not-allowed disabled:opacity-40";
   return (

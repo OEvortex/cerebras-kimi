@@ -4,7 +4,6 @@ import { useModules } from '@/hooks/useModules'
 import { browserStorage } from '@/shared/storage'
 import { useEffect, type ReactNode } from 'react'
 
-import { useAuthStatus } from '@/hooks/useAuthStatus'
 import { notify } from '@/lib/notifications'
 import { recentCronReports } from '@/lib/cron-api'
 import { startCalendarSync, useCalendarRevision } from '../store/calendar-store'
@@ -14,13 +13,8 @@ import { browserTimeZone, formatTime } from '../model/dates'
 /** Reminders work anywhere in the signed-in app while a tab is open. */
 export default function CalendarRuntime({ children }: { children: ReactNode }) {
   
-  const { loading, learningPolicy, enabled: authEnabled, authenticated } = useAuthStatus()
   const { modules } = useModules()
-  const enabled =
-    Boolean(modules?.some(module => module.id === 'calendar' && module.enabled)) &&
-    !loading &&
-    (!authEnabled || authenticated) &&
-    (!learningPolicy || learningPolicy.allowedSurfaces.includes('chat'))
+  const enabled = Boolean(modules?.some(module => module.id === 'calendar' && module.enabled))
   const revision = useCalendarRevision()
   useEffect(() => {
     if (enabled) return startCalendarSync()

@@ -12,9 +12,6 @@ import {
 } from '@/lib/notes-api'
 import type { NotePage, NoteSuggestion } from '@/lib/notes-api'
 vi.mock('@/shared/router/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }))
-vi.mock('@/hooks/useAuthStatus', () => ({
-  useAuthStatus: () => ({ statusAvailable: true, loading: false, enabled: false }),
-}))
 vi.mock('@/lib/notes-api', () => ({
   getNote: vi.fn(),
   listNotes: vi.fn(),

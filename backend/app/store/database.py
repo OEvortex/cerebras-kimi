@@ -490,7 +490,7 @@ def _import_cron(settings: Settings, path: Path, legacy_json: Path) -> None:
             owner_key = (
                 f"partner:{owner.get('partner_id') or ''}"
                 if owner.get("kind") == "partner"
-                else f"chat:{owner.get('user_id') or 'local-admin'}"
+                else "chat:local-admin"
             )
             state = job.get("state") or {}
             rows.append(

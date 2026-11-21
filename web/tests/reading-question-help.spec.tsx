@@ -6,7 +6,6 @@ import { ReadingActionsProvider } from "@/components/reading/ReadingActionsProvi
 import { ReadingActionsContext, useReadingActions } from "@/components/reading/reading-actions-context";
 import { listReadingExtensions, runReadingExtension, submitReadingQuizAnswers, type ReadingExtensionResult } from "@/lib/reading-api";
 
-vi.mock("@/lib/auth", () => ({ fetchAuthStatus: vi.fn().mockResolvedValue({}) }));
 vi.mock("@/lib/reading-api", () => ({
   listReadingExtensions: vi.fn(), runReadingExtension: vi.fn(), submitReadingQuizAnswers: vi.fn(),
 }));

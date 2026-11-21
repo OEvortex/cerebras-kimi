@@ -57,7 +57,6 @@ import {
   tipMessageId,
 } from "@/lib/message-branches";
 import { nextOptimisticId, resolvePersistedMessage } from "@/lib/optimistic-id";
-import { recoveryPrincipal, RECOVERY_PRINCIPAL_CHANGED } from "@/lib/recovery-principal";
 import {
   SUBMIT_CONNECT_RETRY_INTERVAL_MS,
   SUBMIT_CONNECT_RETRY_LIMIT,
@@ -175,40 +174,9 @@ export function ChatStateAdapterProvider({
   const loadSessionRef = useRef<
     ((sessionId: string) => Promise<MessageItem[] | undefined>) | null
   >(null);
-  const principalRef = useRef(recoveryPrincipal());
-  const principalResolvedRef = useRef(principalRef.current !== null);
-
   useEffect(() => {
-    const onPrincipalChanged = () => {
-      const principal = recoveryPrincipal();
-      if (principal === principalRef.current) return;
-      const firstResolution = !principalResolvedRef.current && principalRef.current === null;
-      principalRef.current = principal;
-      if (principal !== null) principalResolvedRef.current = true;
-      if (!firstResolution) {
-        runtimeGeneration.current += 1;
-        runnersRef.current.forEach(({ client }) => client.disconnect());
-        runnersRef.current.clear();
-        retryTimersRef.current.forEach(clearTimeout);
-        retryTimersRef.current.clear();
-        traceRequestsRef.current.forEach((controller) => controller.abort());
-        traceRequestsRef.current.clear();
-        traceCacheRef.current.clear();
-        pendingSubmissionIdsRef.current.clear();
-        pendingRegenerateRef.current.clear();
-        pendingResendRef.current.clear();
-        resolvingResendRef.current.clear();
-        resumedParkedTurnsRef.current.clear();
-        stateRef.current = initialState;
-        dispatch({ type: "RESET_ACCOUNT" });
-        writeStoredActiveSessionId(null);
-      }
-      dispatch({ type: "ENSURE_DRAFT_SESSION", key: `draft_${Date.now()}_${++draftCounterRef.current}`,
-        failedRecords: readFailedSubmissions(draftFailedSubmissionKey()) });
-    };
-    window.addEventListener(RECOVERY_PRINCIPAL_CHANGED, onPrincipalChanged);
-    onPrincipalChanged();
-    return () => window.removeEventListener(RECOVERY_PRINCIPAL_CHANGED, onPrincipalChanged);
+    dispatch({ type: "ENSURE_DRAFT_SESSION", key: `draft_${Date.now()}_${++draftCounterRef.current}`,
+      failedRecords: readFailedSubmissions(draftFailedSubmissionKey()) });
   }, []);
 
   useLayoutEffect(() => {
@@ -1539,8 +1507,6 @@ export function ChatStateAdapterProvider({
   const derivedState = useMemo<ChatState>(() => {
     const current = ensureSelectedSession(state);
     const tail = current.messages.at(-1);
-    const submissionNoLlmAccess = tail?.failedSubmission === true &&
-      tail.failedSubmissionNoLlmAccess === true;
     return {
       sessionKey: current.key,
       boundFromKey: current.boundFromKey ?? null,
@@ -1580,7 +1546,6 @@ export function ChatStateAdapterProvider({
           tail.failedSubmission === true
         );
       })(),
-      submissionNoLlmAccess,
       submissionNeedsReview: (() => {
         const tail = current.messages[current.messages.length - 1];
         return tail?.role === "user" && tail.failedSubmissionNeedsReview === true;

@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import type { FilePreviewSource } from "@/components/chat/preview/previewerFor";
 import type { MessageAttachment } from "@/features/chat/ChatStateAdapter";
-import { recoveryPrincipal } from "@/lib/recovery-principal";
 import { browserStorage } from "@/shared/storage";
 import {
   RESPONDER_ICONS,
@@ -72,7 +71,7 @@ export function subagentTabIdFor(callId: string): string {
 }
 
 export function viewerTabsStorageKey(tabsKey: string): string {
-  return `${VIEWER_TABS_STORAGE_PREFIX}${encodeURIComponent(recoveryPrincipal() ?? "unresolved")}:${encodeURIComponent(tabsKey)}`;
+  return `${VIEWER_TABS_STORAGE_PREFIX}single-user:${encodeURIComponent(tabsKey)}`;
 }
 
 function sideChatTabFromPersisted(tab: PersistedSideChatTab): ViewerTab {

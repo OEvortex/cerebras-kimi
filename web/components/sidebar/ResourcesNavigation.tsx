@@ -9,7 +9,6 @@ import {
   type DashboardGroup,
 } from '@/components/space/dashboard-groups'
 import { useCapabilityFilter } from '@/features/capabilities/useCapabilityCatalog'
-import { navVisibleUnderPolicy } from './nav-entries'
 
 function Shelf({ groups, titled }: { groups: DashboardGroup[]; titled: boolean }) {
   
@@ -42,16 +41,12 @@ export function ResourcesNavigation() {
 }
 
 /** What travels with the account into every workspace. */
-export function PersonalizationNavigation({ allowedSurfaces }: { allowedSurfaces: readonly string[] | null }) {
+export function PersonalizationNavigation() {
   
-  const groups = PERSONALIZATION_GROUPS.map(group => ({
-    ...group,
-    items: group.items.filter(item => item.href !== '/agents' || navVisibleUnderPolicy(item.href, allowedSurfaces)),
-  }))
   return (
     <>
       <OverviewRow href="/personalization" label={"All personalization"} icon={PersonalizationShelfIcon} />
-      <Shelf groups={groups} titled={false} />
+      <Shelf groups={PERSONALIZATION_GROUPS} titled={false} />
     </>
   )
 }

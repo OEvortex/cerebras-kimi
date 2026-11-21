@@ -16,8 +16,6 @@ import {
 
 import Tooltip from '@/shared/ui/Tooltip'
 import { categoryForPath, type NavigationCategory } from '@/lib/navigation'
-import { navVisibleUnderPolicy } from './nav-entries'
-import { useAuthStatus } from '@/hooks/useAuthStatus'
 import { navigateTask } from '@/lib/workspace-scope'
 import { NavigationRow, OverviewRow, Section } from './NavigationPrimitives'
 import { SHORTCUTS } from '@/lib/shortcuts'
@@ -54,10 +52,7 @@ export const CATEGORIES = [
 
 export function useCategoryNavigation() {
   const pathname = usePathname()
-  const { learningPolicy } = useAuthStatus()
-  const categories = CATEGORIES.filter(item =>
-    navVisibleUnderPolicy(item.href, learningPolicy?.allowedSurfaces ?? null)
-  )
+  const categories = [...CATEGORIES]
   const [visited, setVisited] = useState<NavigationCategory[]>([])
   const [selection, setSelection] = useState<{
     pathname: string
@@ -75,7 +70,6 @@ export function useCategoryNavigation() {
         setSelection({ pathname, category: next })
       })
     },
-    allowedSurfaces: learningPolicy?.allowedSurfaces ?? null,
   }
 }
 type Navigation = ReturnType<typeof useCategoryNavigation>
@@ -225,16 +219,12 @@ export function CategoryBody({
       {nav.category === 'home' && (
         <>
           {/* The tutor itself leads the shelf; the tools it works with follow. */}
-          {navVisibleUnderPolicy('/chat', nav.allowedSurfaces) && (
-            <OverviewRow href="/chat" label={"Chat"} icon={MessageCircle} />
-          )}
+          <OverviewRow href="/chat" label={"Chat"} icon={MessageCircle} />
           <Section title={"Workspace"}>
             {[
               { href: '/calendar', label: 'Calendar', icon: CalendarDays },
               { href: '/co-writer', label: 'Co-Writer', icon: PenLine },
-            ]
-              .filter(item => navVisibleUnderPolicy(item.href, nav.allowedSurfaces))
-              .map(item => (
+            ].map(item => (
                 <NavigationRow
                   key={item.href}
                   href={item.href}
@@ -258,7 +248,7 @@ export function CategoryBody({
       )}
       {(nav.category === 'personalization' || nav.visited.includes('personalization')) && (
         <div hidden={nav.category !== 'personalization'}>
-          <PersonalizationNavigation allowedSurfaces={nav.allowedSurfaces} />
+          <PersonalizationNavigation />
         </div>
       )}
     </div>

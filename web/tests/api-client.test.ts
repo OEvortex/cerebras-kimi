@@ -5,7 +5,6 @@ import {
   requestBlob,
   requestJson,
   requestVoid,
-  setRuntimeAuthEnabled,
 } from "../shared/api/client";
 import { ApiError } from "../shared/api/errors";
 
@@ -170,8 +169,7 @@ test("abort and network failures are distinguishable", async () => {
   }
 });
 
-test("the shared boundary keeps the single apiFetch auth redirect gate", async () => {
-  setRuntimeAuthEnabled(false);
+test("apiFetch surfaces HTTP errors without redirects", async () => {
   const restore = withFetch(async () =>
     Response.json({ detail: "no" }, { status: 401 }),
   );

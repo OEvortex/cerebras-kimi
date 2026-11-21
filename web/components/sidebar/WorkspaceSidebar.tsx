@@ -8,9 +8,6 @@ import { useRouter } from "@/shared/router/navigation";
 
 import { LayoutSidebarShell } from "@/features/ui-layout/slots";
 import { reconcileUnread } from "@/lib/session-unread";
-import { LogoutButton } from "@/components/auth/LogoutButton";
-import { AdminLink } from "@/components/auth/AdminLink";
-import { ProfileLink } from "@/components/auth/ProfileLink";
 import { useChatStateAdapter } from "@/features/chat/ChatStateAdapter";
 import {
   deleteSession,
@@ -241,13 +238,6 @@ export default function WorkspaceSidebar() {
       onRenameSession={handleRenameSession}
       onDeleteSession={handleDeleteSession}
       onOrganizeSession={handleOrganizeSession}
-      footerSlot={(collapsed) => (
-        <>
-          <ProfileLink collapsed={collapsed} />
-          <AdminLink collapsed={collapsed} />
-          <LogoutButton collapsed={collapsed} />
-        </>
-      )}
     />
   );
 }

@@ -2,7 +2,6 @@
 
 import { browserStorage } from "@/shared/storage";
 import { randomUuid } from "@/lib/random-uuid";
-import { recoveryPrincipal } from "@/lib/recovery-principal";
 
 /** Kept opaque here so lib/ does not depend on features/. */
 export type FailedSubmissionSnapshot = unknown;
@@ -18,15 +17,12 @@ export interface FailedSubmissionRecord {
   priorMatchingUserIds?: string[];
   /** The text survived, but its request context could not be stored. */
   retryRequiresReview?: boolean;
-  noLlmAccess?: boolean;
 }
 
 const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 function ownerPrefix(kind: "record" | "cleared" | "binding"): string {
-  const principal = recoveryPrincipal();
-  if (principal === null) throw new Error("Recovery ownership is unresolved");
-  return "deeptutor.failedSubmissions.owner." + encodeURIComponent(principal) + "." + kind + ".";
+  return "deeptutor.failedSubmissions.owner.single-user." + kind + ".";
 }
 
 function recordKey(sessionId: string, submissionId: string): string {
@@ -251,7 +247,7 @@ export function storeFailedSubmission(
     priorMatchingUserIds?: string[];
   },
 ): string | null {
-  if (recoveryPrincipal() === null || !sessionId || !hasSubmissionPayload(submission.content, submission.requestSnapshot)) return null;
+  if (!sessionId || !hasSubmissionPayload(submission.content, submission.requestSnapshot)) return null;
   const submissionId = submission.submissionId ?? randomUuid();
   const record: FailedSubmissionRecord = {
     content: submission.content,
@@ -268,23 +264,8 @@ export function storeFailedSubmission(
   return persistRecord(sessionId, record) ? submissionId : null;
 }
 
-/** Update existing copies without reviving a discarded submission. */
-export function markFailedSubmissionNoLlmAccess(sessionId: string, submissionId: string): void {
-  if (recoveryPrincipal() === null) return;
-  const key = recordKey(sessionId, submissionId);
-  for (const scope of ["local", "session"] as const) {
-    const record = storedRecords(scope, sessionId)
-      .find((item) => item.submissionId === submissionId);
-    if (record) {
-      browserStorage.writeRaw(scope, key, JSON.stringify({ ...record, noLlmAccess: true }));
-    }
-  }
-}
-
-/** Read this owner's local and tab fallback records. Unowned legacy data is
- * preserved in storage, never silently attributed to the current account. */
 export function readFailedSubmissions(sessionId: string, includeSuperseded = false): FailedSubmissionRecord[] {
-  if (recoveryPrincipal() === null || !sessionId) return [];
+  if (!sessionId) return [];
   const byId = new Map<string, FailedSubmissionRecord>();
   const bindings = readBindings();
   const boundAwayIds = new Set(
@@ -328,7 +309,7 @@ export function moveFailedSubmissions(
   sessionId: string,
   submissionIds: readonly string[],
 ): string[] {
-  if (recoveryPrincipal() === null || !sourceKey || !sessionId || sourceKey === sessionId || !submissionIds.length) return [];
+  if (!sourceKey || !sessionId || sourceKey === sessionId || !submissionIds.length) return [];
   const ids = new Set(submissionIds);
   const visible: string[] = [];
   for (const record of readFailedSubmissions(sourceKey)) {
@@ -356,7 +337,7 @@ export function moveFailedSubmissions(
 
 /** Remove one causal record; return whether its retirement was recorded. */
 export function clearFailedSubmission(sessionId: string, submissionId?: string): boolean {
-  if (recoveryPrincipal() === null || !sessionId) return false;
+  if (!sessionId) return false;
   if (!submissionId) {
     let cleared = true;
     for (const record of readFailedSubmissions(sessionId)) {

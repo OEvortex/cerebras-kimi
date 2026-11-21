@@ -2,7 +2,7 @@
 
 import Image from '@/shared/router/image'
 import Link from '@/shared/router/link'
-import { useId, useState, type ReactNode } from 'react'
+import { useId, useState } from 'react'
 import { Check, ChevronDown, Settings, Settings2 } from 'lucide-react'
 
 import { useMenuPopover } from '@/shared/ui/useMenuPopover'
@@ -67,15 +67,13 @@ export function WorkspaceChoiceList({ onChoose }: { onChoose?: () => void }) {
 }
 
 /**
- * The sidebar's header: which workspace this is, and the account-level
- * places (workspaces, settings, profile) that used to sit in the footer.
+ * The sidebar's header: which workspace this is, and the places
+ * (workspaces, settings) that used to sit in the footer.
  */
 export function WorkspaceMenu({
-  accountSlot,
   onNavigate,
   compact = false,
 }: {
-  accountSlot?: ReactNode
   onNavigate?: () => void
   /** The collapsed rail's form: the workspace's mark alone, opening beside the rail. */
   compact?: boolean
@@ -127,7 +125,6 @@ export function WorkspaceMenu({
             <Settings size={16} strokeWidth={1.6} />
             <span className="flex-1">{"Settings"}</span>
           </Link>
-          {accountSlot ? <div className="dt-menu-slot">{accountSlot}</div> : null}
           <div className="dt-menu-divider" />
           <div className="dt-menu-footer">
             <span

@@ -47,34 +47,6 @@ def _settings(request: Request) -> Settings:
     return request.app.state.settings
 
 
-# -- auth -------------------------------------------------------------------
-
-
-@router.get("/auth/status")
-def auth_status(request: Request) -> dict[str, Any]:
-    settings = _settings(request)
-    if settings.auth_enabled:
-        # Auth is not implemented in this backend yet; report disabled-auth
-        # shape so the UI does not lock users out of a local deployment.
-        return {"enabled": True, "authenticated": False}
-    return {
-        "enabled": False,
-        "authenticated": True,
-        "user_id": "local",
-        "username": "local",
-        "role": "admin",
-        "is_admin": True,
-        "preset": None,
-        "avatar": "",
-        "learning_policy": None,
-    }
-
-
-@router.post("/auth/login")
-def auth_login() -> dict[str, Any]:
-    raise HTTPException(status_code=501, detail="auth is disabled on this backend")
-
-
 # -- system / runtime ---------------------------------------------------------
 
 
@@ -1493,16 +1465,6 @@ def video_material_get(request: Request, mat_id: str) -> dict[str, Any]:
 @router.get("/dashboard/learning-library/{lib_id}")
 def learning_library_get(request: Request, lib_id: str) -> dict[str, Any]:
     return _get_item(request, "dashboard", "library", lib_id) or {"id": lib_id, "items": []}
-
-
-@router.get("/auth/users/{user_id}")
-def auth_user_get(request: Request, user_id: str) -> dict[str, Any]:
-    return {"id": user_id, "role": "admin"}
-
-
-@router.get("/multi-user/users/{user_id}")
-def multiuser_get(request: Request, user_id: str) -> dict[str, Any]:
-    return {"id": user_id}
 
 
 # -- session sub-actions ---------------------------------------------------------

@@ -1,4 +1,3 @@
-import { updateRecoveryPrincipal } from "@/lib/recovery-principal";
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { createRef } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -34,7 +33,7 @@ vi.mock("@/lib/session-api", async (importOriginal) => ({
   getSession: api.getSession,
 }));
 
-beforeEach(() => { localStorage.clear(); updateRecoveryPrincipal({ enabled: false, authenticated: false }); });
+beforeEach(() => { localStorage.clear(); });
 
 afterEach(() => {
   cleanup();
@@ -281,14 +280,3 @@ it("reuses the page's thread list instead of reading it again", async () => {
   expect(api.listSessionThreads).not.toHaveBeenCalled();
 });
 
-it("does not carry viewer tabs across authenticated account changes", async () => {
-  updateRecoveryPrincipal({ enabled: true, authenticated: true, user_id: "alice" });
-  const { ref } = renderPanel({ conversation });
-  await entered();
-  act(() => ref.current!.openWebTab("https://example.com/private"));
-  expect(await within(tabBar()).findByRole("button", { name: "example.com" })).toBeVisible();
-  act(() => updateRecoveryPrincipal({ enabled: true, authenticated: true, user_id: "bob" }));
-  await entered();
-  expect(within(tabBar()).queryByRole("button", { name: "example.com" })).toBeNull();
-  expect(api.getSession).not.toHaveBeenCalled();
-});

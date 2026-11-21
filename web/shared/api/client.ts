@@ -1,13 +1,11 @@
 import { ApiError, type AppError, type AppErrorScope } from "./errors";
-import { browserReturnPath, loginHref } from "../auth/return-url";
 import { scopedUrl } from "@/lib/workspace-scope";
 
 export interface RequestOptions extends RequestInit {
   scope?: AppErrorScope;
+  /** @deprecated No-op: single-user deployments never redirect to login. */
   skipAuthRedirect?: boolean;
 }
-
-let runtimeAuthEnabled = false;
 
 export function apiUrl(path: string): string {
   return scopedUrl(path);
@@ -22,19 +20,11 @@ export function wsUrl(path: string): string {
   return scopedUrl(path);
 }
 
-export function parseAuthEnabled(raw: string | undefined): boolean {
-  return /^(1|true|yes|on)$/i.test((raw ?? "").trim());
-}
-
-export function setRuntimeAuthEnabled(enabled: boolean): void {
-  runtimeAuthEnabled = enabled;
-}
-
 export async function apiFetch(
   input: RequestInfo | URL,
   init?: RequestInit & { skipAuthRedirect?: boolean },
 ): Promise<Response> {
-  const { skipAuthRedirect, ...fetchInit } = init ?? {};
+  const { skipAuthRedirect: _skipAuthRedirect, ...fetchInit } = init ?? {};
 
   // JSON-RPC transport: every REST-shaped call becomes an http.request
   // method call against POST /api/rpc. Falls back to plain fetch for
@@ -43,16 +33,6 @@ export async function apiFetch(
     : input instanceof URL ? new URL(scopedUrl(input.toString()))
     : new Request(scopedUrl(input.url), input);
   const response = await fetch(scopedInput, { credentials: "include", ...fetchInit });
-
-  if (
-    response.status === 401 &&
-    runtimeAuthEnabled &&
-    !skipAuthRedirect &&
-    typeof window !== "undefined"
-  ) {
-    window.location.href = loginHref(browserReturnPath(window.location));
-    return new Promise(() => {});
-  }
 
   return response;
 }

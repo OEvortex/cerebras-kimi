@@ -6,9 +6,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "@/shared/router/navigation";
 
 import { LayoutSidebarShell } from "@/features/ui-layout/slots";
-import { LogoutButton } from "@/components/auth/LogoutButton";
-import { AdminLink } from "@/components/auth/AdminLink";
-import { ProfileLink } from "@/components/auth/ProfileLink";
 import { useAppShell } from "@/context/AppShellContext";
 import {
   deleteSession,
@@ -151,13 +148,6 @@ export default function UtilitySidebar() {
       onRenameSession={handleRenameSession}
       onDeleteSession={handleDeleteSession}
       onOrganizeSession={handleOrganizeSession}
-      footerSlot={(collapsed) => (
-        <>
-          <ProfileLink collapsed={collapsed} />
-          <AdminLink collapsed={collapsed} />
-          <LogoutButton collapsed={collapsed} />
-        </>
-      )}
     />
   );
 }

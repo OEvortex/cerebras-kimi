@@ -130,7 +130,6 @@ export interface ChatState {
   lastTurnFailed: boolean;
   /** True when the tail of the transcript is a user row the server never accepted (#1594). */
   submissionFailed: boolean;
-  submissionNoLlmAccess: boolean;
   /** The text was recovered without its attachments or other request context. */
   submissionNeedsReview: boolean;
   /** No browser storage accepted even the text. Copy before leaving this tab. */
@@ -238,7 +237,6 @@ export interface MessageItem {
   trace?: MessageTraceMetadata;
   parentMessageId?: number | null;
   failedSubmission?: boolean;
-  failedSubmissionNoLlmAccess?: boolean;
   failedSubmissionNeedsReview?: boolean;
   failedSubmissionNotSaved?: boolean;
   failedSubmissionId?: string;
@@ -288,7 +286,6 @@ export interface SessionSnapshot {
 }
 
 export type Action =
-  | { type: "RESET_ACCOUNT" }
   | { type: "SET_TOOLS"; tools: string[] }
   | { type: "SET_CAPABILITY"; cap: string | null }
   | { type: "SET_KB"; kbs: string[] }
@@ -342,7 +339,6 @@ export type Action =
       errorMessage?: string;
       turnId?: string | null;
       submissionFailed?: boolean;
-      submissionNoLlmAccess?: boolean;
     }
   | {
       type: "BIND_SERVER_SESSION";

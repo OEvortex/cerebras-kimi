@@ -5,7 +5,7 @@ import {
   extractNotebookUI,
   hasNotebookUI,
   toNotebookUIProgram,
-} from "@/lib/notebook-ui/lang";
+} from "@/features/notebook-ui/notebook-ui-lang/lang";
 
 const PROGRAM = `root = Notebook([water, quiz], "The Water Cycle")
 water = Page([intro, facts, takeaways], "The Water Cycle")

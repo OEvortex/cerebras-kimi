@@ -1,5 +1,4 @@
 import { activeWorkspaceId } from './workspace-scope'
-import { fetchAuthStatus } from './auth'
 
 export type WorkspaceDraft = {
   text: string
@@ -24,12 +23,8 @@ export function currentWorkspaceDraftLocation(): WorkspaceDraftLocation {
   }
 }
 
-async function key(workspaceId = activeWorkspaceId(), pathname = window.location.pathname): Promise<string> {
-  const location = `${workspaceId}:${pathname}`
-  const status = await fetchAuthStatus()
-  if (!status || (status.enabled && (!status.authenticated || !status.user_id)))
-    throw new Error('Account identity is unavailable for saving drafts.')
-  return `${status.user_id || 'local-admin'}:${location}`
+function key(workspaceId = activeWorkspaceId(), pathname = window.location.pathname): string {
+  return `local-admin:${workspaceId}:${pathname}`
 }
 
 async function database(): Promise<IDBDatabase> {
@@ -42,7 +37,7 @@ async function database(): Promise<IDBDatabase> {
 }
 
 export async function saveWorkspaceDraft(draft: WorkspaceDraft, workspaceId?: string, pathname?: string): Promise<void> {
-  const draftKey = await key(workspaceId, pathname)
+  const draftKey = key(workspaceId, pathname)
   const db = await database()
   try {
     await new Promise<void>((resolve, reject) => {
@@ -60,7 +55,7 @@ export async function saveWorkspaceDraft(draft: WorkspaceDraft, workspaceId?: st
 }
 
 export async function readWorkspaceDraft(workspaceId?: string, pathname?: string): Promise<WorkspaceDraft | undefined> {
-  const draftKey = await key(workspaceId, pathname)
+  const draftKey = key(workspaceId, pathname)
   const db = await database()
   try {
     return await new Promise((resolve, reject) => {

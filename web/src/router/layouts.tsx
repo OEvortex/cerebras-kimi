@@ -5,8 +5,6 @@ import MotionProvider from "@/components/common/MotionProvider";
 import ToastViewport from "@/components/common/ToastViewport";
 import { AppShellProvider } from "@/context/AppShellContext";
 
-import AdminLayout from "@/app/(admin)/layout";
-import AuthLayout from "@/app/(auth)/layout";
 import SettingsGroupLayout from "@/app/(settings)/layout";
 import SettingsLayout from "@/app/(settings)/settings/layout";
 import UtilityLayout from "@/app/(utility)/layout";
@@ -30,22 +28,6 @@ export function RootShell() {
       </MotionProvider>
       <ToastViewport />
     </AppShellProvider>
-  );
-}
-
-export function AdminLayoutWrapper() {
-  return (
-    <AdminLayout>
-      <Outlet />
-    </AdminLayout>
-  );
-}
-
-export function AuthLayoutWrapper() {
-  return (
-    <AuthLayout>
-      <Outlet />
-    </AuthLayout>
   );
 }
 

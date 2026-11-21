@@ -5,7 +5,6 @@ import {
   SettingsProvider,
   UiSettingsProvider,
 } from "@/features/settings/store";
-import { SettingsAccessProvider } from "@/features/settings/navigation/SettingsAccessProvider";
 import { SettingsTourOverlay } from "@/components/settings/SettingsTourOverlay";
 
 export default function SettingsLayout({
@@ -15,7 +14,6 @@ export default function SettingsLayout({
 }>) {
   return (
     <SettingsProvider>
-      <SettingsAccessProvider>
         <UiSettingsProvider>
           <ModelCatalogProvider>
             <SettingsDraftProvider>
@@ -26,7 +24,6 @@ export default function SettingsLayout({
             </SettingsDraftProvider>
           </ModelCatalogProvider>
         </UiSettingsProvider>
-      </SettingsAccessProvider>
     </SettingsProvider>
   );
 }

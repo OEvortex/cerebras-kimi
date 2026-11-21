@@ -70,10 +70,6 @@ vi.mock("@/components/reading/PdfDocumentView", () => ({
 
 // The workspace provider asks who the learner is; an adult reader is the
 // case under test, so there is no learner policy to find.
-vi.mock("@/lib/auth", () => ({
-  fetchAuthStatus: vi.fn(async () => null),
-}));
-
 vi.mock("@/components/reading/EpubDocumentView", () => ({
   EpubDocumentView: ({ onVisibleLocatorChange, onProgressChange }: {
     onVisibleLocatorChange: (locator: number) => void;

@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { useRouter } from "@/shared/router/navigation";
 
 import { useSettings } from "@/features/settings/store/SettingsStore";
-import { useSettingsAccess } from "@/features/settings/navigation/SettingsAccessProvider";
+import { SETTINGS_ACCESS } from "@/features/settings/navigation/settings-access";
 import {
   resolveSettingsKey,
   settingsAnchorHref,
@@ -56,16 +56,6 @@ const Memory = dynamic(
 );
 const About = dynamic(
   () => import("@/features/settings/sections/AboutSettingsSection"),
-  {
-    loading,
-  },
-);
-const Learner = dynamic(
-  () => import("@/features/settings/sections/LearnerProfileSettingsSection"),
-  { loading },
-);
-const Guardian = dynamic(
-  () => import("@/features/settings/sections/GuardianSettingsSection"),
   {
     loading,
   },
@@ -182,8 +172,6 @@ const PAGES: Record<string, React.ComponentType> = {
   knowledge: Knowledge,
   memory: Memory,
   about: About,
-  "learner-profile": Learner,
-  guardian: Guardian,
   connections: Connections,
   llm: Llm,
   "task-models": Task,
@@ -216,7 +204,7 @@ const AGENTS = {
 export default function SettingsPageContent({ section }: { section: string }) {
   
   const router = useRouter();
-  const access = useSettingsAccess();
+  const access = SETTINGS_ACCESS;
   const { settingsLoading, saving, applying } = useSettings();
   const key = resolveSettingsKey(section);
   const pages = visibleSettingsPages(access);

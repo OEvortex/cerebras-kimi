@@ -201,7 +201,7 @@ class SQLiteCronRepository:
         owner = payload.get("owner") or {}
         if owner.get("kind") == "partner":
             return f"partner:{owner.get('partner_id') or ''}"
-        return f"chat:{owner.get('user_id') or 'local-admin'}"
+        return "chat:local-admin"
 
     @classmethod
     def _upsert_row(cls, connection: sqlite3.Connection, payload: dict[str, Any]) -> None:

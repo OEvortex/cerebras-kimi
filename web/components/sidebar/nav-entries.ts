@@ -11,21 +11,12 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
-import type { Capability } from '@/lib/capability-routes'
-
 export interface NavEntry {
   href: string
   label: string
   icon: LucideIcon
   tooltipKey?: string
   defaultCollapsed?: boolean
-  /** Model capability this feature needs; locked when the user lacks it. */
-  requires?: Capability
-  /**
-   * Learning-account surfaces that may see this entry. Absent means the
-   * entry is hidden whenever a learning policy is in effect (#1222).
-   */
-  surfaces?: readonly string[]
 }
 
 /**
@@ -43,26 +34,22 @@ const PRIMARY_NAV: NavEntry[] = [
     label: 'Home',
     icon: House,
     tooltipKey: 'Home tooltip',
-    requires: 'llm',
-    surfaces: ['chat'],
   },
   {
     href: LEARNING_HUB,
     label: 'Personalized Learning',
     icon: GraduationCap,
     tooltipKey: 'One tutor, your own way to learn.',
-    surfaces: ['reading', 'chat', 'books'],
   },
   { href: '/space', label: 'Learning Space', icon: LayoutGrid, tooltipKey: 'Space tooltip' },
   {
-    href: '/calendar', label: 'Calendar', icon: CalendarDays, surfaces: ['chat'],
+    href: '/calendar', label: 'Calendar', icon: CalendarDays,
   },
   {
     href: '/co-writer',
     label: 'Co-Writer',
     icon: PenLine,
     tooltipKey: 'Co-Writer tooltip',
-    requires: 'llm',
     defaultCollapsed: true,
   },
   {
@@ -90,18 +77,3 @@ export function isNavActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
-/**
- * A learning policy hides every feature the account cannot call. Settings
- * stays, because the redacted page (theme, language) is still theirs.
- * ``allowedSurfaces === null`` means no policy: the full sidebar.
- */
-export function navVisibleUnderPolicy(
-  href: string,
-  allowedSurfaces: readonly string[] | null,
-): boolean {
-  if (allowedSurfaces === null) return true
-  if (href === '/settings') return true
-  const surfaces = NAV_BY_HREF.get(href)?.surfaces
-  if (!surfaces?.length) return false
-  return surfaces.some(surface => allowedSurfaces.includes(surface))
-}

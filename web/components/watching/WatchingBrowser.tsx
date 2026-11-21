@@ -15,7 +15,6 @@ import { useEffect, useRef, useState } from 'react'
 
 import { Search, Link2, Play, ListVideo, Rss, Loader2, ArrowLeft } from 'lucide-react'
 import { browserStorage } from '@/shared/storage'
-import { useAuthStatus } from '@/hooks/useAuthStatus'
 import {
   browseInvidious,
   invidiousAccount,
@@ -37,7 +36,6 @@ export function WatchingBrowser({
   onSelectUrl(url: string): void
 }) {
   
-  const auth = useAuthStatus()
   const [account, setAccount] = useState<InvidiousAccountStatus | null>(null)
   const [view, setView] = useState<BrowserView>('search')
   const [input, setInput] = useState('')
@@ -51,10 +49,9 @@ export function WatchingBrowser({
   const [reload, setReload] = useState(0)
   const scroll = useRef<HTMLElement>(null)
   const restored = useRef(false)
-  const key = `watching-browser:${auth.userId ?? 'local'}`
+  const key = 'watching-browser:local'
 
   useEffect(() => {
-    if (auth.loading || !auth.statusAvailable) return
     let alive = true
     setItems([])
     setAccount(null)
@@ -89,7 +86,7 @@ export function WatchingBrowser({
     return () => {
       alive = false
     }
-  }, [auth.loading, auth.statusAvailable, key])
+  }, [false, true, key])
 
   useEffect(() => {
     if (!account) return
@@ -192,7 +189,7 @@ export function WatchingBrowser({
             )}
             <button
               className="watching-browser-button"
-              disabled={accountBusy || auth.loading}
+              disabled={accountBusy}
               onClick={() => void (account?.connected ? disconnect() : connect())}
             >
               {accountBusy ? <Loader2 className="animate-spin" size={16} /> : <Link2 size={16} />}

@@ -13,10 +13,7 @@ import {
 import { useRouter } from "@/shared/router/navigation";
 
 
-import {
-  recoveryPrincipal,
-  RECOVERY_PRINCIPAL_CHANGED,
-} from "@/lib/recovery-principal";
+
 import {
   DEFAULT_LEARNING_DISPLAY,
   normalizeLearningDisplay,
@@ -354,14 +351,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const serverDisplayLoadedRef = useRef(false);
   const settingsGenerationRef = useRef(0);
   const captureSettingsOwnership = useCallback(() => {
-    const owner = recoveryPrincipal();
+    const owner = "single-user";
     const generation = settingsGenerationRef.current;
     return () =>
       generation === settingsGenerationRef.current &&
-      owner === recoveryPrincipal();
+      owner === "single-user";
   }, []);
   const initialSettingsSettledRef = useRef(false);
-  const awaitingInitialPrincipalRef = useRef(recoveryPrincipal() === null);
+  const awaitingInitialPrincipalRef = useRef(false);
   const displayOwnerRef = useRef<string | null | undefined>(undefined);
   const [learningDisplay, setLearningDisplay] = useState(
     DEFAULT_LEARNING_DISPLAY,
@@ -453,7 +450,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   );
 
   const loadSettings = useCallback(async () => {
-    const displayOwner = recoveryPrincipal();
+    const displayOwner = "single-user";
     if (displayOwner) awaitingInitialPrincipalRef.current = false;
     const isCurrent = captureSettingsOwnership();
     setSettingsError(null);
@@ -478,11 +475,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       initialSettingsSettledRef.current = true;
       const loadedTheme = payload.ui.theme;
       const loadedDisplay = normalizeLearningDisplay(payload.ui);
-      if (displayOwner === recoveryPrincipal()) {
+      if (displayOwner === "single-user") {
         serverDisplayLoadedRef.current = true;
         displayOwnerRef.current = displayOwner;
         setLearningDisplay(loadedDisplay);
-        publishLearningDisplay(loadedDisplay, displayOwner);
+        publishLearningDisplay(loadedDisplay);
       }
       serverThemeLoadedRef.current = true;
       setTheme(loadedTheme);
@@ -695,56 +692,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    let request = 0;
-    const onBoundary = () => {
-      settingsGenerationRef.current += 1;
-      setApplying(false);
-      setSaving(false);
-      const generation = ++request;
-      const owner = recoveryPrincipal();
-      serverDisplayLoadedRef.current = false;
-      displayOwnerRef.current = owner;
-      setLearningDisplay(DEFAULT_LEARNING_DISPLAY);
-      const pending = pendingRef.current.get("ui") as
-        | Partial<UiSettings>
-        | undefined;
-      if (pending) {
-        const next = { ...pending };
-        delete next.content_font_scale;
-        delete next.content_line_spacing;
-        pendingRef.current.set("ui", next);
-        void stageUiRef.current({});
-      }
-      if (!owner) return;
-      if (
-        awaitingInitialPrincipalRef.current ||
-        !initialSettingsSettledRef.current
-      ) {
-        awaitingInitialPrincipalRef.current = false;
-        void loadSettingsRef.current();
-        return;
-      }
-      void (async () => {
-        try {
-          const response = await apiFetch(apiUrl("/api/settings/display"), {
-            skipAuthRedirect: true,
-          });
-          if (!response.ok) return;
-          const display = normalizeLearningDisplay(await response.json());
-          if (generation !== request || recoveryPrincipal() !== owner) return;
-          serverDisplayLoadedRef.current = true;
-          setLearningDisplay(display);
-        } catch {
-          /* An unavailable account starts at defaults. */
-        }
-      })();
-    };
-    window.addEventListener(RECOVERY_PRINCIPAL_CHANGED, onBoundary);
     if (!initialSettingsSettledRef.current) void loadSettingsRef.current();
     return () => {
-      request += 1;
       settingsGenerationRef.current += 1;
-      window.removeEventListener(RECOVERY_PRINCIPAL_CHANGED, onBoundary);
     };
   }, []);
 

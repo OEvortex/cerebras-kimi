@@ -427,22 +427,6 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
     href: "/settings/progress",
   },
   {
-    key: "learner-profile",
-    learnerOnly: true,
-    label: "Learner profile",
-    blurb: "Adjust age, grade, and explanation preferences.",
-    icon: UserRound,
-    href: "/settings#learner-profile",
-  },
-  {
-    key: "guardian",
-    guardianOnly: true,
-    label: "Guardian",
-    blurb: "Review authorized learners and learning materials.",
-    icon: ShieldCheck,
-    href: "/settings#guardian",
-  },
-  {
     key: "memory",
     label: "Memory",
     blurb: "Chunking, budget, dedup, and reference policies",

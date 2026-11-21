@@ -35,8 +35,7 @@ describe("NotebookUIView", () => {
     const user = userEvent.setup();
     render(<NotebookUIView content={PROGRAM} />);
     await user.click(screen.getByText("Stroma"));
-    await user.click(screen.getByRole("button", { name: /check answers/i }));
-    expect(screen.getByText("Correct.")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: /reveal answer/i }));
     expect(screen.getByText(/The Calvin cycle runs in the stroma/)).toBeTruthy();
   });
 
@@ -44,7 +43,7 @@ describe("NotebookUIView", () => {
     const user = userEvent.setup();
     render(<NotebookUIView content={PROGRAM} />);
     expect(screen.getByText("Chlorophyll")).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: /show the back of the card/i }));
+    await user.click(screen.getByRole("button", { name: /flip/i }));
     expect(screen.getByText(/The green pigment that captures light/)).toBeTruthy();
   });
 });
