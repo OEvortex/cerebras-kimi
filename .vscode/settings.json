@@ -5,5 +5,6 @@
     "devin.defaultModel": "swe-2-flash-medium",
     "devin.defaultThoughtLevel": "high",
     "devin.defaultSpeed": "standard",
-    "devin.defaultMode": "bypass"
+    "devin.defaultMode": "bypass",
+    "devin.implicitContext.enabled": false
 }

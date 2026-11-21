@@ -14,6 +14,7 @@ import {
   PinOff,
   Plus,
   Search,
+  Sparkles,
   Trash2,
   Upload,
 } from "lucide-react";
@@ -275,6 +276,15 @@ export default function CoWriterHomePage() {
         action={
           <div className="flex shrink-0 items-center gap-2">
             <NoteReview />
+            <button
+              type="button"
+              onClick={() => router.push("/notebook-ui")}
+              className={pageActionClass("secondary")}
+              title="Generate a notebook from a prompt with Notebook UI"
+            >
+              <Sparkles size={14} />
+              {"Notebook UI"}
+            </button>
             <button
               type="button"
               onClick={() => importInputRef.current?.click()}

@@ -495,7 +495,8 @@ class AgentRuntime:
             from vtx.agent.runtime import ConversationRuntime
             from vtx.core.config import config as vtx_config
             from vtx.core.events import (
-                AgentEndEvent, ErrorEvent, TextDeltaEvent, ThinkingDeltaEvent,
+                AgentEndEvent, BackgroundTaskCompletedEvent, ErrorEvent,
+                HostNoticeEvent, TextDeltaEvent, ThinkingDeltaEvent,
                 ToolApprovalEvent, ToolEndEvent, ToolResultEvent, ToolStartEvent,
             )
             from vtx.core.permissions import ApprovalResponse
@@ -810,6 +811,37 @@ class AgentRuntime:
                                   "tool_name": event.tool_name,
                                   "is_error": _tool_result_is_error(out, text),
                                   "tool_metadata": tool_meta}))
+                elif isinstance(event, BackgroundTaskCompletedEvent):
+                    # A background sub-agent (e.g. the notebook writer)
+                    # finished. The result was already injected into the
+                    # session as a synthetic message; surface a progress row
+                    # so the learner sees the job settle.
+                    await self._emit(handle, self._stream_event(
+                        handle, "progress",
+                        content=(
+                            f"Background task finished: "
+                            f"{event.description or event.task_id} "
+                            f"({event.status})"
+                        ),
+                        source=capability, stage="responding",
+                        metadata={
+                            "tool_name": "background_task",
+                            "background_task": {
+                                "task_id": event.task_id,
+                                "description": event.description,
+                                "subagent_type": event.subagent_type,
+                                "status": event.status,
+                                "summary": event.summary,
+                                "turns": event.turns,
+                                "total_tokens": event.total_tokens,
+                            },
+                        }))
+                elif isinstance(event, HostNoticeEvent):
+                    await self._emit(handle, self._stream_event(
+                        handle, "progress",
+                        content=event.text[:300],
+                        source=capability, stage="responding",
+                        metadata={"tool_name": "host_notice"}))
                 elif isinstance(event, ErrorEvent):
                     status = "error"
                     # Surface the provider/agent failure to the UI. Without an

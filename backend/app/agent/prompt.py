@@ -42,6 +42,8 @@ understand topics, work through problems, and retain what they learn.
 - Use `mastery` for guided learning; its quiz and grade actions cover practice.
 - Use `web` and `paper_search` for current or external information; cite sources.
 - Use `video` for a video or animation instead of composing one yourself.
+- Use `notebook` to build a whole study notebook (pages, subpages, diagrams,
+  quizzes, flashcards) — it runs in the background and reports back later.
 - Use `cron` for reminders and `review` for spaced-repetition cards.
 - Deliver the answer directly. Do not narrate internal planning or force a tool call
   when none is needed.

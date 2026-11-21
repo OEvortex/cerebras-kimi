@@ -303,6 +303,11 @@ const coWriterDocRoute = createRoute({
     () => import("@/app/(workspace)/co-writer/[docId]/page"),
   ),
 });
+const notebookUIRoute = createRoute({
+  getParentRoute: () => workspaceLayoutRoute,
+  path: "/notebook-ui",
+  component: lazyPage(() => import("@/app/(workspace)/notebook-ui/page")),
+});
 const whisperRoute = createRoute({
   getParentRoute: () => workspaceLayoutRoute,
   path: "/whisper",
@@ -508,6 +513,7 @@ const routeTree = rootRoute.addChildren([
     chatIndexRoute,
     chatSessionRoute,
     coWriterLayoutRoute.addChildren([coWriterIndexRoute, coWriterDocRoute]),
+    notebookUIRoute,
     whisperRoute,
     learningLayoutRoute.addChildren([
       learningIndexRoute,

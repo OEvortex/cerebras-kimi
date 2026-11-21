@@ -603,6 +603,80 @@ video = VideoTool()
 
 
 # ---------------------------------------------------------------------------
+# notebook — natural-language request -> background writer sub-agent -> real
+# Co-Writer pages (subpages, mermaid diagrams, quizzes, flashcards). Runs
+# through vtx's BackgroundTaskManager like delegate_subagent: the tool
+# returns a task_id immediately and the writer's report arrives on a later
+# turn. The writer's own prompt and nb_* toolset live in notebook_agent/.
+# ---------------------------------------------------------------------------
+
+
+class NotebookParams(BaseModel):
+    request: str = Field(
+        description=(
+            "What the notebook should contain, in plain language — topic, "
+            "structure, depth and audience, e.g. 'a study notebook on the "
+            "French Revolution with a timeline and a quiz'."
+        )
+    )
+    title: str = Field(
+        default="", description="Optional title for the top page / job label."
+    )
+    parent_page_id: str = Field(
+        default="",
+        description=(
+            "Optional notebook page id to build under; empty creates a new "
+            "top-level page tree."
+        ),
+    )
+    background: bool = Field(
+        default=True,
+        description=(
+            "true (default) = run in the background and return a task_id "
+            "immediately; false = wait for the writer and return its report."
+        ),
+    )
+
+
+class NotebookTool(BaseTool):
+    name = "notebook"
+    tool_icon = "📓"
+    params = NotebookParams
+    mutating = True
+    description = (
+        "Build a study notebook in the background: a dedicated writer "
+        "sub-agent creates pages, subpages, mermaid diagrams, flowcharts, "
+        "quizzes and flashcards in the learner's notebook. Use for requests "
+        "like 'make me notes on X' or 'build a revision notebook'."
+    )
+
+    async def execute(
+        self,
+        params: NotebookParams,
+        cancel_event: Any = None,
+        tool_call_id: str | None = None,
+    ) -> ToolResult:
+        from .notebook_agent import launch_notebook_job
+
+        try:
+            text = await launch_notebook_job(
+                request=params.request,
+                title=params.title,
+                parent_page_id=params.parent_page_id,
+                background=params.background,
+                tool_call_id=tool_call_id,
+            )
+        except RuntimeError as exc:
+            return _fail(str(exc))
+        except Exception as exc:  # noqa: BLE001
+            return _fail(f"Notebook job failed: {exc}")
+        return _ok(text)
+
+
+notebook = NotebookTool()
+
+
+# ---------------------------------------------------------------------------
 # web — vtx WebTool port: Exa MCP search + Jina Reader fetch, single tool
 # ---------------------------------------------------------------------------
 
