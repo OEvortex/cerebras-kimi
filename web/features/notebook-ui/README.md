@@ -26,10 +26,10 @@ still shows the result.
 | `NotebookNotifications.tsx` | Always-on SSE listener that delivers background-job completions even after the turn ended. |
 | `notebook-live.css` | Styling for the live card. |
 
-Back end: `backend/app/agent/notebook_agent/`, `backend/app/api/notebook_ui.py`,
-and the `notebook` tool in `backend/app/agent/dt_tools.py`.
+Back end: `backend/app/agent/notebook_agent/` and the `notebook` tool in
+`backend/app/agent/dt_tools.py`.
 
 ## Tests
 
 - `web/tests/notebook-live.spec.tsx` — live panel streaming, loading and completion states.
-- Backend: `test_notebook_ui_api.py`, `test_notebook_live.py`, `test_realtime_broadcast.py`.
+- Backend: `test_notebook_live.py`, `test_realtime_broadcast.py`.

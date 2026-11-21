@@ -18,7 +18,6 @@ from .api.documents import router as documents_router
 from .api.cron import router as cron_router
 from .api.files import router as files_router
 from .api.handlers import router
-from .api.notebook_ui import router as notebook_ui_router
 from .api.openui import router as openui_router
 from .api.realtime import RealtimeHub, router as realtime_router
 from .config import get_settings
@@ -243,7 +242,6 @@ app.include_router(documents_router)
 app.include_router(cron_router)
 app.include_router(files_router)
 app.include_router(openui_router)
-app.include_router(notebook_ui_router)
 app.include_router(realtime_router)
 
 
