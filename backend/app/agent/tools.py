@@ -10,6 +10,9 @@ from typing import Any
 
 from ..config import Settings
 
+# Side effect: keep params named "title" in the model-facing tool schema.
+from . import _vtx_compat  # noqa: F401
+
 
 def builtin_tools(settings: Settings, enabled: list[str] | None = None) -> list[Any]:
     """All builtin tools, filtered by the turn's ``tools`` allowlist.

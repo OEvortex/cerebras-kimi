@@ -39,6 +39,7 @@ from vtx.protocol.types import ToolResult
 
 from .. import provider_config
 from ..config import Settings
+from . import _vtx_compat  # noqa: F401 - schema shim, side effect only
 from ..services.inline_thinking import InlineThinkingSplitter
 from ..store.session_store import AUTO_PARENT_MESSAGE, SessionStore
 from .turn_context import set_note_context, set_turn_context
@@ -164,6 +165,11 @@ class _SdkToolAdapter(BaseTool):
     async def execute(self, params: Any, cancel_event: Any = None) -> ToolResult:
         try:
             res = await self._fn.execute(params)
+            # Class-based tools already return a ToolResult — pass it through
+            # so success=False and ui fields survive instead of being wrapped
+            # into a successful string result.
+            if isinstance(res, ToolResult):
+                return res
             text = getattr(res, "result", None)
             if text is None:
                 text = str(res)

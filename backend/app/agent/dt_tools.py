@@ -1,81 +1,119 @@
-"""Ports of DeepTutor's built-in tools (``reff/deeptutor/tools``) onto vtx ``@tool``.
+"""DeepTutor's built-in tools as vtx ``BaseTool`` classes.
 
-The notebook companion (Dito) lives in ``dito.py``; its tools are re-exported
-at the bottom of this module.
+Same shape as ``vtx.coding_agent.tools``: a ``*Params`` pydantic model with
+per-field descriptions plus a ``BaseTool`` subclass whose ``execute``
+returns ``ToolResult``. The notebook companion (Dito) lives in ``dito.py``;
+its tools are re-exported below.
 """
 
 from __future__ import annotations
 
-import asyncio
 import json
 import os
 import re
 import shutil
 import time
-import uuid
 from pathlib import Path
 from typing import Any, Literal, cast
 
 import httpx
-from .toolkit import tool
+from pydantic import BaseModel, Field
+from vtx.agent.tools.base import BaseTool
+from vtx.protocol.types import ToolResult
 
 
 _HEADERS = {"User-Agent": "DeepTutor/0.1 (+https://deeptutor.info)"}
 
 
-@tool(mutating=True, tool_icon="📝")
-def notes(action: Literal["write", "list", "search", "update"],
-          title: str = "", content: str = "", tags: str = "", query: str = "",
-          note_id: str = "", old_string: str = "", new_string: str = "",
-          replace_all: bool = False) -> str:
-    """Read and write the user's notebook — notes are Co-Writer pages,
-    visible in the app's Notebook tab.
+class NotesParams(BaseModel):
+    action: Literal["write", "list", "search", "update"] = Field(
+        description=(
+            "write = create a page (needs title, optional content/tags); "
+            "list = all notes as 'id | title | tags'; "
+            "search = full-text search (needs query); "
+            "update = patch a page in place (needs note_id + old_string/"
+            "new_string, optional replace_all)."
+        )
+    )
+    title: str = Field(
+        default="", description="Note title — required for write."
+    )
+    content: str = Field(
+        default="", description="Markdown body — write only."
+    )
+    tags: str = Field(
+        default="", description="Comma-separated tags — write only."
+    )
+    query: str = Field(
+        default="", description="Search terms — search only."
+    )
+    note_id: str = Field(
+        default="",
+        description="Target note id from list/search/write — update only.",
+    )
+    old_string: str = Field(
+        default="",
+        description=(
+            "Exact text to replace, whitespace included — update only. "
+            "Must match uniquely unless replace_all is true."
+        ),
+    )
+    new_string: str = Field(
+        default="", description="Replacement text — update only."
+    )
+    replace_all: bool = Field(
+        default=False,
+        description="Replace every occurrence instead of requiring a unique match — update only.",
+    )
 
-    Exactly one action per call; only fill the params that action uses:
 
-    - ``write`` — create a notebook page. ``title`` is required, ``content``
-      is the Markdown body, ``tags`` is an optional comma-separated list.
-    - ``list`` — return all notes as ``id | title | tags``. No params needed.
-    - ``search`` — full-text search; put the search terms in ``query``.
-    - ``update`` — patch an existing note in place. ``note_id`` comes from
-      ``list``/``search``/``write``. ``old_string`` must match the note body
-      exactly, including whitespace; ``new_string`` replaces it (first
-      occurrence, or every occurrence when ``replace_all`` is true).
-      ``old_string`` and ``new_string`` must differ.
+class NotesTool(BaseTool):
+    """vtx-style tool: the user's notebook (Co-Writer pages)."""
 
-    Example: notes(action="write", title="Photosynthesis",
-    content="# Photosynthesis\\nPlants convert light...", tags="biology")
-    Example: notes(action="update", note_id="doc_abc", old_string="teh",
-    new_string="the", replace_all=true)
+    name = "notes"
+    tool_icon = "📝"
+    params = NotesParams
+    mutating = True
+    prompt_guidelines = (
+        "notes for the user's notebook pages (not workspace files)",
+    )
+    description = (
+        "Read and write the user's notebook — notes are Co-Writer pages, "
+        "visible in the app's Notebook tab. One action per call; only fill "
+        "the params that action uses. update patches a page in place: "
+        "old_string must match the body exactly, including whitespace."
+    )
 
-    :param action: write|list|search|update — required.
-    :param title: Note title (write only).
-    :param content: Markdown body (write only).
-    :param tags: Comma-separated tags (write only).
-    :param query: Search terms (search only).
-    :param note_id: Target note id (update only).
-    :param old_string: Exact text to replace (update only).
-    :param new_string: Replacement text (update only).
-    :param replace_all: Replace every occurrence (update only).
-    """
-    from ..services.documents import notes as note_store
+    async def execute(
+        self, params: NotesParams, cancel_event: Any = None
+    ) -> ToolResult:
+        from ..services.documents import notes as note_store
 
-    op = (action or "list").lower()
+        op = params.action.lower()
+        if op == "write":
+            if not params.title:
+                return _fail("notes write needs a title.")
+            note_id = note_store.write_note(
+                params.title, params.content, params.tags)
+            return _ok(f"Saved note '{params.title}' to your notebook as {note_id}")
+        if op == "search":
+            return _ok(note_store.search_notes(params.query))
+        if op == "update":
+            return _ok(note_store.update_note(
+                params.note_id, params.old_string, params.new_string,
+                replace_all=params.replace_all))
+        return _ok(note_store.list_notes())
 
-    if op == "write":
-        if not title:
-            return "notes write needs a title."
-        note_id_out = note_store.write_note(title, content, tags)
-        return f"Saved note '{title}' to your notebook as {note_id_out}"
 
-    if op == "search":
-        return note_store.search_notes(query)
+def _ok(text: str) -> ToolResult:
+    return ToolResult(success=True, result=text)
 
-    if op == "update":
-        return note_store.update_note(
-            note_id, old_string, new_string, replace_all=replace_all)
 
-    return note_store.list_notes()
+def _fail(text: str) -> ToolResult:
+    return ToolResult(success=False, result=text)
+
+
+notes = NotesTool()
 
 
 # ---------------------------------------------------------------------------
@@ -96,36 +134,54 @@ from .dito import (  # noqa: E402,F401
 )
 
 
-@tool(mutating=True, tool_icon="❓")
-def question_bank(action: str, question: str = "", answer: str = "", topic: str = "") -> str:
-    """Manage a personal Q&A bank (add | list | search).
+class QuestionBankParams(BaseModel):
+    action: Literal["add", "list", "search"] = Field(
+        description="add = save a Q&A pair; list = recent questions; "
+        "search = find entries by text (uses question or topic as the query)."
+    )
+    question: str = Field(default="", description="The question text.")
+    answer: str = Field(default="", description="The answer — add only.")
+    topic: str = Field(default="", description="Optional topic tag.")
 
-    :param action: "add", "list", or "search".
-    :param question: The question text.
-    :param answer: The answer (for add).
-    :param topic: Optional topic tag.
-    """
-    from ..config import get_settings
-    from ..store import database
 
-    settings = get_settings()
-    bank = database.get_state(settings, "question_bank", []) or []
-    action = (action or "").strip().lower()
-    if action == "add":
-        if not question.strip():
-            return "question is required for add."
-        bank.append({"q": question, "a": answer, "topic": topic,
-                     "created": time.time()})
-        database.put_state(settings, "question_bank", bank)
-        return f"Saved question to bank ({len(bank)} total)."
-    if action == "list":
-        return "\n".join(f"- {e['q']}" + (f" [{e.get('topic','')}]" if e.get("topic") else "")
-                         for e in bank[-50:]) or "Question bank is empty."
-    if action == "search":
-        q = question.strip().lower() or topic.strip().lower()
-        hits = [e for e in bank if q in (e["q"] + " " + e.get("a", "")).lower()]
-        return "\n\n".join(f"Q: {e['q']}\nA: {e.get('a','')}" for e in hits[:10]) or "No matches."
-    return 'action must be "add", "list", or "search".'
+class QuestionBankTool(BaseTool):
+    name = "question_bank"
+    tool_icon = "❓"
+    params = QuestionBankParams
+    mutating = True
+    description = (
+        "Manage the learner's personal Q&A bank: save questions with "
+        "answers, list recent entries, or search by text."
+    )
+
+    async def execute(
+        self, params: QuestionBankParams, cancel_event: Any = None
+    ) -> ToolResult:
+        from ..config import get_settings
+        from ..store import database
+
+        settings = get_settings()
+        bank = database.get_state(settings, "question_bank", []) or []
+        verb = params.action.strip().lower()
+        if verb == "add":
+            if not params.question.strip():
+                return _fail("question is required for add.")
+            bank.append({"q": params.question, "a": params.answer,
+                         "topic": params.topic, "created": time.time()})
+            database.put_state(settings, "question_bank", bank)
+            return _ok(f"Saved question to bank ({len(bank)} total).")
+        if verb == "list":
+            return _ok("\n".join(
+                f"- {e['q']}" + (f" [{e.get('topic','')}]" if e.get("topic") else "")
+                for e in bank[-50:]) or "Question bank is empty.")
+        q = params.question.strip().lower() or params.topic.strip().lower()
+        hits = [e for e in bank
+                if q in (e["q"] + " " + e.get("a", "")).lower()]
+        return _ok("\n\n".join(
+            f"Q: {e['q']}\nA: {e.get('a','')}" for e in hits[:10]) or "No matches.")
+
+
+question_bank = QuestionBankTool()
 
 
 # ---------------------------------------------------------------------------
@@ -133,40 +189,57 @@ def question_bank(action: str, question: str = "", answer: str = "", topic: str 
 # ---------------------------------------------------------------------------
 
 
-@tool(mutating=True, tool_icon="🧠")
-def memory(action: str, query: str = "", fact: str = "",
-           category: str = "general") -> str:
-    """Long-term memory about the learner — one tool for read + write.
+class MemoryParams(BaseModel):
+    action: Literal["read", "write"] = Field(
+        description="read = recall stored facts (query filters by substring); "
+        "write = store a durable fact about the learner."
+    )
+    query: str = Field(default="", description="Substring filter — read only.")
+    fact: str = Field(
+        default="", description="One-sentence fact to store — write only."
+    )
+    category: str = Field(
+        default="general",
+        description="Category for write, e.g. preference|goal|background.",
+    )
 
-    Actions:
-    - ``read``: return stored memories (``query`` filters by substring).
-    - ``write``: store a durable fact (``fact`` one sentence, ``category``
-      optional e.g. preference|goal|background).
 
-    :param action: read|write.
-    :param query: Substring filter for read.
-    :param fact: Fact to store for write.
-    :param category: Category for write.
-    """
-    from ..config import get_settings
-    from ..store import database
+class MemoryTool(BaseTool):
+    name = "memory"
+    tool_icon = "🧠"
+    params = MemoryParams
+    mutating = True
+    description = (
+        "Long-term memory about the learner: recall stored facts or save "
+        "new durable ones (preferences, goals, background)."
+    )
 
-    settings = get_settings()
-    memories = database.get_state(settings, "memory", []) or []
-    action = (action or "read").lower()
-    if action == "write":
-        if not fact:
-            return "memory write needs a fact."
-        memories.append({"fact": fact, "category": category, "created": time.time()})
-        database.put_state(settings, "memory", memories)
-        return f"Remembered: {fact}"
-    # read
-    if not memories:
-        return "No memories stored yet."
-    q = query.strip().lower()
-    if q:
-        memories = [m for m in memories if q in json.dumps(m, ensure_ascii=False).lower()]
-    return json.dumps(memories[-50:], ensure_ascii=False, indent=1) or "[]"
+    async def execute(
+        self, params: MemoryParams, cancel_event: Any = None
+    ) -> ToolResult:
+        from ..config import get_settings
+        from ..store import database
+
+        settings = get_settings()
+        memories = database.get_state(settings, "memory", []) or []
+        if params.action == "write":
+            if not params.fact:
+                return _fail("memory write needs a fact.")
+            memories.append({"fact": params.fact, "category": params.category,
+                             "created": time.time()})
+            database.put_state(settings, "memory", memories)
+            return _ok(f"Remembered: {params.fact}")
+        if not memories:
+            return _ok("No memories stored yet.")
+        kept = memories
+        q = params.query.strip().lower()
+        if q:
+            kept = [m for m in memories
+                    if q in json.dumps(m, ensure_ascii=False).lower()]
+        return _ok(json.dumps(kept[-50:], ensure_ascii=False, indent=1) or "[]")
+
+
+memory = MemoryTool()
 
 
 # ---------------------------------------------------------------------------
@@ -175,66 +248,80 @@ def memory(action: str, query: str = "", fact: str = "",
 # ---------------------------------------------------------------------------
 
 
-@tool(mutating=True, tool_icon="📚")
-def learning(action: str, topic: str = "", note: str = "", status: str = "",
-             minutes: int = 0) -> str:
-    """Track the learner's progress across topics — one tool for all learning state.
+class LearningParams(BaseModel):
+    action: Literal["status", "update", "journal", "weak"] = Field(
+        description="status = overall progress; update = record progress on "
+        "a topic; journal = append a free-form note; weak = list weak topics."
+    )
+    topic: str = Field(default="", description="Topic name — update only.")
+    note: str = Field(
+        default="", description="Free-text note — update and journal."
+    )
+    status: str = Field(
+        default="",
+        description="learned|learning|weak — update only.",
+    )
+    minutes: int = Field(default=0, description="Minutes spent — update only.")
 
-    Actions:
-    - ``status``: show overall progress and per-topic state.
-    - ``update``: record progress on ``topic`` (status: learned|learning|weak,
-      optional ``note`` and ``minutes`` spent).
-    - ``journal``: append a free-form ``note`` to the learning journal.
-    - ``weak``: list topics marked weak for review.
 
-    :param action: One of status|update|journal|weak.
-    :param topic: Topic name (for update).
-    :param note: Free-text note (for update/journal).
-    :param status: learned|learning|weak (for update).
-    :param minutes: Minutes spent (for update).
-    """
-    from ..config import get_settings
-    from ..store import database
+class LearningTool(BaseTool):
+    name = "learning"
+    tool_icon = "📚"
+    params = LearningParams
+    mutating = True
+    description = (
+        "Track the learner's progress across topics: per-topic mastery "
+        "state, a free-form journal, and a weak-topics list for review."
+    )
 
-    settings = get_settings()
-    data = database.get_state(settings, "learning", {"topics": {}, "journal": []})
-    if not isinstance(data, dict):
-        data = {"topics": {}, "journal": []}
-    topics = cast(dict[str, Any], data.setdefault("topics", {}))
-    journal = cast(list[dict[str, Any]], data.setdefault("journal", []))
+    async def execute(
+        self, params: LearningParams, cancel_event: Any = None
+    ) -> ToolResult:
+        from ..config import get_settings
+        from ..store import database
 
-    action = (action or "status").lower()
-    if action == "update":
-        if not topic:
-            return "learning update needs a topic."
-        t = topics.setdefault(topic, {"status": "learning", "notes": [], "minutes": 0})
-        if status:
-            t["status"] = status
-        if note:
-            t["notes"].append({"at": time.time(), "note": note})
-        t["minutes"] = int(t.get("minutes", 0)) + max(0, minutes)
-        t["updated_at"] = time.time()
-        database.put_state(settings, "learning", data)
-        return f"Recorded: {topic} → {t['status']}"
-    if action == "journal":
-        if not note:
-            return "journal needs a note."
-        journal.append({"at": time.time(), "note": note})
-        database.put_state(settings, "learning", data)
-        return "Journal entry saved."
-    if action == "weak":
-        weak = {k: v for k, v in topics.items() if v.get("status") == "weak"}
-        if not weak:
-            return "No weak topics recorded."
-        return "Weak topics:\n" + "\n".join(
-            f"- {k} ({v.get('minutes', 0)}min)" for k, v in weak.items())
-    # status
-    if not topics:
-        return "No learning progress recorded yet."
-    lines = ["Learning status:"]
-    for k, v in sorted(topics.items()):
-        lines.append(f"- {k}: {v.get('status','?')} ({v.get('minutes',0)}min)")
-    return "\n".join(lines)
+        settings = get_settings()
+        data = database.get_state(settings, "learning", {"topics": {}, "journal": []})
+        if not isinstance(data, dict):
+            data = {"topics": {}, "journal": []}
+        topics = cast(dict[str, Any], data.setdefault("topics", {}))
+        journal = cast(list[dict[str, Any]], data.setdefault("journal", []))
+
+        verb = params.action.lower()
+        if verb == "update":
+            if not params.topic:
+                return _fail("learning update needs a topic.")
+            t = topics.setdefault(params.topic,
+                                  {"status": "learning", "notes": [], "minutes": 0})
+            if params.status:
+                t["status"] = params.status
+            if params.note:
+                t["notes"].append({"at": time.time(), "note": params.note})
+            t["minutes"] = int(t.get("minutes", 0)) + max(0, params.minutes)
+            t["updated_at"] = time.time()
+            database.put_state(settings, "learning", data)
+            return _ok(f"Recorded: {params.topic} → {t['status']}")
+        if verb == "journal":
+            if not params.note:
+                return _fail("journal needs a note.")
+            journal.append({"at": time.time(), "note": params.note})
+            database.put_state(settings, "learning", data)
+            return _ok("Journal entry saved.")
+        if verb == "weak":
+            weak = {k: v for k, v in topics.items() if v.get("status") == "weak"}
+            if not weak:
+                return _ok("No weak topics recorded.")
+            return _ok("Weak topics:\n" + "\n".join(
+                f"- {k} ({v.get('minutes', 0)}min)" for k, v in weak.items()))
+        if not topics:
+            return _ok("No learning progress recorded yet.")
+        lines = ["Learning status:"]
+        for k, v in sorted(topics.items()):
+            lines.append(f"- {k}: {v.get('status','?')} ({v.get('minutes',0)}min)")
+        return _ok("\n".join(lines))
+
+
+learning = LearningTool()
 
 
 # ---------------------------------------------------------------------------
@@ -243,97 +330,108 @@ def learning(action: str, topic: str = "", note: str = "", status: str = "",
 # ---------------------------------------------------------------------------
 
 
-@tool(mutating=True, tool_icon="🗂️")
-def workspace(action: str, path: str = "", content: str = "",
-              query: str = "", max_chars: int = 12000) -> str:
-    """Full control over the workspace directory — one tool for all file ops.
+class WorkspaceParams(BaseModel):
+    action: Literal["list", "read", "write", "search", "delete", "mkdir",
+                    "info"] = Field(
+        description="list = files under path; read = file contents; "
+        "write = save content; search = substring match under path; "
+        "delete = remove file/dir; mkdir = create dir; info = size/mtime."
+    )
+    path: str = Field(
+        default="", description="Workspace-relative path (default '.')."
+    )
+    content: str = Field(default="", description="File content — write only.")
+    query: str = Field(default="", description="Search substring — search only.")
+    max_chars: int = Field(default=12000, description="Read truncation limit.")
 
-    Actions:
-    - ``list``: list files under ``path`` (default root, non-recursive unless
-      path ends with '/').
-    - ``read``: read a UTF-8 file at ``path``.
-    - ``write``: write ``content`` to ``path`` (creates parents).
-    - ``search``: substring-search file contents for ``query`` under ``path``.
-    - ``delete``: delete file at ``path``.
-    - ``mkdir``: create directory ``path``.
-    - ``info``: file size/mtime for ``path``.
 
-    Paths are workspace-relative; ``..`` escapes are rejected.
+class WorkspaceTool(BaseTool):
+    name = "workspace"
+    tool_icon = "🗂️"
+    params = WorkspaceParams
+    mutating = True
+    description = (
+        "Full control over the workspace directory: list, read, write, "
+        "search, delete, mkdir and info. Paths are workspace-relative; "
+        "'..' escapes are rejected."
+    )
 
-    :param action: list|read|write|search|delete|mkdir|info.
-    :param path: Workspace-relative path.
-    :param content: File content for write.
-    :param query: Search substring for search.
-    :param max_chars: Read truncation limit.
-    """
-    root = Path(os.environ.get("DT_WORKSPACE_DIR", "./data/workspace")).resolve()
-    root.mkdir(parents=True, exist_ok=True)
+    async def execute(
+        self, params: WorkspaceParams, cancel_event: Any = None
+    ) -> ToolResult:
+        root = Path(os.environ.get("DT_WORKSPACE_DIR", "./data/workspace")).resolve()
+        root.mkdir(parents=True, exist_ok=True)
 
-    def _resolve(p: str) -> Path:
-        cand = (root / (p or ".").lstrip("/")).resolve()
-        if cand != root and root not in cand.parents:
-            raise ValueError(f"path escapes workspace: {p}")
-        return cand
+        def _resolve(p: str) -> Path:
+            cand = (root / (p or ".").lstrip("/")).resolve()
+            if cand != root and root not in cand.parents:
+                raise ValueError(f"path escapes workspace: {p}")
+            return cand
 
-    action = (action or "list").lower()
-    try:
-        if action == "list":
-            base = _resolve(path or ".")
-            if not base.is_dir():
-                return f"Not a directory: {path}"
-            entries = sorted(base.iterdir(), key=lambda e: (e.is_file(), e.name))
-            lines = []
-            for e in entries[:200]:
-                rel = e.relative_to(root)
-                lines.append(f"{'📁' if e.is_dir() else '📄'} {rel}")
-            return "\n".join(lines) or "(empty)"
-        if action == "read":
-            f = _resolve(path)
-            if not f.is_file():
-                return f"Not a file: {path}"
-            return f.read_text(encoding="utf-8", errors="replace")[:max_chars]
-        if action == "write":
-            f = _resolve(path)
-            f.parent.mkdir(parents=True, exist_ok=True)
-            f.write_text(content, encoding="utf-8")
-            return f"Wrote {len(content)} chars to {path}"
-        if action == "search":
-            base = _resolve(path or ".")
-            hits = []
-            for f in base.rglob("*") if base.is_dir() else [base]:
-                if not f.is_file() or f.stat().st_size > 2_000_000:
-                    continue
-                try:
-                    text = f.read_text(encoding="utf-8", errors="replace")
-                except Exception:  # noqa: BLE001
-                    continue
-                if query.lower() in text.lower():
-                    hits.append(str(f.relative_to(root)))
-                    if len(hits) >= 20:
-                        break
-            return "\n".join(hits) or "No matches."
-        if action == "delete":
-            f = _resolve(path)
-            if f.is_file():
-                f.unlink()
-                return f"Deleted {path}"
-            if f.is_dir():
-                import shutil
-                shutil.rmtree(f)
-                return f"Deleted dir {path}"
-            return f"Not found: {path}"
-        if action == "mkdir":
-            _resolve(path).mkdir(parents=True, exist_ok=True)
-            return f"Created {path}"
-        if action == "info":
-            f = _resolve(path)
-            if not f.exists():
-                return f"Not found: {path}"
-            st = f.stat()
-            return f"{path}: {'dir' if f.is_dir() else 'file'}, {st.st_size} bytes, mtime {time.strftime('%Y-%m-%d %H:%M', time.localtime(st.st_mtime))}"
-        return f"Unknown workspace action: {action}"
-    except Exception as exc:  # noqa: BLE001
-        return f"workspace {action} error: {exc}"
+        verb = params.action.lower()
+        try:
+            if verb == "list":
+                base = _resolve(params.path or ".")
+                if not base.is_dir():
+                    return _ok(f"Not a directory: {params.path}")
+                entries = sorted(base.iterdir(), key=lambda e: (e.is_file(), e.name))
+                lines = []
+                for e in entries[:200]:
+                    rel = e.relative_to(root)
+                    lines.append(f"{'📁' if e.is_dir() else '📄'} {rel}")
+                return _ok("\n".join(lines) or "(empty)")
+            if verb == "read":
+                f = _resolve(params.path)
+                if not f.is_file():
+                    return _ok(f"Not a file: {params.path}")
+                return _ok(f.read_text(encoding="utf-8", errors="replace")[:params.max_chars])
+            if verb == "write":
+                f = _resolve(params.path)
+                f.parent.mkdir(parents=True, exist_ok=True)
+                f.write_text(params.content, encoding="utf-8")
+                return _ok(f"Wrote {len(params.content)} chars to {params.path}")
+            if verb == "search":
+                base = _resolve(params.path or ".")
+                hits = []
+                for f in base.rglob("*") if base.is_dir() else [base]:
+                    if not f.is_file() or f.stat().st_size > 2_000_000:
+                        continue
+                    try:
+                        text = f.read_text(encoding="utf-8", errors="replace")
+                    except Exception:  # noqa: BLE001
+                        continue
+                    if params.query.lower() in text.lower():
+                        hits.append(str(f.relative_to(root)))
+                        if len(hits) >= 20:
+                            break
+                return _ok("\n".join(hits) or "No matches.")
+            if verb == "delete":
+                f = _resolve(params.path)
+                if f.is_file():
+                    f.unlink()
+                    return _ok(f"Deleted {params.path}")
+                if f.is_dir():
+                    shutil.rmtree(f)
+                    return _ok(f"Deleted dir {params.path}")
+                return _ok(f"Not found: {params.path}")
+            if verb == "mkdir":
+                _resolve(params.path).mkdir(parents=True, exist_ok=True)
+                return _ok(f"Created {params.path}")
+            if verb == "info":
+                f = _resolve(params.path)
+                if not f.exists():
+                    return _ok(f"Not found: {params.path}")
+                st = f.stat()
+                return _ok(
+                    f"{params.path}: {'dir' if f.is_dir() else 'file'}, "
+                    f"{st.st_size} bytes, mtime "
+                    f"{time.strftime('%Y-%m-%d %H:%M', time.localtime(st.st_mtime))}")
+            return _ok(f"Unknown workspace action: {params.action}")
+        except Exception as exc:  # noqa: BLE001
+            return _ok(f"workspace {verb} error: {exc}")
+
+
+workspace = WorkspaceTool()
 
 
 # ---------------------------------------------------------------------------
@@ -342,95 +440,114 @@ def workspace(action: str, path: str = "", content: str = "",
 # ---------------------------------------------------------------------------
 
 
-@tool(mutating=True, tool_icon="🎯")
-def mastery(action: str, topic: str = "", question: str = "",
-            answer: str = "", score: int = -1, note: str = "") -> str:
-    """Guided Learning mastery — one tool for the whole mastery loop.
+class MasteryParams(BaseModel):
+    action: Literal["topics", "start", "status", "quiz", "grade", "note",
+                    "leave"] = Field(
+        description="topics = list mastery state; start = begin a session "
+        "on a topic; status = session state; quiz = next review question; "
+        "grade = record an answer with a score; note = attach a note; "
+        "leave = end the session."
+    )
+    topic: str = Field(default="", description="Topic name.")
+    question: str = Field(
+        default="", description="Question being answered — grade only."
+    )
+    answer: str = Field(default="", description="Learner's answer — grade only.")
+    score: int = Field(
+        default=-1,
+        description="0-100 correctness for grade; -1 = ungraded.",
+    )
+    note: str = Field(default="", description="Free-text note.")
 
-    Actions:
-    - ``topics``: list topics and their mastery state.
-    - ``start``: begin a mastery session on ``topic``.
-    - ``status``: current session state.
-    - ``quiz``: get the next review question for ``topic``.
-    - ``grade``: record learner's ``answer`` to ``question`` with ``score``
-      (0-100, -1 = ungraded); updates mastery level.
-    - ``note``: attach a free-form ``note`` to ``topic``.
-    - ``leave``: end the current session.
 
-    :param action: topics|start|status|quiz|grade|note|leave.
-    :param topic: Topic name.
-    :param question: Question being answered (grade).
-    :param answer: Learner's answer (grade).
-    :param score: 0-100 correctness (grade).
-    :param note: Free-text note.
-    """
-    from ..config import get_settings
-    from ..store import database
+class MasteryTool(BaseTool):
+    name = "mastery"
+    tool_icon = "🎯"
+    params = MasteryParams
+    mutating = True
+    description = (
+        "Guided Learning mastery loop: start a session on a topic, ask "
+        "diagnostic questions, grade answers (0-100), and track level "
+        "0-5 across reviews."
+    )
 
-    settings = get_settings()
-    data = database.get_state(settings, "mastery", {"topics": {}, "session": None})
-    if not isinstance(data, dict):
-        data = {"topics": {}, "session": None}
-    topics = cast(dict[str, Any], data.setdefault("topics", {}))
-    session = data.get("session")
+    async def execute(
+        self, params: MasteryParams, cancel_event: Any = None
+    ) -> ToolResult:
+        from ..config import get_settings
+        from ..store import database
 
-    action = (action or "status").lower()
-    if action == "topics":
-        if not topics:
-            return "No mastery topics yet. Use mastery(action='start', topic='...')."
-        return "Mastery topics:\n" + "\n".join(
-            f"- {k}: level {v.get('level', 0)}/5, {v.get('reviews', 0)} reviews"
-            for k, v in topics.items())
-    if action == "start":
-        if not topic:
-            return "mastery start needs a topic."
-        topics.setdefault(topic, {"level": 0, "reviews": 0, "notes": []})
-        data["session"] = {"topic": topic, "started_at": time.time(), "turn": 0}
-        database.put_state(settings, "mastery", data)
-        return f"Started mastery session on {topic}. Ask a diagnostic question."
-    if action == "status":
-        return f"Session: {session} " if session else "No active session. " + \
-            f"Topics: {len(topics)}"
-    if action == "quiz":
-        t = session and topics.get(session.get("topic"))
-        if not t:
-            return "No active session — mastery(action='start', topic='...') first."
-        lvl = t.get("level", 0)
-        prompts = [
-            f"Explain {session['topic']} from scratch.",
-            f"Give a non-trivial example of {session['topic']}.",
-            f"What are the edge cases of {session['topic']}?",
-            f"Compare {session['topic']} with a related concept.",
-            f"Teach {session['topic']} to a beginner in 3 steps.",
-        ]
-        q = prompts[min(lvl, len(prompts) - 1)]
-        return f"QUIZ: {q}\n(INSTRUCTION: ask the learner, then call mastery(action='grade').)"
-    if action == "grade":
-        if not session or not question:
-            return "mastery grade needs an active session and question."
-        t = topics.setdefault(session["topic"], {"level": 0, "reviews": 0, "notes": []})
-        t["reviews"] = int(t.get("reviews", 0)) + 1
-        if score >= 0:
-            # level 0-5: correct answers raise, wrong lower (min 0)
-            delta = 1 if score >= 70 else (-1 if score < 40 else 0)
-            t["level"] = max(0, min(5, int(t.get("level", 0)) + delta))
-        if note:
-            t.setdefault("notes", []).append({"at": time.time(), "note": note})
-        t["updated_at"] = time.time()
-        database.put_state(settings, "mastery", data)
-        return (f"Recorded: level {t['level']}/5 after {t['reviews']} reviews "
+        settings = get_settings()
+        data = database.get_state(settings, "mastery", {"topics": {}, "session": None})
+        if not isinstance(data, dict):
+            data = {"topics": {}, "session": None}
+        topics = cast(dict[str, Any], data.setdefault("topics", {}))
+        session = data.get("session")
+
+        verb = params.action.lower()
+        if verb == "topics":
+            if not topics:
+                return _ok("No mastery topics yet. Use mastery(action='start', topic='...').")
+            return _ok("Mastery topics:\n" + "\n".join(
+                f"- {k}: level {v.get('level', 0)}/5, {v.get('reviews', 0)} reviews"
+                for k, v in topics.items()))
+        if verb == "start":
+            if not params.topic:
+                return _fail("mastery start needs a topic.")
+            topics.setdefault(params.topic, {"level": 0, "reviews": 0, "notes": []})
+            data["session"] = {"topic": params.topic,
+                               "started_at": time.time(), "turn": 0}
+            database.put_state(settings, "mastery", data)
+            return _ok(f"Started mastery session on {params.topic}. Ask a diagnostic question.")
+        if verb == "status":
+            return _ok(
+                f"Session: {session} " if session
+                else "No active session. " + f"Topics: {len(topics)}")
+        if verb == "quiz":
+            t = session and topics.get(session.get("topic"))
+            if not t:
+                return _ok("No active session — mastery(action='start', topic='...') first.")
+            lvl = t.get("level", 0)
+            prompts = [
+                f"Explain {session['topic']} from scratch.",
+                f"Give a non-trivial example of {session['topic']}.",
+                f"What are the edge cases of {session['topic']}?",
+                f"Compare {session['topic']} with a related concept.",
+                f"Teach {session['topic']} to a beginner in 3 steps.",
+            ]
+            q = prompts[min(lvl, len(prompts) - 1)]
+            return _ok(f"QUIZ: {q}\n(INSTRUCTION: ask the learner, then call mastery(action='grade').)")
+        if verb == "grade":
+            if not session or not params.question:
+                return _fail("mastery grade needs an active session and question.")
+            t = topics.setdefault(session["topic"], {"level": 0, "reviews": 0, "notes": []})
+            t["reviews"] = int(t.get("reviews", 0)) + 1
+            if params.score >= 0:
+                # level 0-5: correct answers raise, wrong lower (min 0)
+                delta = 1 if params.score >= 70 else (-1 if params.score < 40 else 0)
+                t["level"] = max(0, min(5, int(t.get("level", 0)) + delta))
+            if params.note:
+                t.setdefault("notes", []).append({"at": time.time(), "note": params.note})
+            t["updated_at"] = time.time()
+            database.put_state(settings, "mastery", data)
+            return _ok(
+                f"Recorded: level {t['level']}/5 after {t['reviews']} reviews "
                 f"on {session['topic']}.")
-    if action == "note":
-        tname = topic or (session or {}).get("topic")
-        t = topics.setdefault(tname or "general", {"level": 0, "reviews": 0, "notes": []})
-        t.setdefault("notes", []).append({"at": time.time(), "note": note})
-        database.put_state(settings, "mastery", data)
-        return "Note saved."
-    if action == "leave":
-        data["session"] = None
-        database.put_state(settings, "mastery", data)
-        return "Mastery session ended."
-    return f"Unknown mastery action: {action}"
+        if verb == "note":
+            tname = params.topic or (session or {}).get("topic")
+            t = topics.setdefault(tname or "general",
+                                  {"level": 0, "reviews": 0, "notes": []})
+            t.setdefault("notes", []).append({"at": time.time(), "note": params.note})
+            database.put_state(settings, "mastery", data)
+            return _ok("Note saved.")
+        if verb == "leave":
+            data["session"] = None
+            database.put_state(settings, "mastery", data)
+            return _ok("Mastery session ended.")
+        return _fail(f"Unknown mastery action: {params.action}")
+
+
+mastery = MasteryTool()
 
 
 # ---------------------------------------------------------------------------
@@ -443,28 +560,46 @@ def mastery(action: str, topic: str = "", question: str = "",
 _VIDEO_LESSON_MARKER = "VIDEO_LESSON_RESULT:"
 
 
-@tool(mutating=True, tool_icon="🎬")
-async def video(query: str, title: str = "") -> str:
-    """Turn a natural-language request into an animated video lesson.
+class VideoParams(BaseModel):
+    query: str = Field(
+        description=(
+            "The learner's request in plain language, e.g. 'explain how "
+            "photosynthesis works in a one-minute animation'."
+        )
+    )
+    title: str = Field(
+        default="", description="Optional short title for the lesson card/file slug."
+    )
 
-    A dedicated writer sub-agent writes a Remotion (React) scene; the backend
-    compiles it, checks sample frames and narration timing, and publishes a
-    self-contained player page under /files.
 
-    :param query: The learner's request in plain language, e.g. "explain how
-      photosynthesis works in a one-minute animation".
-    :param title: Optional short title (used for the lesson card and file slug).
-    """
-    from .video_lesson import create_lesson
+class VideoTool(BaseTool):
+    name = "video"
+    tool_icon = "🎬"
+    params = VideoParams
+    mutating = True
+    description = (
+        "Turn a natural-language request into an animated video lesson. A "
+        "writer sub-agent produces a Remotion scene; the backend compiles "
+        "it, frame-checks it, and publishes a player page under /files."
+    )
 
-    try:
-        lesson = await create_lesson(query, title)
-    except RuntimeError as exc:
-        # Runtime errors already carry a user-facing "Video ... failed:" prefix.
-        return str(exc)
-    except Exception as exc:  # noqa: BLE001
-        return f"Video render failed: {exc}"
-    return _VIDEO_LESSON_MARKER + json.dumps(lesson, ensure_ascii=False, separators=(",", ":"))
+    async def execute(
+        self, params: VideoParams, cancel_event: Any = None
+    ) -> ToolResult:
+        from .video_lesson import create_lesson
+
+        try:
+            lesson = await create_lesson(params.query, params.title)
+        except RuntimeError as exc:
+            # Runtime errors already carry a user-facing "Video ... failed:" prefix.
+            return _fail(str(exc))
+        except Exception as exc:  # noqa: BLE001
+            return _fail(f"Video render failed: {exc}")
+        return _ok(_VIDEO_LESSON_MARKER
+                   + json.dumps(lesson, ensure_ascii=False, separators=(",", ":")))
+
+
+video = VideoTool()
 
 
 # ---------------------------------------------------------------------------
@@ -565,29 +700,49 @@ async def _jina_fetch(url: str) -> tuple[str | None, str | None]:
     return text, None
 
 
-@tool(mutating=False, tool_icon="🌐")
-async def web(query: str, mode: str = "search", max_results: int = 8,
-              max_chars: int = _MAX_FETCH_CHARS) -> str:
-    """Web search (Exa) or URL fetch (Jina Reader) — one tool for both.
+class WebParams(BaseModel):
+    query: str = Field(
+        description="Search query, or a full http(s) URL when mode='fetch'."
+    )
+    mode: Literal["search", "fetch"] = Field(
+        default="search",
+        description="search = web search results (titles/URLs/snippets); "
+        "fetch = download a URL's readable markdown text.",
+    )
+    max_results: int = Field(
+        default=8, description="Max search results (Exa returns up to ~8-10)."
+    )
+    max_chars: int = Field(
+        default=_MAX_FETCH_CHARS, description="Fetch truncation limit."
+    )
 
-    ``mode='search'`` (default): query the web, returns titles/URLs/snippets.
-    ``mode='fetch'``: download a URL's readable markdown text.
-    Needs internet.
 
-    :param query: Search query, or a URL when mode='fetch'.
-    :param mode: 'search' (default) or 'fetch'.
-    :param max_results: Max search results (Exa returns up to ~8-10).
-    :param max_chars: Fetch truncation limit.
-    """
-    mode = (mode or "search").lower()
-    if mode == "fetch":
-        url = query.strip()
-        if not url.startswith(("http://", "https://")):
-            return "mode='fetch' requires an http(s) URL"
-        text, err = await _jina_fetch(url)
-        return err or (text or "")[:max_chars] if text else (err or "empty")
-    text, err = await _exa_search(query, max_results)
-    return err or text or "No results."
+class WebTool(BaseTool):
+    name = "web"
+    tool_icon = "🌐"
+    params = WebParams
+    mutating = False
+    description = (
+        "Web access: search the web via Exa, or fetch a URL as readable "
+        "markdown via Jina Reader. Needs internet."
+    )
+
+    async def execute(
+        self, params: WebParams, cancel_event: Any = None
+    ) -> ToolResult:
+        if params.mode == "fetch":
+            url = params.query.strip()
+            if not url.startswith(("http://", "https://")):
+                return _fail("mode='fetch' requires an http(s) URL")
+            text, err = await _jina_fetch(url)
+            if err:
+                return _fail(err)
+            return _ok((text or "")[:params.max_chars] if text else "empty")
+        text, err = await _exa_search(params.query, params.max_results)
+        return _ok(err) if err else _ok(text or "No results.")
+
+
+web = WebTool()
 
 
 # ---------------------------------------------------------------------------
@@ -595,63 +750,74 @@ async def web(query: str, mode: str = "search", max_results: int = 8,
 # ---------------------------------------------------------------------------
 
 
-@tool(mutating=False, tool_icon="📄")
-async def paper_search(
-    query: str, max_results: int = 5, sort_by: str = "relevance"
-) -> str:
-    """Search arXiv for research papers.
-
-    :param query: Search keywords (arXiv query syntax supported).
-    :param max_results: Number of papers to return (max 20).
-    :param sort_by: "relevance" or "date".
-    """
-    import xml.etree.ElementTree as ET
-
-    query = (query or "").strip()
-    if not query:
-        return "Empty query."
-    max_results = max(1, min(int(max_results), 20))
-    sort = "submittedDate" if sort_by == "date" else "relevance"
-    # Build the arXiv query with urlencode (QueryParams is not a str).
-    from urllib.parse import urlencode
-
-    api = "https://export.arxiv.org/api/query?" + urlencode(
-        {
-            "search_query": f"all:{query}",
-            "start": 0,
-            "max_results": max_results,
-            "sortBy": sort,
-            "sortOrder": "descending",
-        }
+class PaperSearchParams(BaseModel):
+    query: str = Field(
+        description="Search keywords (arXiv query syntax supported)."
     )
-    try:
-        async with httpx.AsyncClient(timeout=30.0, headers=_HEADERS) as client:
-            resp = await client.get(api)
-            resp.raise_for_status()
-        ns = {"a": "http://www.w3.org/2005/Atom"}
-        root = ET.fromstring(resp.text)
-        out = []
-        for entry in root.findall("a:entry", ns):
-            title = " ".join((entry.findtext("a:title", "", ns) or "").split())
-            summary = " ".join((entry.findtext("a:summary", "", ns) or "").split())
-            link = ""
-            for ln in entry.findall("a:link", ns):
-                if ln.get("title") == "pdf" or ln.get("rel") == "related":
-                    link = ln.get("href", "")
-                    break
-            id_node = entry.find("a:id", ns)
-            link = link or ((id_node.text or "") if id_node is not None else "")
-            authors = [a.findtext("a:name", "", ns) for a in entry.findall("a:author", ns)]
-            year = ""
-            published = entry.findtext("a:published", "", ns) or ""
-            year = published[:4]
-            out.append(
-                f"Title: {title}\nAuthors: {', '.join(authors)}\nYear: {year}\n"
-                f"URL: {link}\nAbstract: {summary[:800]}"
-            )
-        return "\n\n---\n\n".join(out) if out else "No papers found."
-    except Exception as exc:  # noqa: BLE001
-        return f"arXiv search error: {exc}"
+    max_results: int = Field(default=5, description="Number of papers (max 20).")
+    sort_by: Literal["relevance", "date"] = Field(
+        default="relevance", description="Sort order for results."
+    )
+
+
+class PaperSearchTool(BaseTool):
+    name = "paper_search"
+    tool_icon = "📄"
+    params = PaperSearchParams
+    mutating = False
+    description = "Search arXiv for research papers; returns titles, authors, year, URL and abstract."
+
+    async def execute(
+        self, params: PaperSearchParams, cancel_event: Any = None
+    ) -> ToolResult:
+        import xml.etree.ElementTree as ET
+
+        query = params.query.strip()
+        if not query:
+            return _fail("Empty query.")
+        max_results = max(1, min(int(params.max_results), 20))
+        sort = "submittedDate" if params.sort_by == "date" else "relevance"
+        # Build the arXiv query with urlencode (QueryParams is not a str).
+        from urllib.parse import urlencode
+
+        api = "https://export.arxiv.org/api/query?" + urlencode(
+            {
+                "search_query": f"all:{query}",
+                "start": 0,
+                "max_results": max_results,
+                "sortBy": sort,
+                "sortOrder": "descending",
+            }
+        )
+        try:
+            async with httpx.AsyncClient(timeout=30.0, headers=_HEADERS) as client:
+                resp = await client.get(api)
+                resp.raise_for_status()
+            ns = {"a": "http://www.w3.org/2005/Atom"}
+            root = ET.fromstring(resp.text)
+            out = []
+            for entry in root.findall("a:entry", ns):
+                title = " ".join((entry.findtext("a:title", "", ns) or "").split())
+                summary = " ".join((entry.findtext("a:summary", "", ns) or "").split())
+                link = ""
+                for ln in entry.findall("a:link", ns):
+                    if ln.get("title") == "pdf" or ln.get("rel") == "related":
+                        link = ln.get("href", "")
+                        break
+                id_node = entry.find("a:id", ns)
+                link = link or ((id_node.text or "") if id_node is not None else "")
+                authors = [a.findtext("a:name", "", ns) for a in entry.findall("a:author", ns)]
+                published = entry.findtext("a:published", "", ns) or ""
+                out.append(
+                    f"Title: {title}\nAuthors: {', '.join(authors)}\nYear: {published[:4]}\n"
+                    f"URL: {link}\nAbstract: {summary[:800]}"
+                )
+            return _ok("\n\n---\n\n".join(out) if out else "No papers found.")
+        except Exception as exc:  # noqa: BLE001
+            return _fail(f"arXiv search error: {exc}")
+
+
+paper_search = PaperSearchTool()
 
 
 # ---------------------------------------------------------------------------
@@ -689,113 +855,142 @@ def _cron_parse_at(value: str) -> int:
     return int(parsed.timestamp() * 1000)
 
 
-@tool(mutating=True, tool_icon="⏰")
-def cron(
-    action: str,
-    message: str = "",
-    name: str = "",
-    at: str = "",
-    every_seconds: int = 0,
-    cron_expr: str = "",
-    tz: str = "",
-    job_id: str = "",
-) -> str:
-    """Schedule reminders or automations that run later, and manage them.
-
-    Use this when the learner asks to be reminded, nudged or given something on
-    a schedule ("remind me every Monday at 9", "quiz me tomorrow evening").
-    The scheduled run lands as a new message in this conversation.
-
-    :param action: "list", "schedule" (aka add) or "cancel".
-    :param message: For "schedule": the instruction or reminder to deliver when due.
-    :param name: Optional short label for the task.
-    :param at: For "schedule": one-off time, ISO 8601, e.g. "2026-06-12T09:00".
-    :param every_seconds: For "schedule": repeat interval in seconds (min 30).
-    :param cron_expr: For "schedule": cron expression, e.g. "0 9 * * 1" (Mondays 09:00).
-    :param tz: For "schedule": IANA timezone for cron_expr, e.g. "Europe/Berlin".
-    :param job_id: For "cancel": the id shown by action="list".
-    """
-    from ..services.cron import CronOwner, get_cron_service
-    from .turn_context import turn_context
-
-    session_id, workspace_id = turn_context()
-    if not session_id:
-        return "Scheduling is not available in this context."
-    owner = CronOwner(kind="chat", session_id=session_id, workspace_id=workspace_id)
-    service = get_cron_service()
-    verb = (action or "").strip().lower()
-    verb = {"add": "schedule", "remove": "cancel"}.get(verb, verb)
-
-    def describe(job) -> str:  # noqa: ANN001 - CronJob
-        from datetime import datetime
-
-        nxt = job.state.next_run_at_ms
-        when = (
-            datetime.fromtimestamp(nxt / 1000).astimezone().strftime("%Y-%m-%d %H:%M %Z")
-            if nxt
-            else "—"
+class CronParams(BaseModel):
+    action: str = Field(
+        description=(
+            "list = show scheduled reminders; schedule (alias add) = create "
+            "one; cancel (alias remove) = delete by job_id. Provide exactly "
+            "one of at / every_seconds / cron_expr when scheduling."
         )
-        status = job.state.last_status or "pending"
-        return (
-            f"- `{job.id}` **{job.name}** — {_cron_describe(job.schedule)}; "
-            f"next run {when}; last: {status}"
-        )
+    )
+    message: str = Field(
+        default="", description="Instruction or reminder to deliver when due — schedule only."
+    )
+    name: str = Field(default="", description="Optional short label for the task.")
+    at: str = Field(
+        default="",
+        description="One-off time, ISO 8601 e.g. '2026-06-12T09:00' — schedule only.",
+    )
+    every_seconds: int = Field(
+        default=0, description="Repeat interval in seconds (min 30) — schedule only."
+    )
+    cron_expr: str = Field(
+        default="", description="Cron expression e.g. '0 9 * * 1' — schedule only."
+    )
+    tz: str = Field(
+        default="", description="IANA timezone for cron_expr e.g. 'Europe/Berlin'."
+    )
+    job_id: str = Field(
+        default="", description="Job id from action='list' — cancel only."
+    )
 
-    if verb == "list":
-        jobs = service.list_jobs(owner_key=owner.key)
-        if not jobs:
-            return "No scheduled reminders for this conversation."
-        return "\n".join([f"{len(jobs)} scheduled reminder(s):", *map(describe, jobs)])
 
-    if verb == "cancel":
-        key = (job_id or "").strip()
-        if not key:
-            return "cancel needs a job_id (see action='list')."
-        if service.cancel_job(key, owner_key=owner.key):
-            return f"Reminder `{key}` cancelled."
-        return f"No reminder `{key}` found for this conversation."
+class CronTool(BaseTool):
+    name = "cron"
+    tool_icon = "⏰"
+    params = CronParams
+    mutating = True
+    description = (
+        "Schedule reminders or automations that run later and manage them. "
+        "Use when the learner asks to be reminded, nudged or given "
+        "something on a schedule ('remind me every Monday at 9', 'quiz me "
+        "tomorrow evening'). The scheduled run lands as a new message in "
+        "this conversation."
+    )
 
-    if verb == "schedule":
-        text = (message or "").strip()
-        if not text:
-            return "schedule needs a message — what to deliver when it is due."
-        chosen = [bool((at or "").strip()), bool(every_seconds), bool((cron_expr or "").strip())]
-        if sum(chosen) != 1:
+    async def execute(
+        self, params: CronParams, cancel_event: Any = None
+    ) -> ToolResult:
+        from ..services.cron import CronOwner, get_cron_service
+        from .turn_context import turn_context
+
+        session_id, workspace_id = turn_context()
+        if not session_id:
+            return _fail("Scheduling is not available in this context.")
+        owner = CronOwner(kind="chat", session_id=session_id,
+                          workspace_id=workspace_id)
+        service = get_cron_service()
+        verb = params.action.strip().lower()
+        verb = {"add": "schedule", "remove": "cancel"}.get(verb, verb)
+
+        def describe(job) -> str:  # noqa: ANN001 - CronJob
+            from datetime import datetime
+
+            nxt = job.state.next_run_at_ms
+            when = (
+                datetime.fromtimestamp(nxt / 1000).astimezone().strftime("%Y-%m-%d %H:%M %Z")
+                if nxt
+                else "—"
+            )
+            status = job.state.last_status or "pending"
             return (
-                "Provide exactly one of: at (one-off), every_seconds (interval), "
-                "or cron_expr (cron expression)."
+                f"- `{job.id}` **{job.name}** — {_cron_describe(job.schedule)}; "
+                f"next run {when}; last: {status}"
             )
-        try:
-            from ..services.cron import CronSchedule
 
-            if at.strip():
-                schedule = CronSchedule(kind="at", at_ms=_cron_parse_at(at.strip()))
-            elif every_seconds:
-                schedule = CronSchedule(kind="every", every_seconds=int(every_seconds))
-            else:
-                schedule = CronSchedule(
-                    kind="cron", expr=cron_expr.strip(), tz=(tz or "").strip() or None
+        if verb == "list":
+            jobs = service.list_jobs(owner_key=owner.key)
+            if not jobs:
+                return _ok("No scheduled reminders for this conversation.")
+            return _ok("\n".join([f"{len(jobs)} scheduled reminder(s):",
+                                  *map(describe, jobs)]))
+
+        if verb == "cancel":
+            key = params.job_id.strip()
+            if not key:
+                return _fail("cancel needs a job_id (see action='list').")
+            if service.cancel_job(key, owner_key=owner.key):
+                return _ok(f"Reminder `{key}` cancelled.")
+            return _ok(f"No reminder `{key}` found for this conversation.")
+
+        if verb == "schedule":
+            text = params.message.strip()
+            if not text:
+                return _fail("schedule needs a message — what to deliver when it is due.")
+            chosen = [bool(params.at.strip()), bool(params.every_seconds),
+                      bool(params.cron_expr.strip())]
+            if sum(chosen) != 1:
+                return _fail(
+                    "Provide exactly one of: at (one-off), every_seconds "
+                    "(interval), or cron_expr (cron expression)."
                 )
-            job = service.add_job(
-                name=name, message=text, schedule=schedule, owner=owner
+            try:
+                from ..services.cron import CronSchedule
+
+                if params.at.strip():
+                    schedule = CronSchedule(kind="at",
+                                            at_ms=_cron_parse_at(params.at.strip()))
+                elif params.every_seconds:
+                    schedule = CronSchedule(kind="every",
+                                            every_seconds=int(params.every_seconds))
+                else:
+                    schedule = CronSchedule(
+                        kind="cron", expr=params.cron_expr.strip(),
+                        tz=params.tz.strip() or None,
+                    )
+                job = service.add_job(
+                    name=params.name, message=text, schedule=schedule, owner=owner
+                )
+            except (ValueError, TypeError) as exc:
+                return _fail(f"Could not schedule: {exc}")
+            from datetime import datetime
+
+            first = (
+                datetime.fromtimestamp(job.state.next_run_at_ms / 1000)
+                .astimezone()
+                .strftime("%Y-%m-%d %H:%M %Z")
+                if job.state.next_run_at_ms
+                else "—"
             )
-        except (ValueError, TypeError) as exc:
-            return f"Could not schedule: {exc}"
-        from datetime import datetime
+            return _ok(
+                f"Scheduled **{job.name}** (`{job.id}`) — {_cron_describe(job.schedule)}; "
+                f"first run {first}. The result arrives in this conversation and on the calendar."
+            )
 
-        first = (
-            datetime.fromtimestamp(job.state.next_run_at_ms / 1000)
-            .astimezone()
-            .strftime("%Y-%m-%d %H:%M %Z")
-            if job.state.next_run_at_ms
-            else "—"
-        )
-        return (
-            f"Scheduled **{job.name}** (`{job.id}`) — {_cron_describe(job.schedule)}; "
-            f"first run {first}. The result arrives in this conversation and on the calendar."
-        )
+        return _fail(f"Unknown action {params.action!r} — use list, schedule or cancel.")
 
-    return f"Unknown action {action!r} — use list, schedule or cancel."
+
+cron = CronTool()
 
 
 # ---------------------------------------------------------------------------
@@ -803,47 +998,64 @@ def cron(
 # ---------------------------------------------------------------------------
 
 
-@tool(mutating=True, tool_icon="🔁")
-def review(action: str, question: str = "", correct: bool = True) -> str:
-    """Run spaced-repetition reviews of the learner's question bank.
+class ReviewParams(BaseModel):
+    action: Literal["due", "grade", "status"] = Field(
+        description="due = cards due for review now; grade = record an "
+        "answer; status = schedule summary."
+    )
+    question: str = Field(
+        default="",
+        description="Question text exactly as shown by 'due' — grade only.",
+    )
+    correct: bool = Field(
+        default=True, description="True if the learner answered correctly — grade only."
+    )
 
-    Cards are due on a growing schedule (1, 3, 7, 14, 30, 60 days). Use
-    action="due" to fetch what needs reviewing now, ask the learner, then
-    record each outcome with action="grade".
 
-    :param action: "due" (what to review now), "grade" (record an answer) or "status".
-    :param question: For "grade": the question text exactly as shown by "due".
-    :param correct: For "grade": true if the learner answered correctly.
-    """
-    from ..services import reviews
+class ReviewTool(BaseTool):
+    name = "review"
+    tool_icon = "🔁"
+    params = ReviewParams
+    mutating = True
+    description = (
+        "Spaced-repetition reviews of the learner's question bank. Cards "
+        "are due on a growing schedule (1, 3, 7, 14, 30, 60 days): fetch "
+        "what's due, ask the learner, then record each outcome."
+    )
 
-    verb = (action or "").strip().lower()
-    if verb == "status":
-        s = reviews.summary()
-        return (
-            f"{s['cards']} card(s) scheduled, {s['due_now']} due now. "
-            + ", ".join(f"box {box}: {count}" for box, count in s["boxes"].items() if count)
-        )
-    if verb == "due":
-        import time
+    async def execute(
+        self, params: ReviewParams, cancel_event: Any = None
+    ) -> ToolResult:
+        from ..services import reviews
 
-        now = time.time()
-        cards = reviews.due_between(now, now + 86400 * 30)
-        if not cards:
+        verb = params.action.lower()
+        if verb == "status":
             s = reviews.summary()
-            return f"Nothing due right now — {s['cards']} card(s) scheduled."
-        lines = [f"{len(cards)} card(s) due:"]
-        for card in cards[:20]:
-            lines.append(f"- [{card['key']}] {card['question']} (box {card['box']})")
-        return "\n".join(lines)
-    if verb == "grade":
-        text = (question or "").strip()
+            return _ok(
+                f"{s['cards']} card(s) scheduled, {s['due_now']} due now. "
+                + ", ".join(f"box {box}: {count}" for box, count in s["boxes"].items() if count)
+            )
+        if verb == "due":
+            import time
+
+            now = time.time()
+            cards = reviews.due_between(now, now + 86400 * 30)
+            if not cards:
+                s = reviews.summary()
+                return _ok(f"Nothing due right now — {s['cards']} card(s) scheduled.")
+            lines = [f"{len(cards)} card(s) due:"]
+            for card in cards[:20]:
+                lines.append(f"- [{card['key']}] {card['question']} (box {card['box']})")
+            return _ok("\n".join(lines))
+        text = params.question.strip()
         if not text:
-            return "grade needs the question text from action='due'."
+            return _fail("grade needs the question text from action='due'.")
         try:
-            card = reviews.grade(reviews.key_for(text), bool(correct))
+            card = reviews.grade(reviews.key_for(text), bool(params.correct))
         except KeyError:
-            return f"No card matches {text!r} — run action='due' first."
+            return _fail(f"No card matches {text!r} — run action='due' first.")
         days = int((card["due_at"] - __import__("time").time()) / 86400)
-        return f"Recorded. Box {card['box']}, next review in about {max(days, 0)} day(s)."
-    return 'action must be "due", "grade" or "status".'
+        return _ok(f"Recorded. Box {card['box']}, next review in about {max(days, 0)} day(s).")
+
+
+review = ReviewTool()
