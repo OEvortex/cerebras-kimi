@@ -16,6 +16,7 @@ import dynamic from '@/shared/router/dynamic'
 import { ArrowUpRight, FileText } from 'lucide-react'
 
 import type { NoteBlock } from '@/lib/notes-api'
+import { hasInlineMathCandidate } from '@/lib/latex-normalize'
 import { parseNoteMarkdown } from '../../model/markdown'
 import NoteFavoriteBlock from '../NoteFavoriteBlock'
 import { noteFile } from '../NoteFile'
@@ -189,6 +190,81 @@ function migrateMathTypes(blocks: NoteBlock[]): NoteBlock[] {
   })
 }
 
+const INLINE_MATH_RE = /\$([^$\n]+?)\$/g;
+
+/** Split `$...$` pairs out of a text run into `math` inline nodes. Only pairs
+ *  the shared normalizer would call a formula are converted, so prices like
+ *  "$5 and $10" stay literal. Code-styled text and `$$`/`\$` neighbours are
+ *  left alone. */
+function extractTextMath(item: Record<string, unknown>): unknown[] {
+  const text = item.text;
+  const styles = (item.styles ?? {}) as Record<string, unknown>;
+  if (typeof text !== 'string' || !text.includes('$') || styles.code) return [item];
+  const out: unknown[] = [];
+  let last = 0;
+  for (const match of text.matchAll(INLINE_MATH_RE)) {
+    const start = match.index!;
+    const end = start + match[0].length;
+    // Skip $$ display math fragments, escaped \$, and code-adjacent dollars.
+    if (
+      text[start - 1] === '$' ||
+      text[start - 1] === '\\' ||
+      text[end] === '$' ||
+      text[end] === '\\'
+    )
+      continue;
+    const body = match[1].trim();
+    if (!body || !hasInlineMathCandidate(`$${body}$`)) continue;
+    if (start > last) out.push({ type: 'text', text: text.slice(last, start), styles });
+    out.push({ type: 'math', content: body });
+    last = end;
+  }
+  if (!out.length) return [item];
+  if (last < text.length) out.push({ type: 'text', text: text.slice(last), styles });
+  return out;
+}
+
+function extractInlineMath(content: unknown): unknown {
+  if (typeof content === 'string' || !content) return content;
+  if (Array.isArray(content)) {
+    return content.flatMap(item => {
+      if (!item || typeof item !== 'object') return [item];
+      const node = item as Record<string, unknown>;
+      if (node.type === 'text') return extractTextMath(node);
+      if (Array.isArray(node.content)) return [{ ...node, content: extractInlineMath(node.content) }];
+      // Table cells: { rows: [{ cells: [[inline...]] }] }
+      const table = node as { rows?: Array<{ cells?: unknown[] }> };
+      if (Array.isArray(table.rows))
+        return [
+          {
+            ...node,
+            rows: table.rows.map(row => ({
+              ...row,
+              cells: (row.cells ?? []).map(cell =>
+                Array.isArray(cell) ? extractInlineMath(cell) : cell
+              ),
+            })),
+          },
+        ];
+      return [item];
+    });
+  }
+  if (typeof content === 'object') {
+    const table = content as { rows?: Array<{ cells?: unknown[] }> };
+    if (Array.isArray(table.rows))
+      return {
+        ...table,
+        rows: table.rows.map(row => ({
+          ...row,
+          cells: (row.cells ?? []).map(cell =>
+            Array.isArray(cell) ? extractInlineMath(cell) : cell
+          ),
+        })),
+      };
+  }
+  return content;
+}
+
 /** Drop inline content a block type cannot hold. A stray string there (a model
  *  echoing "timeline" into a learning block) makes the editor reject the page. */
 export function fitSchema(blocks: NoteBlock[]): NoteBlock[] {
@@ -198,7 +274,7 @@ export function fitSchema(blocks: NoteBlock[]): NoteBlock[] {
     ]
     const { content, ...rest } = block
     return {
-      ...(spec?.content === 'none' ? rest : { ...rest, content }),
+      ...(spec?.content === 'none' ? rest : { ...rest, content: extractInlineMath(content) }),
       children: fitSchema(block.children || []),
     } as NoteBlock
   })

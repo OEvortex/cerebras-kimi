@@ -28,7 +28,7 @@ const INLINE_CODE_SPAN_RE = /(`+)([^`\n]+?)\1/g;
 // `$$...$$` first so a display span is never split into two inline ones.
 const MATH_SPAN_RE = /\$\$[\s\S]*?\$\$|\$(?!\s)(?:\\.|[^$\n])*?(?<!\s)\$/g;
 const CJK_RE =
-  /[,.;:?!()…—]/u;
+  /[぀-ヿ㐀-䶿一-鿿豈-﫿]/u;
 const LATEX_STRUCTURE_RE = /\\[a-zA-Z]+|[\^_]|\\\\/;
 // Function names a writer may legitimately spell out inside a formula.
 const MATH_WORDS = new Set([
@@ -207,7 +207,10 @@ function plausibleMathBody(body: string, tight: boolean): boolean {
   // Latin prose gives itself away with words. `x + y`, `f(x)` and `E = mc` are
   // all formulas; "5 and the value of " is not.
   const words = value.match(/[A-Za-z]{3,}/g) ?? [];
-  return words.every((word) => MATH_WORDS.has(word.toLowerCase()));
+  if (!words.every((word) => MATH_WORDS.has(word.toLowerCase()))) return false;
+  // Letterless, operatorless bodies ("10, ", "5 and ") are prices, not
+  // formulas — unless tightly delimited as a single token ("$5$").
+  return /[A-Za-z\\^_+\-*/=<>]/.test(value) || (tight && !/\s/.test(value));
 }
 
 /**

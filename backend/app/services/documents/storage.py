@@ -42,7 +42,7 @@ class CoWriterDocument(BaseModel):
     icon: str = ""
     cover: str = ""
     pinned: bool = False
-    # Tags attached by the agent's ``notes`` tool. Kept on the
+    # Tags attached to notebook pages. Kept on the
     # page itself so notebook pages written by the tool stay searchable in the
     # same place they are displayed.
     tags: list[str] = Field(default_factory=list)

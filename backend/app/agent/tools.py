@@ -29,7 +29,6 @@ def builtin_tools(settings: Settings, enabled: list[str] | None = None) -> list[
         # DeepTutor portable ports (dt_tools.py)
         "web": dt_tools.web,
         "paper_search": dt_tools.paper_search,
-        "notes": dt_tools.notes,
         "question_bank": dt_tools.question_bank,
         "memory": dt_tools.memory,
         "knowledge_base_search": _kb.knowledge_base_search,

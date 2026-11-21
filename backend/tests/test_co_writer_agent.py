@@ -44,7 +44,7 @@ def test_co_writer_has_its_own_narrower_toolset(tmp_path, monkeypatch):
     # Dito manages pages through the shared nb_* tools only.
     assert {"nb_read", "nb_list", "nb_search", "nb_patch"} <= names
     assert "notes" not in names
-    assert "notes" in chat
+    assert "notes" not in chat
 
 
 def test_notebook_prompt_does_not_inject_earlier_conversations(tmp_path, monkeypatch):

@@ -1,13 +1,9 @@
-"""Notes saved by the agent must show up as Co-Writer notebook pages.
+"""Legacy markdown notes are migrated into Co-Writer notebook pages.
 
-The old tool wrote standalone markdown files under ``data/notes`` while the
-Notebook tab lists ``data/documents``. These tests pin the bridge between the
-two, including migration of notes saved before the fix.
+Older versions wrote standalone markdown files under ``data/notes`` while the
+Notebook tab lists ``data/documents``. These tests pin that one-time bridge.
 """
 
-import asyncio
-
-from app.agent.dt_tools import notes
 from app.services.documents.notes import (
     list_notes,
     search_notes,
@@ -15,36 +11,6 @@ from app.services.documents.notes import (
     write_note,
 )
 from app.services.documents.storage import get_co_writer_storage
-
-
-def _run(tool, **kwargs):
-    return asyncio.run(tool.execute(tool.params(**kwargs)))
-
-
-def test_notes_write_creates_a_notebook_page(tmp_path, monkeypatch):
-    monkeypatch.setenv("DT_DATA_DIR", str(tmp_path))
-
-    result = _run(
-        notes,
-        action="write",
-        title="PN Junction",
-        content="# PN Junction\n\nCarriers diffuse across the junction.",
-        tags="electronics, semiconductors",
-    )
-    assert result.success, result.result
-
-    storage = get_co_writer_storage()
-    docs = storage.list_documents()
-    assert len(docs) == 1
-    page = storage.load_document(docs[0].id)
-    assert page is not None
-    assert page.title == "PN Junction"
-    assert page.tags == ["electronics", "semiconductors"]
-    assert "Carriers diffuse" in page.content
-    assert page.id in result.result
-
-    # Markdown mirrors are no longer written: the page is the only copy.
-    assert list((tmp_path / "notes").glob("*.md")) == []
 
 
 def test_legacy_notes_are_imported_once_and_are_searchable(tmp_path, monkeypatch):
@@ -73,7 +39,7 @@ def test_legacy_notes_are_imported_once_and_are_searchable(tmp_path, monkeypatch
     found = search_notes("diodes")
     assert page.id in found
 
-    # A note written by the tool must not be imported a second time.
+    # A note written through the store must not be imported a second time.
     write_note("New note", "Body", "physics")
     list_notes()
     assert len(storage.list_documents()) == 2
@@ -110,16 +76,3 @@ def test_update_note_rejects_bad_input(tmp_path, monkeypatch):
     assert "Note not found" in update_note("doc_missing", "a", "b")
     assert "old_string not found" in update_note(note_id, "missing", "x")
 
-
-def test_notes_tool_dispatches_update(tmp_path, monkeypatch):
-    monkeypatch.setenv("DT_DATA_DIR", str(tmp_path))
-    note_id = write_note("Via tool", "alpha beta", "misc")
-
-    result = _run(notes, action="update", note_id=note_id,
-                  old_string="beta", new_string="gamma")
-    assert result.success, result.result
-    assert "Updated note 'Via tool'" in result.result
-
-    page = get_co_writer_storage().load_document(note_id)
-    assert page is not None
-    assert page.content == "alpha gamma"

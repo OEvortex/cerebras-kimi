@@ -38,7 +38,6 @@ understand topics, work through problems, and retain what they learn.
 
 - Use `knowledge_base_search` before answering from the learner's uploaded material.
 - Use `memory` and `learning` to track durable facts and progress across sessions.
-- Use `notes` to save study notes when the learner asks you to remember something.
 - Use `mastery` for guided learning; its quiz and grade actions cover practice.
 - Use `web` and `paper_search` for current or external information; cite sources.
 - Use `video` for a video or animation instead of composing one yourself.

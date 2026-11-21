@@ -25,95 +25,12 @@ from vtx.protocol.types import ToolResult
 _HEADERS = {"User-Agent": "DeepTutor/0.1 (+https://deeptutor.info)"}
 
 
-class NotesParams(BaseModel):
-    action: Literal["write", "list", "search", "update"] = Field(
-        description=(
-            "write = create a page (needs title, optional content/tags); "
-            "list = all notes as 'id | title | tags'; "
-            "search = full-text search (needs query); "
-            "update = patch a page in place (needs note_id + old_string/"
-            "new_string, optional replace_all)."
-        )
-    )
-    title: str = Field(
-        default="", description="Note title — required for write."
-    )
-    content: str = Field(
-        default="", description="Markdown body — write only."
-    )
-    tags: str = Field(
-        default="", description="Comma-separated tags — write only."
-    )
-    query: str = Field(
-        default="", description="Search terms — search only."
-    )
-    note_id: str = Field(
-        default="",
-        description="Target note id from list/search/write — update only.",
-    )
-    old_string: str = Field(
-        default="",
-        description=(
-            "Exact text to replace, whitespace included — update only. "
-            "Must match uniquely unless replace_all is true."
-        ),
-    )
-    new_string: str = Field(
-        default="", description="Replacement text — update only."
-    )
-    replace_all: bool = Field(
-        default=False,
-        description="Replace every occurrence instead of requiring a unique match — update only.",
-    )
-
-
-class NotesTool(BaseTool):
-    """vtx-style tool: the user's notebook (Co-Writer pages)."""
-
-    name = "notes"
-    tool_icon = "📝"
-    params = NotesParams
-    mutating = True
-    prompt_guidelines = (
-        "notes for the user's notebook pages (not workspace files)",
-    )
-    description = (
-        "Read and write the user's notebook — notes are Co-Writer pages, "
-        "visible in the app's Notebook tab. One action per call; only fill "
-        "the params that action uses. update patches a page in place: "
-        "old_string must match the body exactly, including whitespace."
-    )
-
-    async def execute(
-        self, params: NotesParams, cancel_event: Any = None
-    ) -> ToolResult:
-        from ..services.documents import notes as note_store
-
-        op = params.action.lower()
-        if op == "write":
-            if not params.title:
-                return _fail("notes write needs a title.")
-            note_id = note_store.write_note(
-                params.title, params.content, params.tags)
-            return _ok(f"Saved note '{params.title}' to your notebook as {note_id}")
-        if op == "search":
-            return _ok(note_store.search_notes(params.query))
-        if op == "update":
-            return _ok(note_store.update_note(
-                params.note_id, params.old_string, params.new_string,
-                replace_all=params.replace_all))
-        return _ok(note_store.list_notes())
-
-
 def _ok(text: str) -> ToolResult:
     return ToolResult(success=True, result=text)
 
 
 def _fail(text: str) -> ToolResult:
     return ToolResult(success=False, result=text)
-
-
-notes = NotesTool()
 
 
 class QuestionBankParams(BaseModel):
