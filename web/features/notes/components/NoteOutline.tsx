@@ -5,17 +5,14 @@
  * Folded, it is a rail of short marks — one per heading, longer for higher
  * levels, the one you are reading in ink — that opens into the titles under
  * the pointer. Open, the titles stay in the margin. H1 to H4, toggle headings
- * included. Built from the live blocks, so it follows typing.
- *
- * The open panel also lists this page's subpages, so a reader can switch to a
- * child page without hunting for the page tree or the page switcher.
+ * included. Built from the live blocks, so it follows typing. Subpages live
+ * in the page tree and in the document body, not in this heading outline.
  */
-import { useEffect, useMemo, useState, type MouseEvent } from 'react'
-import Link from '@/shared/router/link'
+import { useEffect, useMemo, useState } from 'react'
 
-import { FileText, PanelLeftClose, Plus, TableOfContents } from 'lucide-react'
+import { PanelLeftClose, TableOfContents } from 'lucide-react'
 import Tooltip from '@/shared/ui/Tooltip'
-import type { NoteBlock, NoteSummary } from '@/lib/notes-api'
+import type { NoteBlock } from '@/lib/notes-api'
 import { inlineText } from '../model/threads'
 
 interface Heading {

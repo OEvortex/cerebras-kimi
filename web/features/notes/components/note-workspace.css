@@ -2,8 +2,12 @@
    and the Dito companion. Text columns share one measure so the title, the
    blocks and the backlinks start on the same edge. */
 .dt-note-workspace {
-  --note-measure: 820px;
-  --note-gutter: 54px;
+  /* A Notion-like surface: a calm, near-neutral canvas, one sans-serif voice
+     for both chrome and document, and hairline separators instead of cards. */
+  --note-measure: 860px;
+  --note-gutter: 64px;
+  --note-sidebar: color-mix(in srgb, var(--foreground) 3%, var(--background));
+  --note-hover: color-mix(in srgb, var(--foreground) 6%, transparent);
   --dt-note-anchor-bg: color-mix(in srgb, var(--primary) 8%, transparent);
   --dt-note-anchor-flash: color-mix(in srgb, var(--primary) 20%, transparent);
   position: relative;
@@ -13,6 +17,7 @@
   min-height: 0;
   background: var(--background);
   color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 }
 .dt-note-body {
   display: flex;
@@ -44,9 +49,10 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  height: 44px;
+  height: 45px;
   flex-shrink: 0;
-  padding: 0 10px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--border);
   color: var(--muted-foreground);
 }
 .dt-note-icon-button {
@@ -294,7 +300,7 @@ a.dt-note-crumb:hover {
   transform-origin: bottom right;
 }
 .dt-note-head-body {
-  padding: 40px var(--note-gutter) 0;
+  padding: 52px var(--note-gutter) 0;
 }
 .dt-note-head.has-cover .dt-note-head-body {
   padding-top: 18px;
@@ -366,11 +372,11 @@ a.dt-note-crumb:hover {
   overflow: hidden;
   background: transparent;
   outline: none;
-  font-family: var(--font-serif), Georgia, serif;
-  font-size: 38px;
-  font-weight: 600;
-  line-height: 1.22;
-  letter-spacing: -0.01em;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
   color: var(--foreground);
   text-wrap: pretty;
 }
@@ -383,30 +389,52 @@ a.dt-note-crumb:hover {
 .dt-note-page-tree {
   display: flex;
   flex-direction: column;
-  width: 248px;
+  width: 268px;
   flex-shrink: 0;
   min-height: 0;
-  padding: 2px 8px 10px;
+  padding: 6px 10px 12px;
   border-right: 1px solid var(--border);
+  background: var(--note-sidebar);
   font-size: 13.5px;
 }
 .dt-note-tree-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 36px;
-  padding: 0 2px 0 8px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--muted-foreground);
+  height: 40px;
+  padding: 0 2px 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+.dt-note-tree-heading a {
+  color: inherit;
+  text-decoration: none;
 }
 .dt-note-tree-heading a:hover {
   color: var(--foreground);
 }
+.dt-note-tree-heading-main {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+.dt-note-tree-section {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  opacity: 0.8;
+}
 .dt-note-tree-scroll {
   flex: 1;
   min-height: 0;
+  margin-top: 4px;
   overflow-y: auto;
+  scrollbar-width: thin;
 }
 .dt-note-page-tree ul {
   margin: 0;
@@ -416,17 +444,19 @@ a.dt-note-crumb:hover {
 .dt-note-tree-row {
   display: flex;
   align-items: center;
-  height: 30px;
+  height: 32px;
   margin: 1px 0;
   border-radius: 6px;
-  color: var(--foreground);
-  transition: background-color 100ms;
+  color: var(--muted-foreground);
+  transition: background-color 100ms, color 100ms;
 }
 .dt-note-tree-row:hover {
-  background: var(--accent, var(--secondary));
+  background: var(--note-hover);
+  color: var(--foreground);
 }
 .dt-note-tree-row.is-current {
-  background: color-mix(in srgb, var(--foreground) 7%, transparent);
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+  color: var(--foreground);
   font-weight: 500;
 }
 .dt-note-tree-row a {
@@ -437,6 +467,8 @@ a.dt-note-crumb:hover {
   gap: 7px;
   height: 100%;
   padding-right: 4px;
+  color: inherit;
+  text-decoration: none;
 }
 .dt-note-tree-toggle {
   display: flex;
@@ -1093,4 +1125,83 @@ button.dt-note-tree-toggle:hover {
   width: 18px;
   font-size: 13px;
   color: var(--muted-foreground);
+}
+
+/* ---- Inline subpages (Notion-style child page links) ------------------ */
+.dt-note-subpages {
+  max-width: var(--note-measure);
+  margin: 28px auto 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+.dt-note-subpages-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.dt-note-subpages-head h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.dt-note-subpages-add {
+  border: none;
+  background: none;
+  padding: 2px 6px;
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  border-radius: 6px;
+}
+.dt-note-subpages-add:hover { color: var(--foreground); background: var(--accent, var(--secondary)); }
+.dt-note-subpages-add:disabled { opacity: 0.4; }
+.dt-note-subpages-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+.dt-note-subpage-card {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card, var(--background));
+  color: var(--foreground);
+  text-decoration: none;
+  transition: border-color 120ms, background-color 120ms;
+}
+.dt-note-subpage-card:hover {
+  border-color: var(--primary);
+  background: var(--accent, var(--secondary));
+}
+.dt-note-subpage-icon { display: inline-flex; color: var(--muted-foreground); }
+.dt-note-subpage-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dt-note-subpage-arrow { color: var(--muted-foreground); flex-shrink: 0; }
+
+/* ---- Tree drag & drop -------------------------------------------------- */
+.dt-note-tree-row[draggable='true'] { cursor: grab; }
+.dt-note-tree-row.is-drop-target {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+  border-radius: 6px;
+  background: var(--accent, var(--secondary));
+}
+.dt-note-tree-scroll.is-drop-root {
+  outline: 2px dashed var(--primary);
+  outline-offset: -4px;
+  border-radius: 8px;
 }

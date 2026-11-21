@@ -1,4 +1,5 @@
 'use client'
+import { ChevronRight, FileText } from 'lucide-react'
 import dynamic from '@/shared/router/dynamic'
 import Link from '@/shared/router/link'
 import { useCallback, useEffect, useRef, useState, type ComponentType } from 'react'
@@ -496,6 +497,23 @@ export default function NoteWorkspace({
       editor.current?.setEditable(true)
     }
   }
+  // Reparent any page from the tree's drag & drop. The backend validates
+  // cycles; we still refresh the list so both old and new parents update.
+  const movePage = async (pageId: string, parentId: string | null) => {
+    const target = pages.find(p => p.id === pageId)
+    if (!target || target.parent_id === parentId) return
+    try {
+      await saveNote(pageId, {
+        parent_id: parentId,
+        expected_revision: target.revision,
+      })
+      refreshPages()
+      if (pageId === docId) await getNote(docId).then(setPage).catch(() => {})
+    } catch (err) {
+      setError(String(err))
+      refreshPages()
+    }
+  }
   const exportFile = async (format: 'md' | 'docx' | 'anki') => {
     try {
       await flush()
@@ -688,6 +706,7 @@ export default function NoteWorkspace({
             embedded={embedded}
             onNavigate={navigate}
             onCreate={createPage}
+            onMove={(id, parent) => void movePage(id, parent)}
           />
         )}
         <main className="dt-note-main" ref={setMainEl}>
@@ -748,6 +767,37 @@ export default function NoteWorkspace({
                 onDeleteThread={threads.removeThread}
                 onFocusBlock={threads.open && !embedded ? focusBlock : undefined}
               />
+              {!!subpages.length && (
+                <section className="dt-note-subpages" aria-label={"Subpages"}>
+                  <div className="dt-note-subpages-head">
+                    <h2>{"Subpages"}</h2>
+                    <button
+                      type="button"
+                      className="dt-note-subpages-add"
+                      disabled={mutating}
+                      onClick={() => void createPage(docId)}
+                    >
+                      {"+ New subpage"}
+                    </button>
+                  </div>
+                  <div className="dt-note-subpages-list">
+                    {subpages.map(sub => (
+                      <Link
+                        key={sub.id}
+                        href={`/co-writer/${sub.id}`}
+                        className="dt-note-subpage-card"
+                        onClick={e => navigate(e, sub.id)}
+                      >
+                        <span className="dt-note-subpage-icon" aria-hidden>
+                          {sub.icon || <FileText size={16} strokeWidth={1.6} />}
+                        </span>
+                        <span className="dt-note-subpage-title">{sub.title || "Untitled"}</span>
+                        <ChevronRight size={14} className="dt-note-subpage-arrow" aria-hidden />
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              )}
               {!!backlinks.length && (
                 <section className="dt-note-backlinks" aria-label={"Linked from"}>
                   <h2>{"Linked from"}</h2>
