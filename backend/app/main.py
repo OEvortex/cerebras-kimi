@@ -91,15 +91,36 @@ def _speed_up_model_lookup() -> None:
     from vtx.ai.context_length import TokenLimits, context_length_manager
 
     def fast_get_limits(self, model: str):  # type: ignore[no-untyped-def]
+        """Same resolution rules as vtx, with a cached normalized index.
+
+        The original O(n²) cost came from matching *every fetched model* against
+        *every limits key*, not from a single lookup. Restoring vtx's fuzzy
+        fallback here keeps gateway-prefixed ids accurate without that cost.
+        """
         self.ensure_loaded()
         limits = self._limits.get(model)
-        if limits is None:
-            lower = getattr(self, "_dt_lower_limits", None)
-            if lower is None:
-                lower = {key.lower(): value for key, value in self._limits.items()}
-                self._dt_lower_limits = lower
-            limits = lower.get(model.lower())
-        return limits if limits is not None else TokenLimits(context=0, output=0)
+        if limits is not None:
+            return limits
+
+        normalized = getattr(self, "_dt_normalized_limits", None)
+        if normalized is None:
+            normalized = {
+                key.lower().replace("-", ""): value
+                for key, value in list(self._limits.items())
+            }
+            self._dt_normalized_limits = normalized
+
+        probe = model.lower().replace("-", "")
+        candidate = normalized.get(probe)
+        if candidate is not None:
+            return candidate
+        for key, value in normalized.items():
+            if probe in key or key in probe:
+                # Prefer the longest match to avoid e.g. "gpt-4" matching
+                # "gpt-4o" when an exact-ish key exists.
+                if len(key) >= len(probe) or candidate is None:
+                    candidate = value
+        return candidate if candidate is not None else TokenLimits(context=0, output=0)
 
     type(context_length_manager).get_limits = fast_get_limits  # ty: ignore[invalid-assignment]
 

@@ -26,7 +26,7 @@ import {
   Upload,
 } from 'lucide-react'
 
-import { listNotes } from '@/lib/notes-api'
+import { createNote, listNotes } from '@/lib/notes-api'
 import {
   basicPreviewKinds,
   isBasicPreviewKind,
@@ -204,6 +204,46 @@ export default function useNoteSlashItems({
           ['page', 'page', 'link'],
           FileText,
           () => editor.getExtension(SuggestionMenu)?.openSuggestionMenu('[['),
+          'pageLink'
+        ),
+        item(
+          'Turn into sub-page',
+          'Basic blocks',
+          'Move the selected blocks into a new page under this one.',
+          ['subpage', 'sub-page', 'child page', 'page'],
+          FileText,
+          () => {
+            void (async () => {
+              const selection = editor.getSelection()?.blocks ?? []
+              const blocks = (selection.length ? selection : editor.document.slice(0, 1)).map(
+                b => JSON.parse(JSON.stringify(b)) as Record<string, unknown>
+              )
+              if (!blocks.length) return
+              const title =
+                blocks
+                  .map(b => {
+                    const c = (b as { content?: unknown }).content
+                    const text = Array.isArray(c)
+                      ? c.map(i => (i && typeof i === 'object' && 'text' in i ? String((i as { text?: string }).text ?? '') : '')).join('')
+                      : ''
+                    return text.trim()
+                  })
+                  .find(Boolean) ?? 'Untitled'
+              const child = await createNote(title.slice(0, 60), pageId)
+              // Persist the moved blocks onto the child page.
+              const { noteRequest } = await import('@/lib/notes-api')
+              await noteRequest(`/${child.id}`, {
+                method: 'PUT',
+                body: JSON.stringify({ blocks, expected_revision: child.revision }),
+              }).catch(() => undefined)
+              const ids = new Set(blocks.map(b => String((b as { id?: string }).id ?? '')))
+              editor.removeBlocks([...ids])
+              editor.insertInlineContent([
+                { type: 'pageLink', props: { pageId: child.id, title: child.title } },
+                ' ',
+              ])
+            })()
+          },
           'pageLink'
         ),
         ...(

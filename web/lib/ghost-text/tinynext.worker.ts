@@ -2,52 +2,46 @@
 /**
  * tinynext ghost-text worker.
  *
- * Loads paperweight/tinynext (v2, model_int8.onnx) + tokenizer.json from
- * /tinynext/ and answers "suggest" requests with the gray continuation the
- * composer shows. Protocol:
+ * Runs entirely in the browser: loads /tinynext/{config,tokenizer,model},
+ * then answers "suggest" with the gray continuation shown in the composer.
+ *
  *   in : { type: "warmup" }
- *        { type: "suggest", id: number, text: string }
+ *        { type: "suggest", id, text }
  *   out: { type: "ready" }
- *        { type: "suggestion", id: number, text: string }   // "" = stay quiet
+ *        { type: "suggestion", id, text, error? }
  */
 import * as ort from "onnxruntime-web";
-import { Tokenizer } from "tokenizers";
+
+import { TinyTokenizer } from "./tiny-tokenizer";
 
 ort.env.wasm.wasmPaths =
   "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.31.1/dist/";
+ort.env.wasm.numThreads = 1;
 
 const BASE = "/tinynext";
 const CUTOFF = 0.4;
 const MAX_WORDS = 6;
 const MAX_CHARS = 48;
 const MIN_CHARS = 4;
+const LAYERS = 8;
+const HEADS = 5;
+const HEAD_DIM = 64;
 
 type Cache = { k: ort.Tensor; v: ort.Tensor } | null;
 
 let session: ort.InferenceSession | null = null;
-let tokenizer: Tokenizer | null = null;
+let tokenizer: TinyTokenizer | null = null;
 let vocab = 0;
-let tokenTexts: string[] = [];
-const stopIds = new Set<number>();
 let ready = false;
 
-async function init() {
+async function init(): Promise<void> {
   if (ready) return;
   const [configRes, tokRes] = await Promise.all([
-    fetch(`${BASE}/config.json`).then((r) => r.json()),
-    fetch(`${BASE}/tokenizer.json`).then((r) => r.text()),
+    fetch(`${BASE}/config.json`).then((response) => response.json()),
+    fetch(`${BASE}/tokenizer.json`).then((response) => response.json()),
   ]);
-  tokenizer = await Tokenizer.fromString(tokRes);
-  vocab = configRes.vocab;
-  const special = Object.keys(configRes.special_tokens ?? {}).length || 4;
-  for (let i = 0; i < special; i++) stopIds.add(i);
-  tokenTexts = await Promise.all(
-    Array.from({ length: vocab }, (_, i) =>
-      i >= special
-        ? Promise.resolve(tokenizer!.decode([i], false))
-        : Promise.resolve(""),
-    ),
-  );
+  tokenizer = new TinyTokenizer(tokRes);
+  vocab = Number(configRes.vocab) || Object.keys(tokRes.model?.vocab || {}).length;
   session = await ort.InferenceSession.create(`${BASE}/model.onnx`, {
     executionProviders: ["wasm"],
   });
@@ -55,92 +49,106 @@ async function init() {
   (self as unknown as Worker).postMessage({ type: "ready" });
 }
 
-function emptyCache(seqLen: number): { k: ort.Tensor; v: ort.Tensor } {
-  const shape = [8, 1, 5, seqLen, 64];
+/** The graph takes `past_k` / `past_v` on the first step too, with length 0. */
+function emptyCache(): { past_k: ort.Tensor; past_v: ort.Tensor } {
+  const shape = [LAYERS, 1, HEADS, 0, HEAD_DIM];
+  const empty = new Float32Array(0);
   return {
-    k: new ort.Tensor("float32", new Float32Array(8 * 1 * 5 * seqLen * 64), shape),
-    v: new ort.Tensor("float32", new Float32Array(8 * 1 * 5 * seqLen * 64), shape),
+    past_k: new ort.Tensor("float32", empty, shape),
+    past_v: new ort.Tensor("float32", empty, shape),
   };
 }
 
 async function suggest(before: string): Promise<string> {
   if (!session || !tokenizer) return "";
-  const ids = (await tokenizer.encode(before)).getIds();
+  const ids = tokenizer.encode(before);
   if (!ids.length) return "";
 
-  const feeds = {
+  const first = (await session.run({
     input_ids: new ort.Tensor("int64", BigInt64Array.from(ids.map(BigInt)), [1, ids.length]),
-    ...emptyCache(0),
-  };
-  const first = (await session.run(feeds)) as Record<string, ort.Tensor>;
+    ...emptyCache(),
+  })) as Record<string, ort.Tensor>;
+
   let logits: ort.Tensor = first.logits;
   let cache: Cache = { k: first.present_k, v: first.present_v };
   let out = "";
-  let prob = 1;
+  let probability = 1;
 
-  for (let step = 0; step < 30; step++) {
+  for (let step = 0; step < 30; step += 1) {
     const row = logits.data as Float32Array;
-    // softmax over vocab, specials masked
     let max = -Infinity;
-    for (let i = 0; i < vocab; i++) {
-      if (!stopIds.has(i) && row[i] > max) max = row[i];
+    for (let index = 0; index < vocab; index += 1) {
+      if (!tokenizer.specials.has(index) && row[index] > max) max = row[index];
     }
+    if (!Number.isFinite(max)) break;
+
     let sum = 0;
-    const probs = new Float64Array(vocab);
-    for (let i = 0; i < vocab; i++) {
-      probs[i] = stopIds.has(i) ? 0 : Math.exp(row[i] - max);
-      sum += probs[i];
+    const probabilities = new Float64Array(vocab);
+    for (let index = 0; index < vocab; index += 1) {
+      probabilities[index] = tokenizer.specials.has(index) ? 0 : Math.exp(row[index] - max);
+      sum += probabilities[index];
     }
+
     let top = -1;
-    let topP = 0;
-    for (let i = 0; i < vocab; i++) {
-      const p = probs[i] / sum;
-      if (p > topP) {
-        topP = p;
-        top = i;
+    let topProbability = 0;
+    for (let index = 0; index < vocab; index += 1) {
+      const chance = probabilities[index] / sum;
+      if (chance > topProbability) {
+        topProbability = chance;
+        top = index;
       }
     }
-    if (top < 0 || topP < 0.05) break;
-    prob *= topP;
-    if (prob < CUTOFF) break;
-    const text = tokenTexts[top] ?? "";
-    if (!text.trim() || stopIds.has(top)) break;
-    out += text;
-    if (/[.,!?;:]$/.test(text) || out.length >= MAX_CHARS || out.trim().split(/\s+/).length >= MAX_WORDS) break;
+    if (top < 0 || topProbability < 0.05) break;
+    probability *= topProbability;
+    if (probability < CUTOFF) break;
 
-    const nextFeeds: Record<string, ort.Tensor> = {
+    const text = tokenizer.tokenText(top);
+    if (tokenizer.specials.has(top) || !text.trim()) break;
+    out += text;
+    if (
+      /[.,!?;:]$/.test(text) ||
+      out.length >= MAX_CHARS ||
+      out.trim().split(/\s+/).length >= MAX_WORDS
+    ) break;
+
+    const result = (await session.run({
       input_ids: new ort.Tensor("int64", BigInt64Array.from([BigInt(top)]), [1, 1]),
       past_k: cache!.k,
       past_v: cache!.v,
-    };
-    const step = (await session.run(nextFeeds)) as Record<string, ort.Tensor>;
-    logits = step.logits;
-    cache = { k: step.present_k, v: step.present_v };
+    })) as Record<string, ort.Tensor>;
+    logits = result.logits;
+    cache = { k: result.present_k, v: result.present_v };
   }
 
-  // Keep only whole words; need >= MIN_CHARS to bother the user.
-  const trimmed = out.includes(" ") ? out.slice(0, out.lastIndexOf(" ") + 1).trimEnd() : out;
+  // Keep only whole words; stay quiet unless there is something worth showing.
+  const trimmed = out.includes(" ")
+    ? out.slice(0, out.lastIndexOf(" ") + 1).trimEnd()
+    : out;
   return trimmed.length >= MIN_CHARS ? trimmed : "";
 }
 
 self.onmessage = async (event: MessageEvent) => {
-  const msg = event.data as { type: string; id?: number; text?: string };
+  const message = event.data as { type: string; id?: number; text?: string };
   try {
-    if (msg.type === "warmup") {
+    if (message.type === "warmup") {
       await init();
       return;
     }
-    if (msg.type === "suggest" && typeof msg.id === "number") {
+    if (message.type === "suggest" && typeof message.id === "number") {
       if (!ready) await init();
-      const text = await suggest(msg.text ?? "");
-      (self as unknown as Worker).postMessage({ type: "suggestion", id: msg.id, text });
+      const text = await suggest(message.text ?? "");
+      (self as unknown as Worker).postMessage({
+        type: "suggestion",
+        id: message.id,
+        text,
+      });
     }
-  } catch (err) {
+  } catch (error) {
     (self as unknown as Worker).postMessage({
       type: "suggestion",
-      id: msg.id ?? -1,
+      id: message.id ?? -1,
       text: "",
-      error: String(err),
+      error: error instanceof Error ? error.message : String(error),
     });
   }
 };
