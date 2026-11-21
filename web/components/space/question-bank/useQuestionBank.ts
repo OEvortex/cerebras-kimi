@@ -41,7 +41,7 @@ export type BankSort = "recent" | "oldest";
 const PAGE_SIZE = 60;
 const SEARCH_DEBOUNCE_MS = 250;
 
-export const DEFAULT_SCOPE: BankScope = { kind: "all" };
+const DEFAULT_SCOPE: BankScope = { kind: "all" };
 
 export interface ReviewFilters {
   source: AssessmentSource | "";

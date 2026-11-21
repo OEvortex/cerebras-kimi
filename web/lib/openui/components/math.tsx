@@ -52,7 +52,7 @@ export type MathPart = { tex: string; display: boolean };
  * `\(...\)`, `\[...\]` and `$$...$$` are accepted too, which is what many
  * models emit instead of dollars.
  */
-export function splitInlineMath(input: string): MathSegment[] {
+function splitInlineMath(input: string): MathSegment[] {
   const out: MathSegment[] = [];
   let buffer = "";
 

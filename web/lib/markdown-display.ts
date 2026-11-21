@@ -491,7 +491,7 @@ export function citationAnchorIdFor(id: string): string | null {
   return `ref-${normalized.toLowerCase().replace(/[^a-z0-9_-]+/g, "-")}`;
 }
 
-export function citationHrefForId(id: string): string {
+function citationHrefForId(id: string): string {
   const anchor = citationAnchorIdFor(id);
   return anchor ? `#${anchor}` : "#references";
 }

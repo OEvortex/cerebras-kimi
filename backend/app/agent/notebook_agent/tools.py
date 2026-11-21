@@ -13,6 +13,7 @@ agent's explicit tool list) so a ``SubagentSpec`` can select exactly them via
 
 from __future__ import annotations
 
+import re
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
@@ -411,9 +412,18 @@ class NbPatchTool(BaseTool):
                 if op.op == "create":
                     if target["deleted"]:
                         continue
+                    create_content = target["content"]
+                    # Pages with ```noteui programs need real blocks now — the
+                    # client-side Markdown parser does not know the DSL.
+                    create_blocks = (
+                        coarse_markdown_to_blocks(create_content)
+                        if re.search(r"^\s*`{3,}(noteui|nb|note)\b", create_content, re.M)
+                        else None
+                    )
                     doc = storage.create_document(
                         title=target["title"] or None,
-                        content=target["content"],
+                        content=create_content,
+                        blocks=create_blocks,
                         parent_id=parent_id_of(target["parent"]),
                     )
                     created[target["title"].lower()] = doc.id

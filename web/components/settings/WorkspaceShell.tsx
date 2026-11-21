@@ -270,24 +270,4 @@ export function WorkspaceDetailEmpty({
 }
 
 /** Heading for a group of fields inside a detail pane. */
-export function WorkspaceFieldGroup({
-  title,
-  action,
-  children,
-  className = "",
-}: {
-  title: string;
-  action?: ReactNode;
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <section className={`space-y-3 ${className}`}>
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[color-mix(in_srgb,var(--border)_70%,transparent)] pb-2">
-        <h4 className="text-[12px] font-semibold tracking-tight">{title}</h4>
-        {action}
-      </div>
-      {children}
-    </section>
-  );
-}
+

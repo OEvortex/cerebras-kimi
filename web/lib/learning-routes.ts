@@ -9,7 +9,7 @@ export const PRACTICE_HOME = `${LEARNING_HUB}/practice`
 export const MASTERY_HOME = `${LEARNING_HUB}/mastery`
 export const READING_HOME = `${LEARNING_HUB}/reading`
 export const READING_MATERIALS = `${READING_HOME}/materials`
-export const WATCHING_HOME = `${LEARNING_HUB}/watching`
+const WATCHING_HOME = `${LEARNING_HUB}/watching`;
 
 const segment = (value: string) => encodeURIComponent(value.trim())
 

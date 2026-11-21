@@ -26,7 +26,7 @@ export interface NotebookReferenceGroup {
   count: number;
 }
 
-export const MODE_BADGE_LABELS: Record<string, string> = {
+const MODE_BADGE_LABELS: Record<string, string> = {
   chat: "Chat",
   ask_questions: "Ask Questions",
   deep_solve: "Deep Solve",

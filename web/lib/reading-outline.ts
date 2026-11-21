@@ -23,13 +23,13 @@ export interface ReaderDisplayLine {
   fence: boolean;
 }
 
-export function headingAnchor(locator: number, index: number): string {
+function headingAnchor(locator: number, index: number): string {
   return `dt-reader-heading-${locator}-${index + 1}`;
 }
 
 const HEADING_PATTERN = /^(#{1,6})\s+(.+?)\s*#*$/;
 
-export function readerHeadingLine(line: string): ReaderHeading | null {
+function readerHeadingLine(line: string): ReaderHeading | null {
   const match = HEADING_PATTERN.exec(line.trim());
   if (!match) return null;
   const title = match[2].replace(/\s+#+$/, "").trim();

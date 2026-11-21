@@ -15,13 +15,6 @@ def _env(name: str, default: str = "") -> str:
     return os.environ.get(name, default).strip()
 
 
-def _env_bool(name: str, default: bool = False) -> bool:
-    raw = _env(name)
-    if not raw:
-        return default
-    return raw.lower() in {"1", "true", "yes", "on"}
-
-
 @dataclass(frozen=True)
 class Settings:
     # Root for all persisted state (sessions, uploads, logs).

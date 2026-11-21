@@ -27,7 +27,7 @@ export function wrapLatexSource(tex: string, display: boolean): string {
 }
 
 /** Read the original TeX embedded by KaTeX's default htmlAndMathml output. */
-export function extractTexAnnotation(root: ParentNode): string | null {
+function extractTexAnnotation(root: ParentNode): string | null {
   const annotation = root.querySelector(
     'annotation[encoding="application/x-tex"]',
   );

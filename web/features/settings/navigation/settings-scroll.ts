@@ -5,11 +5,6 @@ export const SETTINGS_ANCHOR_EVENT = "deeptutor:settings-anchor";
 export type SettingsAnchorEvent = CustomEvent<{ key: string }>;
 
 /** Notify the resident settings document that a same-page anchor was chosen. */
-export function requestSettingsSection(key: string): void {
-  window.dispatchEvent(
-    new CustomEvent(SETTINGS_ANCHOR_EVENT, { detail: { key } }),
-  );
-}
 
 /**
  * Scroll a settings anchor inside the settings document only.

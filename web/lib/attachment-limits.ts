@@ -25,7 +25,7 @@ export interface AttachmentLimits {
   maxTotalBytes: number;
 }
 
-export const DEFAULT_ATTACHMENT_LIMITS: AttachmentLimits = {
+const DEFAULT_ATTACHMENT_LIMITS: AttachmentLimits = {
   maxFileBytes: DEFAULT_MAX_ATTACHMENT_BYTES,
   maxTotalBytes: DEFAULT_MAX_TOTAL_ATTACHMENT_BYTES,
 };

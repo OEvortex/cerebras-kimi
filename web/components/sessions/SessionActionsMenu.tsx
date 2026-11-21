@@ -21,7 +21,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-
 import type {
   SessionOrganizationPatch,
   SessionSummary,
@@ -74,7 +73,7 @@ export function SessionMenuDivider() {
   return <div className="my-1 border-t border-[var(--border)]/70" />;
 }
 
-export function SessionMenuCaption({ children }: { children: ReactNode }) {
+function SessionMenuCaption({ children }: { children: ReactNode }) {
   return (
     <div className="px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-[var(--muted-foreground)]/65">
       {children}

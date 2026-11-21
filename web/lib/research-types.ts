@@ -31,28 +31,6 @@ export function createEmptyResearchConfig(): DeepResearchFormConfig {
   };
 }
 
-export function normalizeResearchConfig(
-  raw: Record<string, unknown> | undefined,
-): DeepResearchFormConfig {
-  const empty = createEmptyResearchConfig();
-  return {
-    mode:
-      raw?.mode === "notes" ||
-      raw?.mode === "report" ||
-      raw?.mode === "comparison" ||
-      raw?.mode === "learning_path"
-        ? raw.mode
-        : empty.mode,
-    depth:
-      raw?.depth === "quick" ||
-      raw?.depth === "standard" ||
-      raw?.depth === "deep" ||
-      raw?.depth === "manual"
-        ? raw.depth
-        : empty.depth,
-  };
-}
-
 export function validateResearchConfig(
   cfg: DeepResearchFormConfig,
 ): ResearchConfigValidationResult {

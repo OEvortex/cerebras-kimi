@@ -41,10 +41,6 @@ export function addDays(date: Date, days: number): Date {
   return addCalendarDays(date, days)
 }
 
-export function addDaysToKey(key: DateKey, days: number): DateKey {
-  return dateKey(addDays(fromDateKey(key), days))
-}
-
 /** Months later, clamped to the last day: Jan 31 + 1 month is Feb 28/29. */
 export function addMonths(date: Date, months: number): Date {
   return addCalendarMonths(date, months)
@@ -58,10 +54,6 @@ export function startOfWeek(date: Date, weekStartsOn: number): Date {
   const day = startOfDay(date)
   const offset = (day.getDay() - weekStartsOn + 7) % 7
   return addDays(day, -offset)
-}
-
-export function isSameDay(a: Date, b: Date): boolean {
-  return dateKey(a) === dateKey(b)
 }
 
 /** Whole calendar days from `a` to `b`, immune to DST-length days. */
@@ -110,10 +102,6 @@ export function monthWeeks(cursor: Date, weekStart: number): Date[][] {
   return weeks
 }
 
-export function snapMinutes(minutes: number, step = 15): number {
-  return Math.round(minutes / step) * step
-}
-
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value))
 }
@@ -152,7 +140,7 @@ export function formatHour(hour: number, locale: string): string {
     : formatDate(date, locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
 }
 
-export function usesTwelveHours(locale: string): boolean {
+function usesTwelveHours(locale: string): boolean {
   try {
     const cycle = new Intl.DateTimeFormat(locale, { hour: 'numeric' }).resolvedOptions().hourCycle
     return cycle === 'h12' || cycle === 'h11'
@@ -165,10 +153,6 @@ export function formatMonthTitle(date: Date, locale: string): string {
   return formatDate(date, locale, { year: 'numeric', month: 'long' })
 }
 
-export function formatLongDay(date: Date, locale: string): string {
-  return formatDate(date, locale, { month: 'long', day: 'numeric', weekday: 'short' })
-}
-
 export function formatWeekday(
   date: Date,
   locale: string,
@@ -177,6 +161,3 @@ export function formatWeekday(
   return formatDate(date, locale, { weekday: width })
 }
 
-export function formatShortDate(date: Date, locale: string): string {
-  return formatDate(date, locale, { month: 'short', day: 'numeric' })
-}

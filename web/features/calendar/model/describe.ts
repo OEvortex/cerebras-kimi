@@ -7,8 +7,6 @@ type Translate = (key: string, options?: Record<string, unknown>) => string
  * midnight, so their offsets read as a clock time: -540 is 09:00 on the
  * day, 900 is 09:00 the day before.
  */
-export const TIMED_REMINDERS = [0, 5, 10, 15, 30, 60, 120, 1440, 2880, 10080]
-export const ALL_DAY_REMINDERS = [-540, 900, 2340, 9540]
 
 function clockAfterMidnight(minutes: number, locale: string): string {
   return formatTime(new Date(2000, 0, 1, 0, minutes), locale)

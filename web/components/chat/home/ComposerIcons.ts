@@ -12,18 +12,6 @@ const duo = 'dt-duo'
 const solid = 'dt-duo-solid'
 
 /** Skills as Dito needs them: a hand of cards, the front one lit. */
-export const SkillDeckIcon = createLucideIcon('skill-deck', [
-  ['path', { d: 'M8.75 6.5V5.25a2 2 0 0 1 2-2h7.5a2 2 0 0 1 2 2V15.5a2 2 0 0 1-2 2h-1.5', key: 'back' }],
-  ['rect', { x: '3.75', y: '6.5', width: '12.75', height: '14.25', rx: '2.25', className: duo, key: 'front' }],
-  [
-    'path',
-    {
-      d: 'M10.1 10.6c.3 1.6 1.25 2.55 2.85 2.85-1.6.3-2.55 1.25-2.85 2.85-.3-1.6-1.25-2.55-2.85-2.85 1.6-.3 2.55-1.25 2.85-2.85z',
-      className: solid,
-      key: 'spark',
-    },
-  ],
-])
 
 /** Every connected service: Dito at the hub, each service on its own branch. */
 export const ConnectorHubIcon = createLucideIcon('connector-hub', [
@@ -108,14 +96,14 @@ const MathMotionIcon = createLucideIcon('mode-math-animator', [
 ])
 
 /** The tray's own marks for each mode; anything else keeps the icon it came with. */
-export const MODE_ICONS: Record<string, LucideIcon> = {
+const MODE_ICONS: Record<string, LucideIcon> = {
   ask_questions: AskBackIcon,
   visualize: VisualizeRingIcon,
   deep_solve: SolveStepsIcon,
   deep_research: ResearchLensIcon,
   audio_overview: AudioVoicesIcon,
   math_animator: MathMotionIcon,
-}
+};
 
 export function modeIcon(capability: { value: string; icon: LucideIcon }): LucideIcon {
   return MODE_ICONS[capability.value] ?? capability.icon

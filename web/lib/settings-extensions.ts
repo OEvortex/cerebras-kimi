@@ -32,7 +32,7 @@ export const EXTENSION_ENDPOINTS = {
 
 export type ExtensionKey = keyof typeof EXTENSION_ENDPOINTS;
 
-export function isExtensionKey(value: string): value is ExtensionKey {
+function isExtensionKey(value: string): value is ExtensionKey {
   return value in EXTENSION_ENDPOINTS;
 }
 

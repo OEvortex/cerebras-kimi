@@ -39,7 +39,7 @@ const preamble = `You are an AI assistant that responds using openui-lang, a dec
 
 ${functionReference}`;
 
-export const exampleShoppingList = `root = Col([title, stepper, list, copy])
+const exampleShoppingList = `root = Col([title, stepper, list, copy])
 $guests = 4
 $got = []
 title = Title("Pasta night for " + @Plural($guests, "guest"), "lg")
@@ -49,7 +49,7 @@ list = Col(@Each(lines, "l", Pressable([Text((@Includes($got, l.name) ? "✓ " :
 copy = Button("Copy list", @CopyToClipboard(@Join(@Each(lines, "l", l.qty + " " + l.name), "\\n")), "outline")
 base = [{name: "spaghetti", qty: 400, unit: " g"}, {name: "tomatoes", qty: 6, unit: ""}]`;
 
-export const exampleLesson = `root = Col([head, photo, facts, table, quiz])
+const exampleLesson = `root = Col([head, photo, facts, table, quiz])
 $answer = ""
 head = Col([Title("Photosynthesis", "xl"), Text("Plants turn light, water and CO₂ into sugar and oxygen.", "md", "muted")], 2)
 photo = Row([Box([SearchImage("chloroplast leaf anatomy", 1.33)]), Col([Text("Light reactions", "md", null, "semibold"), Caption("Thylakoid membrane"), Row([Badge("ATP", "info"), Badge("NADPH", "success")], 2)], 2)], 4, "start")
@@ -57,7 +57,7 @@ facts = Row([Badge("Needs light"), Badge("Releases O₂", "success"), Badge("Use
 table = Table(["Stage", "Where", "Output"], [["Light reactions", "Thylakoid", "ATP, NADPH"], ["Calvin cycle", "Stroma", "Sugar"]])
 quiz = Card([Title("Check yourself", "sm"), Form([RadioGroup($answer, ["Stroma", "Thylakoid"], "Where does the Calvin cycle happen?"), Button("Check answer", @ToAssistant("Quiz me on photosynthesis"))])], "soft")`;
 
-export const exampleSteps = `root = Col([head, viewer, nav])
+const exampleSteps = `root = Col([head, viewer, nav])
 $step = 0
 head = Col([Title("Fold a paper crane", "xl"), Text("Two folds to start; the rest builds on them.", "md", "muted")], 2)
 drawings = [d0, d1]
@@ -67,7 +67,7 @@ nav = Row([Button("Back", @Set($step, @Clamp($step - 1, 0, 1)), "outline", null,
 d0 = Svg([Rect(40, 20, 120, 120, "surface", "ink", 2), Line(40, 20, 160, 140, "ink", 2), SvgText("crease", 166, 82, 11, "muted", "start")], "0 0 240 160", "A square with one diagonal crease")
 d1 = Svg([Polygon("40,20 160,20 100,140", "surface", "ink", 2), Line(100, 20, 100, 140, "chart1", 2), SvgText("fold down", 104, 60, 11, "info")], "0 0 240 160", "The top point folded down to the centre")`;
 
-export const exampleDashboard = `root = Col([head, kpis, Grid([weekly, byRegion], 2, 280, 4), top])
+const exampleDashboard = `root = Col([head, kpis, Grid([weekly, byRegion], 2, 280, 4), top])
 $region = "All"
 orders = Query("get_orders", {days: 90}, {rows: []})
 rows = $region == "All" ? orders.rows : @Filter(orders.rows, "region", "==", $region)

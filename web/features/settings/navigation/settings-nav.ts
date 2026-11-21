@@ -105,16 +105,6 @@ export function isSettingsCategoryVisible(
   );
 }
 
-export function visibleSettingsChildren(
-  categoryKey: string,
-  access: SettingsAccess,
-): SettingsLeaf[] {
-  return (
-    SETTINGS_CATEGORIES.find((category) => category.key === categoryKey)
-      ?.children ?? []
-  ).filter((leaf) => isSettingsLeafVisible(leaf, access));
-}
-
 const MODEL_CHILDREN: SettingsLeaf[] = [
   {
     // "Voice" is already a catalog key used by voice-selection UI
@@ -442,10 +432,10 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
   },
 ];
 
-export const SETTINGS_HUB_HREF = "/settings";
+const SETTINGS_HUB_HREF = "/settings";
 
 /** Stable aliases keep existing bookmarks and links from older clients working. */
-export const SETTINGS_ALIASES: Record<string, string> = {
+const SETTINGS_ALIASES: Record<string, string> = {
   tts: "voice",
   stt: "voice",
   imagegen: "multimodal",

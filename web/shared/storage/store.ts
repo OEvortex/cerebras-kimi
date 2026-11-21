@@ -164,7 +164,7 @@ export class StorageStore {
   }
 }
 
-export function createBrowserStorageStore(): StorageStore {
+function createBrowserStorageStore(): StorageStore {
   if (typeof window === "undefined") return new StorageStore({});
   let local: StorageLike | undefined;
   let session: StorageLike | undefined;

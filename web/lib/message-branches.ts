@@ -243,23 +243,6 @@ export function selectChildBranch(
  * Persisted (positive-id) rows only — optimistic in-flight rows aren't
  * useful as a persisted selection target.
  */
-export function latestChildId(
-  allMessages: BranchMessage[],
-  parentId: number | null
-): number | null {
-  const key = parentKey(parentId)
-  let best: number | null = null
-  let bestId = 0
-  for (const m of allMessages) {
-    if (parentKey(m.parentMessageId) !== key) continue
-    if (m.id === undefined || m.id <= 0) continue
-    if (m.id > bestId) {
-      bestId = m.id
-      best = m.id
-    }
-  }
-  return best
-}
 
 /**
  * Compute the parent id of the next message a user would send right now

@@ -123,4 +123,3 @@ export function completeMention(
   return text.replace(/@[^\s@]*$/, `@${member.name || member.partner_id} `);
 }
 
-export { EVERYONE_TOKENS };

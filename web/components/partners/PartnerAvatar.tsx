@@ -6,7 +6,7 @@
  * compose (iOS-contacts style) instead of being mutually exclusive.
  */
 
-export const PARTNER_COLORS = [
+const PARTNER_COLORS = [
   "#b0501e", // ember (primary-adjacent)
   "#8c6a2f", // ochre
   "#4f7a5b", // moss

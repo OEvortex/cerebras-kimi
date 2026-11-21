@@ -162,7 +162,7 @@ export function allLearningActivity(sources: LearningSources): LearningActivity[
  * The same links its route follows, so a conversation is filed exactly where
  * clicking it would take you.
  */
-export function learningRecordKeyOf(session: SessionSummary): string | null {
+function learningRecordKeyOf(session: SessionSummary): string | null {
   const workspace = sessionWorkspaceId(session)
   const pathId = masteryPathIdOf(session)
   if (pathId) return `topic:${workspace}:${pathId}`

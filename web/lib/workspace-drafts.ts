@@ -72,15 +72,4 @@ export async function readWorkspaceDraft(workspaceId?: string, pathname?: string
 }
 
 /** Move the current unsent message with an explicit composer assignment. */
-export async function transferWorkspaceDraft(destination: string): Promise<void> {
-  const source = activeWorkspaceId()
-  if (source === destination) return
-  const draft = await readWorkspaceDraft()
-  if (!draft || (!draft.text && !draft.attachments.length)) return
-  const prior = await readWorkspaceDraft(destination, '/chat')
-  await saveWorkspaceDraft({
-    text: [prior?.text, draft.text].filter(Boolean).join('\n\n'),
-    attachments: [...(prior?.attachments || []), ...draft.attachments],
-  }, destination, '/chat')
-  await saveWorkspaceDraft({ text: '', attachments: [] })
-}
+

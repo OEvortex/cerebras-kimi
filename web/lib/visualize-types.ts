@@ -46,7 +46,7 @@ const VISUALIZE_RENDER_LABELS: Record<string, string> = {
   manim_image: "Storyboard",
 };
 
-export function isManimRenderType(
+function isManimRenderType(
   renderType: string,
 ): renderType is VisualizeManimRenderType {
   return renderType === "manim_video" || renderType === "manim_image";

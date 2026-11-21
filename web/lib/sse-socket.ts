@@ -38,7 +38,7 @@ function newClientId(): string {
 }
 
 /** Map a legacy WS path onto the REST command + SSE event endpoints. */
-export function realtimeEndpoints(path: string): {
+function realtimeEndpoints(path: string): {
   eventsUrl: string
   commandsUrl: string
   channel: string

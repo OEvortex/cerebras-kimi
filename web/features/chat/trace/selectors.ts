@@ -118,7 +118,7 @@ export function isChatLoopAnswerContent(event: StreamEvent): boolean {
   );
 }
 
-export function groupHasTraceSubstance(events: StreamEvent[]): boolean {
+function groupHasTraceSubstance(events: StreamEvent[]): boolean {
   return events.some((event) => {
     if (
       event.type === "tool_call" ||

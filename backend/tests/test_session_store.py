@@ -214,22 +214,3 @@ def test_delete_removes_index_rows(tmp_path):
     assert store.get(session["id"]) is None
     assert store.search_hits("zebra") == []
     assert store.delete(session["id"]) is False
-
-
-def test_embedding_cache_round_trips_in_sqlite(tmp_path):
-    store = _store(tmp_path)
-    assert store.load_embeddings() == {}
-    store.save_embeddings(
-        {
-            "text-embedding-3-small:sess_one": {"hash": "abc", "vec": [1.0, 0.0]},
-            "text-embedding-3-small:sess_two": {"hash": "def", "vec": [0.0, 2.0]},
-        }
-    )
-    cache = store.load_embeddings()
-    assert cache["text-embedding-3-small:sess_one"]["vec"] == [1.0, 0.0]
-    assert cache["text-embedding-3-small:sess_two"]["hash"] == "def"
-    # A rebuild overwrites the cached vector for the same model/session.
-    store.save_embeddings(
-        {"text-embedding-3-small:sess_one": {"hash": "xyz", "vec": [0.5, 0.5]}}
-    )
-    assert store.load_embeddings()["text-embedding-3-small:sess_one"]["hash"] == "xyz"

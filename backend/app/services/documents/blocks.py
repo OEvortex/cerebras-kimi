@@ -7,7 +7,37 @@ import re
 import uuid
 from typing import Any
 
+from .noteui import NoteUIError, block_to_dsl, compile_noteui, parse_inline_md
+
 MAX_BLOCK_BYTES = 4 * 1024 * 1024
+
+# Fenced-block info strings that become ``learning`` blocks (info -> props.kind).
+# Keep in sync with ``web/features/notes/model/markdown.ts``.
+FENCE_LEARNING_KINDS = {
+    "quiz": "quiz",
+    "flashcards": "flashcards",
+    "flashcard": "flashcards",
+    "timeline": "timeline",
+    "conceptmap": "concept_map",
+    "concept_map": "concept_map",
+    "geogebra": "geogebra",
+    "research": "research",
+    "task": "task",
+}
+DIAGRAM_FENCES = frozenset({"mermaid", "flow", "seq"})
+# ```noteui fences hold a NoteUI Lang program (see noteui.py) compiled to blocks.
+NOTEUI_FENCES = frozenset({"noteui", "nb", "note"})
+_KIND_FENCES = {
+    "quiz": "quiz",
+    "flashcards": "flashcards",
+    "timeline": "timeline",
+    "concept_map": "conceptmap",
+    "geogebra": "geogebra",
+    "research": "research",
+    "task": "task",
+}
+_FENCE_OPEN = re.compile(r"^\s*(`{3,}|~{3,})(\S*)\s*$")
+
 # Blocks with no inline content of their own (BlockNote ``content: "none"``).
 LEAF_BLOCK_TYPES = frozenset(
     {
@@ -30,71 +60,221 @@ LEAF_BLOCK_TYPES = frozenset(
 )
 
 
-def coarse_markdown_to_blocks(content: str) -> list[dict[str, Any]]:
-    """Best-effort blocks for a markdown-only page that must be edited.
+def _new_id() -> str:
+    return uuid.uuid4().hex[:12]
 
-    Imported notes can arrive with ``blocks=None``. Before the notebook
-    companion can propose a reviewable change, the page needs block IDs; this
-    keeps the markdown as text (headings and lists get their own blocks) instead
-    of asking the learner to re-save the page by hand. It is a fallback, not a
-    faithful markdown parser — the editor still owns rich conversions.
+
+def _text_block(type_: str, text: str, props: dict | None = None) -> dict:
+    return {
+        "id": _new_id(),
+        "type": type_,
+        "props": props or {},
+        "content": parse_inline_md(text),
+        "children": [],
+    }
+
+
+def _fence_learning_block(info: str, body: str, source: str) -> dict:
+    """Build the ``learning`` block the browser makes from a fenced block."""
+    kind = FENCE_LEARNING_KINDS.get(info)
+    if kind is None:
+        kind = "mermaid" if info == "mermaid" else "legacy_diagram"
+    data = "{}"
+    try:
+        parsed = json.loads(body)
+        if isinstance(parsed, dict):
+            data = json.dumps(parsed, ensure_ascii=False, separators=(",", ":"))
+    except (TypeError, ValueError):
+        pass
+    return {
+        "id": _new_id(),
+        "type": "learning",
+        "props": {
+            "kind": kind,
+            # Structured fences keep their JSON body; diagrams keep the whole
+            # fence because their Markdown renderer understands the delimiters.
+            "markdown": body if kind in FENCE_LEARNING_KINDS.values() else source,
+            "prompt": "",
+            "data": data,
+            "sourceUrl": "",
+        },
+        "children": [],
+    }
+
+
+def _html_embed_block(source: str) -> dict:
+    return {"id": _new_id(), "type": "htmlEmbed", "props": {"source": source}, "children": []}
+
+
+def _parse_table_row(line: str) -> list[str] | None:
+    stripped = line.strip()
+    if "|" not in stripped:
+        return None
+    cells = [c.strip() for c in stripped.strip("|").split("|")]
+    return cells or None
+
+
+def _is_table_sep(line: str) -> bool:
+    cells = _parse_table_row(line)
+    return bool(cells) and all(re.fullmatch(r":?-{3,}:?", c.replace(" ", "")) for c in cells)
+
+
+def coarse_markdown_to_blocks(content: str) -> list[dict[str, Any]]:
+    """Markdown (plus ```noteui / learning fences) -> BlockNote blocks.
+
+    Used when a page must be edited through ``nb_patch``: the model's Markdown
+    body becomes real blocks so rich content survives the round trip. It is a
+    pragmatic parser, not a full CommonMark implementation — the editor still
+    owns exotic conversions.
     """
     blocks: list[dict[str, Any]] = []
     paragraph: list[str] = []
+    lines = content.splitlines()
 
     def flush() -> None:
         if paragraph:
-            text = "\n".join(paragraph)
-            blocks.append(
-                {
-                    "id": uuid.uuid4().hex[:12],
-                    "type": "paragraph",
-                    "props": {},
-                    "content": [{"type": "text", "text": text, "styles": {}}],
-                    "children": [],
-                }
-            )
+            text = "\n".join(paragraph).strip()
             paragraph.clear()
+            if text:
+                blocks.append(_text_block("paragraph", text))
 
-    for line in content.splitlines():
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        fence = _FENCE_OPEN.match(line)
+        if fence:
+            marker = fence.group(1)
+            info = fence.group(2)
+            close = re.compile(r"^\s*" + re.escape(marker[0]) + "{" + str(len(marker)) + r",}\s*$")
+            end = index + 1
+            while end < len(lines) and not close.match(lines[end]):
+                end += 1
+            if end < len(lines):
+                body = "\n".join(lines[index + 1 : end])
+                source = "\n".join(lines[index : end + 1])
+                flush()
+                if info in NOTEUI_FENCES:
+                    try:
+                        blocks.extend(compile_noteui(body))
+                    except NoteUIError as exc:
+                        blocks.append(
+                            _text_block(
+                                "paragraph",
+                                f"```{info}\n{body}\n```\n\n(noteui compile failed: {exc})",
+                            )
+                        )
+                elif info in FENCE_LEARNING_KINDS or info in DIAGRAM_FENCES:
+                    blocks.append(_fence_learning_block(info, body, source))
+                elif info == "html":
+                    blocks.append(_html_embed_block(body))
+                else:
+                    blocks.append(
+                        _blk_code(info, body)
+                    )
+                index = end + 1
+                continue
+            # Unterminated fence: treat the rest as literal lines.
         stripped = line.strip()
         if not stripped:
             flush()
+            index += 1
             continue
         heading = re.match(r"^(#{1,6})\s+(.*)$", stripped)
         if heading:
             flush()
-            level = len(heading.group(1))
+            blocks.append(
+                _text_block("heading", heading.group(2), {"level": len(heading.group(1))})
+            )
+            index += 1
+            continue
+        if re.fullmatch(r"(-{3,}|\*{3,}|_{3,})", stripped):
+            flush()
+            blocks.append({"id": _new_id(), "type": "divider", "props": {}, "children": []})
+            index += 1
+            continue
+        # Pipe table: header row followed by a |---| separator row.
+        if "|" in stripped and index + 1 < len(lines) and _is_table_sep(lines[index + 1]):
+            flush()
+            header = _parse_table_row(stripped) or []
+            rows = [[{"type": "text", "text": c, "styles": {}} for c in header]]
+            index += 2
+            while index < len(lines) and "|" in lines[index] and lines[index].strip():
+                cells = _parse_table_row(lines[index]) or []
+                rows.append([{"type": "text", "text": c, "styles": {}} for c in cells])
+                index += 1
             blocks.append(
                 {
-                    "id": uuid.uuid4().hex[:12],
-                    "type": "heading",
-                    "props": {"level": level},
-                    "content": [{"type": "text", "text": heading.group(2), "styles": {}}],
+                    "id": _new_id(),
+                    "type": "table",
+                    "props": {},
+                    "content": {"rows": [{"cells": r} for r in rows]},
                     "children": [],
                 }
             )
             continue
+        # Blockquote: consecutive "> " lines.
+        if stripped.startswith(">"):
+            flush()
+            quote_lines = []
+            while index < len(lines) and lines[index].strip().startswith(">"):
+                quote_lines.append(lines[index].strip().lstrip(">").strip())
+                index += 1
+            blocks.append(_text_block("quote", "\n".join(quote_lines)))
+            continue
+        task = re.match(r"^[-*+]\s+\[([ xX])\]\s+(.*)$", stripped)
         bullet = re.match(r"^[-*+]\s+(.*)$", stripped)
         numbered = re.match(r"^\d+[.)]\s+(.*)$", stripped)
-        match = bullet or numbered
-        if match:
+        if task or bullet or numbered:
             flush()
-            blocks.append(
-                {
-                    "id": uuid.uuid4().hex[:12],
-                    "type": "bulletListItem" if bullet else "numberedListItem",
-                    "props": {},
-                    "content": [{"type": "text", "text": match.group(1), "styles": {}}],
-                    "children": [],
-                }
-            )
+            if task:
+                blocks.append(
+                    _text_block(
+                        "checkListItem",
+                        task.group(2),
+                        {"checked": task.group(1).lower() == "x"},
+                    )
+                )
+            elif bullet:
+                blocks.append(_text_block("bulletListItem", bullet.group(1)))
+            else:
+                blocks.append(_text_block("numberedListItem", numbered.group(1)))
+            index += 1
             continue
+        # Display math on its own line(s): $$...$$
+        if stripped.startswith("$$"):
+            if stripped.endswith("$$") and len(stripped) > 4:
+                formula = stripped[2:-2].strip()
+                flush()
+                blocks.append(
+                    {"id": _new_id(), "type": "mathBlock", "props": {}, "content": formula, "children": []}
+                )
+                index += 1
+                continue
+            end = index + 1
+            while end < len(lines) and not lines[end].strip().endswith("$$"):
+                end += 1
+            if end < len(lines):
+                formula = "\n".join(lines[index + 1 : end])
+                flush()
+                blocks.append(
+                    {"id": _new_id(), "type": "mathBlock", "props": {}, "content": formula.strip(), "children": []}
+                )
+                index = end + 1
+                continue
         paragraph.append(stripped)
-        if len(blocks) > 500:
-            break
+        index += 1
     flush()
-    return blocks[:500]
+    return blocks
+
+
+def _blk_code(language: str, code: str) -> dict:
+    return {
+        "id": _new_id(),
+        "type": "codeBlock",
+        "props": {"language": language},
+        "content": [{"type": "text", "text": code, "styles": {}}],
+        "children": [],
+    }
 
 
 def safe_link(value: str) -> bool:
@@ -293,10 +473,76 @@ def inline_markdown(content: Any) -> str:
     return "".join(result)
 
 
+# Block types Markdown cannot represent (or only lossily); they serialize to a
+# ```noteui fence so nb_patch can compile them back losslessly.
+_DSL_ALWAYS = {
+    "callout",
+    "toggleHeading",
+    "toggleListItem",
+    "noteColumns",
+    "noteColumn",
+    "tableOfContents",
+    "webCard",
+    "htmlEmbed",
+    "taskView",
+    "clip",
+    "noteUpload",
+}
+# These keep a Markdown form, but children would be lost — prefer DSL then.
+_DSL_WITH_CHILDREN = {
+    "heading",
+    "quote",
+    "bulletListItem",
+    "numberedListItem",
+    "checkListItem",
+}
+
+
+def _special_markdown(block: dict[str, Any]) -> str | None:
+    """Fence-serialized form for blocks plain Markdown cannot carry, else None."""
+    kind = block.get("type")
+    props = block.get("props") or {}
+    children = block.get("children") or []
+    if kind in _DSL_ALWAYS or (kind in _DSL_WITH_CHILDREN and children):
+        try:
+            return "````noteui\n" + block_to_dsl(block) + "\n````"
+        except NoteUIError:
+            return None
+    if kind == "learning":
+        try:
+            data = json.loads(props.get("data", "{}"))
+        except (TypeError, ValueError):
+            data = {}
+        if not isinstance(data, dict):
+            data = {}
+        lkind = str(props.get("kind") or "")
+        info = _KIND_FENCES.get(lkind)
+        if info and (data or props.get("markdown")):
+            body = (
+                json.dumps(data, ensure_ascii=False)
+                if data
+                else str(props.get("markdown") or "")
+            )
+            fence = "`" * max(3, max((len(m[0]) + 1 for m in re.finditer(r"`+", body)), default=3))
+            return f"{fence}{info}\n{body}\n{fence}"
+        markdown = str(props.get("markdown") or "")
+        if lkind in ("mermaid", "legacy_diagram") and markdown.strip().startswith("```"):
+            return markdown
+        try:
+            return "````noteui\n" + block_to_dsl(block) + "\n````"
+        except NoteUIError:
+            return None
+    return None
+
+
 def blocks_to_markdown(blocks: list[dict[str, Any]], depth: int = 0) -> str:
     parts = []
     for block in blocks:
         kind, props = block.get("type"), block.get("props") or {}
+        special = _special_markdown(block)
+        if special is not None:
+            parts.append("\n".join("  " * depth + line for line in special.splitlines()))
+            continue
         text = inline_markdown(block.get("content"))
         if kind in {"heading", "toggleHeading"}:
             text = "#" * max(1, min(6, int(props.get("level", 1)))) + " " + text

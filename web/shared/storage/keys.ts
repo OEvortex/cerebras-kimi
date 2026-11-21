@@ -19,9 +19,3 @@ export function physicalStorageKey<T>(key: StorageKey<T>): string {
   return `${STORAGE_NAMESPACE}${key.scope}:${key.name}`;
 }
 
-export function dynamicStorageKey<T>(
-  base: Omit<StorageKey<T>, "name">,
-  name: string,
-): StorageKey<T> {
-  return defineStorageKey({ ...base, name });
-}

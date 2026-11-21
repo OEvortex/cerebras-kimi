@@ -32,7 +32,7 @@ function publish(next: Roster) {
 }
 
 /** Fetch the list unless a fresh one is held or one is already on its way. */
-export function refreshPartnerRoster(force = false): Promise<void> {
+function refreshPartnerRoster(force = false): Promise<void> {
   if (inflight) return inflight;
   if (!force && loadedAt && Date.now() - loadedAt < STALE_MS) return Promise.resolve();
   publish({ ...roster, loading: true });

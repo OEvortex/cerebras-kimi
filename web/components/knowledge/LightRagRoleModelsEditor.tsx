@@ -1,6 +1,5 @@
 "use client";
 
-
 import type {
   IndexingLLMSelection,
   LightRagRoleModel,
@@ -19,7 +18,7 @@ const ROLE_DESCRIPTIONS = {
   vlm: "Used to analyze images during indexing. The model must support image input.",
 } as const;
 
-export const inheritedRole = (maxAsync = 4): LightRagRoleModel => ({
+const inheritedRole = (maxAsync = 4): LightRagRoleModel => ({
   mode: "inherit",
   max_async: maxAsync,
   timeout: 240,

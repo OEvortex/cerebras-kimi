@@ -53,18 +53,6 @@ export const ResourcesShelfIcon = createLucideIcon('resources-shelf', [
   ['path', { d: 'M3.75 10.4h16.5', key: 'lip' }],
 ])
 
-export const PartnersShelfIcon = createLucideIcon('partners-shelf', [
-  [
-    'path',
-    {
-      d: 'M12 4c4.56 0 8.25 3.25 8.25 7.25S16.56 18.5 12 18.5c-.98 0-1.92-.15-2.8-.43L5.1 19.6l1.18-3.38C4.84 14.92 3.75 13.18 3.75 11.25 3.75 7.25 7.44 4 12 4z',
-      className: fill,
-      key: 'bubble',
-    },
-  ],
-  ['path', { d: 'M9 12.1c.75.95 1.75 1.45 3 1.45s2.25-.5 3-1.45', key: 'smile' }],
-])
-
 export const PersonalizationShelfIcon = createLucideIcon('personalization-shelf', [
   ['circle', { cx: '10', cy: '8.25', r: '3.5', className: fill, key: 'head' }],
   ['path', { d: 'M3.75 19.75c.55-3.35 3.15-5.6 6.25-5.6 1.2 0 2.32.33 3.27.92', key: 'shoulders' }],

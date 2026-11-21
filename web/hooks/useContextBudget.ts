@@ -24,7 +24,7 @@ import type { StreamEvent } from "@/features/chat/model/protocol";
  * second copy of this walk would be a second definition of "how full is the
  * window" — the sort that drifts and then disagrees on screen.
  */
-export function readContextBudget(
+function readContextBudget(
   events: StreamEvent[] | undefined,
 ): ContextBudget | null {
   if (!events) return null;

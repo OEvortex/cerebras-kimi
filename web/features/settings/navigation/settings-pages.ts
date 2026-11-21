@@ -45,14 +45,10 @@ const WIDE_SETTINGS_PAGES = new Set([
   'multimodal',
 ])
 
-export function isWideSettingsPage(key: string): boolean {
-  return WIDE_SETTINGS_PAGES.has(resolveSettingsKey(key))
-}
-
 /** Related service pages share a compact navigation row, with explicit tabs. */
-export const SETTINGS_PAGE_FAMILIES: string[][] = [
+const SETTINGS_PAGE_FAMILIES: string[][] = [
   SETTINGS_CATEGORIES.find(category => category.key === 'agents')!.children!.map(leaf => leaf.key),
-]
+];
 
 export function settingsPageFamily(key: string): string[] {
   return SETTINGS_PAGE_FAMILIES.find(family => family.includes(key)) ?? [key]

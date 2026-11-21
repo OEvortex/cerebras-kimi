@@ -97,7 +97,7 @@ export function providerRegistry(catalog: Catalog): ProviderSource[] {
     }
   return result;
 }
-export function modelProviderRef(
+function modelProviderRef(
   service: ServiceName,
   profile: CatalogProfile,
   model?: CatalogModel | null,

@@ -19,7 +19,7 @@ import {
   sendReadingToNotebook,
 } from "@/lib/reading-workspace-api";
 
-export function ModalShell({
+function ModalShell({
   title,
   children,
   onClose,

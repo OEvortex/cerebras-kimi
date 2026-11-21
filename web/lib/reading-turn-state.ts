@@ -16,7 +16,7 @@ import {
 } from "@/lib/workspace-mode";
 
 /** Backward-compatible name for callers that still label the old capability. */
-export const READING_CAPABILITY = READING_WORKSPACE_MODE;
+
 export { READING_WORKSPACE_MODE };
 
 export interface ReadingTurnState {

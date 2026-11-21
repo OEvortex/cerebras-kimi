@@ -9,11 +9,11 @@
  * of the question instead of filing it as a document.
  */
 
-export const QUOTE_ATTACHMENT_TYPE = "quote";
-export const QUOTE_ATTACHMENT_FILENAME = "quote.md";
+const QUOTE_ATTACHMENT_TYPE = "quote";
+const QUOTE_ATTACHMENT_FILENAME = "quote.md";
 const QUOTE_MIME_TYPE = "text/markdown";
 /** Same bound as the server's; a longer selection is clipped, not refused. */
-export const MAX_QUOTE_LENGTH = 12_000;
+const MAX_QUOTE_LENGTH = 12_000;
 
 interface QuoteLike {
   type?: string;

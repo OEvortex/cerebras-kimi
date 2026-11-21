@@ -116,4 +116,3 @@ export function subscribeNotebookCompletions(listener: () => void): () => void {
   return () => window.removeEventListener(COMPLETION_EVENT, listener);
 }
 
-export const NOTEBOOK_COMPLETION_EVENT = COMPLETION_EVENT;

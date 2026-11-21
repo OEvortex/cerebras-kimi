@@ -1,7 +1,7 @@
 import { apiFetch, apiUrl } from "@/shared/api/client";
 
 /** Mirrors `deeptutor/api/routers/space_cli_apps.py`. */
-export const CLI_APPS_BASE_PATH = "/api/space/cli-apps";
+const CLI_APPS_BASE_PATH = "/api/space/cli-apps";
 
 /** Where the code comes from — the only honest input to "should I install this?". */
 export type CliAppTrust = "first-party" | "third-party";

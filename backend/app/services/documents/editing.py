@@ -15,7 +15,6 @@ from ...config import get_settings
 from ...store import database
 from ..llm_text import clean_thinking_tags
 
-MAX_TEXT_CHARS = 600_000
 MAX_HISTORY = 200
 _HISTORY_KEY = "documents/history"
 

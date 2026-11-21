@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 
 /** Binary Office formats — handled by dedicated parsers server-side. */
-export const OFFICE_EXTS = [".pdf", ".docx", ".xlsx", ".pptx"] as const;
+const OFFICE_EXTS = [".pdf", ".docx", ".xlsx", ".pptx"] as const;
 
 /**
  * Text-like formats — decoded server-side with multi-encoding fallback.
@@ -156,9 +156,9 @@ export const TEXT_LIKE_EXTS = [
   ".dockerfile",
 ] as const;
 
-export const SUPPORTED_DOC_EXTS = [...OFFICE_EXTS, ...TEXT_LIKE_EXTS] as const;
+const SUPPORTED_DOC_EXTS = [...OFFICE_EXTS, ...TEXT_LIKE_EXTS] as const;
 
-export const SUPPORTED_DOC_MIMES = new Set<string>([
+const SUPPORTED_DOC_MIMES = new Set<string>([
   // Office
   "application/pdf",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",

@@ -276,7 +276,7 @@ export function segmentTextByQuotes<T extends { quote: string }>(
 }
 
 /** Collect the text nodes of a rendered layer, in document order. */
-export function collectTextNodes(container: Element): Text[] {
+function collectTextNodes(container: Element): Text[] {
   const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
   const nodes: Text[] = [];
   let current = walker.nextNode();

@@ -16,7 +16,7 @@ import { useSyncExternalStore } from "react";
  *                    chrome, too narrow for a side-by-side panel
  *   desktop  >= 1024 iPad landscape and up: the layout the app was built for
  */
-export const DEVICE_BREAKPOINTS = {
+const DEVICE_BREAKPOINTS = {
   /** Below this width the sidebar becomes an overlay drawer. */
   tablet: 768,
   /** At/above this width side-by-side panels are affordable. */

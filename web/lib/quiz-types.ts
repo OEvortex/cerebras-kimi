@@ -31,17 +31,6 @@ export interface DeepQuestionFormConfig {
   max_questions: number;
 }
 
-export const DEFAULT_QUIZ_CONFIG: DeepQuestionFormConfig = {
-  mode: "custom",
-  topic: "",
-  num_questions: 3,
-  difficulty: "auto",
-  question_types: [],
-  per_type_counts: {},
-  paper_path: "",
-  max_questions: 10,
-};
-
 export interface QuizQuestion {
   question_id: string;
   question: string;
@@ -129,33 +118,6 @@ function buildQuizQuestionFromQa(qa: Record<string, unknown>): QuizQuestion {
  * the caller can fall back to the legacy ``extractQuizQuestions`` shape
  * for older (mimic) result envelopes.
  */
-export function extractStreamingQuizQuestions(
-  events: Array<{
-    type?: string;
-    metadata?: Record<string, unknown> | undefined;
-  }>,
-): QuizQuestion[] | null {
-  if (!Array.isArray(events) || events.length === 0) return null;
-  const byId = new Map<string, { idx: number; qa: QuizQuestion }>();
-  for (const event of events) {
-    if (event.type !== "content") continue;
-    const meta = (event.metadata ?? {}) as Record<string, unknown>;
-    if (meta.call_kind !== "quiz_question_emitted") continue;
-    const qa = meta.qa_pair as Record<string, unknown> | undefined;
-    if (!qa || typeof qa !== "object" || !qa.question) continue;
-    const idx = Number(meta.question_index);
-    const question = buildQuizQuestionFromQa(qa);
-    const key = question.question_id || String(idx);
-    byId.set(key, {
-      idx: Number.isFinite(idx) ? idx : byId.size,
-      qa: question,
-    });
-  }
-  if (byId.size === 0) return null;
-  return Array.from(byId.values())
-    .sort((a, b) => a.idx - b.idx)
-    .map((entry) => entry.qa);
-}
 
 /**
  * Resolve the turn identity of a quiz message from its event stream.
@@ -172,16 +134,6 @@ export function extractStreamingQuizQuestions(
  * ``turn_id``; QuizViewer renders those cards local-only (no notebook
  * reads or writes), so they can never inherit another turn's answers.
  */
-export function extractQuizTurnId(
-  events: Array<{ type?: string; turn_id?: string }> | undefined,
-): string | null {
-  if (!Array.isArray(events)) return null;
-  const result = events.find(
-    (event) => event.type === "result" && event.turn_id,
-  );
-  if (result?.turn_id) return result.turn_id;
-  return events.find((event) => event.turn_id)?.turn_id ?? null;
-}
 
 /**
  * Extract QuizQuestion[] from the raw `result` event metadata returned by
@@ -251,7 +203,7 @@ function titleCase(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-export const QUIZ_TYPE_LABEL_KEYS: Record<NormalizedQuizQuestionType, string> =
+const QUIZ_TYPE_LABEL_KEYS: Record<NormalizedQuizQuestionType, string> =
   {
     choice: "Multiple Choice",
     concept: "Concept Question",
@@ -265,60 +217,9 @@ export const QUIZ_TYPE_LABEL_KEYS: Record<NormalizedQuizQuestionType, string> =
  * One-line summary of the quiz form, shown next to the collapsed `Settings`
  * chevron in the composer. The summary is always in English.
  */
-export function summarizeQuizConfig(
-  cfg: DeepQuestionFormConfig,
-  translate?: (key: string) => string,
-): string {
-  const tr = translate ?? ((s: string) => s);
-  if (cfg.mode === "mimic") {
-    const target = cfg.paper_path.trim() || tr("no paper");
-    return [
-      tr("Mimic Paper"),
-      target,
-      `${tr("Max")} ${cfg.max_questions}`,
-    ].join(" · ");
-  }
-  const typeSummary =
-    cfg.question_types.length === 0
-      ? tr("Auto")
-      : cfg.question_types.length === 1
-        ? tr(QUIZ_TYPE_LABEL_KEYS[cfg.question_types[0]])
-        : `${cfg.question_types.length} ${tr("types")}`;
-  return [
-    tr("Custom"),
-    `${cfg.num_questions} ${tr("questions")}`,
-    tr(titleCase(cfg.difficulty || "auto")),
-    typeSummary,
-  ].join(" · ");
-}
 
 /**
  * Build the `config` payload to send over WebSocket for a quiz generation
  * request.
  */
-export function buildQuizWSConfig(
-  cfg: DeepQuestionFormConfig,
-): Record<string, unknown> {
-  if (cfg.mode === "mimic") {
-    return {
-      mode: "mimic",
-      paper_path: cfg.paper_path.trim(),
-      max_questions: cfg.max_questions,
-    };
-  }
-  // Only forward per-type counts when >=2 types are selected AND the user
-  // actually populated counts that sum to num_questions. Otherwise let
-  // the backend distribute freely across the allowed set.
-  const countsValid =
-    cfg.question_types.length >= 2 &&
-    Object.keys(cfg.per_type_counts).length > 0 &&
-    Object.values(cfg.per_type_counts).reduce((sum, v) => sum + (v || 0), 0) ===
-      cfg.num_questions;
-  return {
-    mode: "custom",
-    num_questions: cfg.num_questions,
-    difficulty: cfg.difficulty === "auto" ? "" : cfg.difficulty,
-    question_types: cfg.question_types,
-    per_type_counts: countsValid ? cfg.per_type_counts : {},
-  };
-}
+

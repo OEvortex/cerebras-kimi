@@ -42,6 +42,9 @@ export type { NoteAsk, NoteEditorHandle, NoteEditorProps }
  *  through the real markdown parser instead of showing raw `**`/`$`. */
 function blocksNeedMarkdownParse(blocks: NoteBlock[] | null, content: string): boolean {
   if (!blocks?.length || !content) return false
+  // ```noteui programs are compiled to blocks server-side; the client parser
+  // does not know the DSL and would reduce them to literal code blocks.
+  if (/^\s*`{3,}(noteui|nb|note)\b/m.test(content)) return false
   const hasMarkdown = /(^|\n)\s{0,3}(#{1,6}\s|[-*+]\s|\d+[.)]\s|>|```|\$\$?|\*\*|__)/.test(content)
   if (!hasMarkdown) return false
   const raw = JSON.stringify(blocks)

@@ -72,7 +72,7 @@ export interface FollowupThreadState {
   resourceSelection: { skills: string[]; mcp: string[] };
 }
 
-export function createEmptyThreadState(): FollowupThreadState {
+function createEmptyThreadState(): FollowupThreadState {
   return {
     isOpen: false,
     input: "",
@@ -741,6 +741,4 @@ export function useFollowupThread(questionKey: string): FollowupThreadState {
 
 /** Returns the full threads record — used by QuizViewer for "any thread
  *  with messages?" lookups across all questions in a quiz. */
-export function useAllFollowupThreads(): Record<string, FollowupThreadState> {
-  return useContext(QuizFollowupStateCtx);
-}
+

@@ -79,7 +79,7 @@ export function getStoredTheme(): Theme | null {
  * Save a theme preference to localStorage.
  * Pass "system" to remember that the OS should keep winning.
  */
-export function saveThemeToStorage(theme: ThemePreference): boolean {
+function saveThemeToStorage(theme: ThemePreference): boolean {
   if (typeof window === "undefined") return false;
 
   try {
@@ -112,7 +112,7 @@ export function resolveTheme(preference: ThemePreference | null): Theme {
 /**
  * Apply a resolved palette to the document.
  */
-export function applyThemeToDocument(theme: Theme): void {
+function applyThemeToDocument(theme: Theme): void {
   if (typeof document === "undefined") return;
 
   const html = document.documentElement;

@@ -12,7 +12,7 @@ export type RepeatEnd =
   { kind: 'never' } | { kind: 'until'; date: DateKey } | { kind: 'count'; count: number }
 
 /** Indexed like `Date.getDay()`: Sunday first. */
-export const WEEKDAY_CODES = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'] as const
+const WEEKDAY_CODES = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'] as const;
 
 export interface RecurrenceRule {
   freq: Frequency
@@ -111,7 +111,7 @@ export function buildRule(rule: RecurrenceRule, allDay: boolean): string {
 }
 
 /** Which of its weekday's dates in the month this is: 1–4, or -1 for a fifth (the last). */
-export function weekdayOrdinal(date: Date): number {
+function weekdayOrdinal(date: Date): number {
   const nth = Math.floor((date.getDate() - 1) / 7) + 1
   return nth === 5 ? -1 : nth
 }

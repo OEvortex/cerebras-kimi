@@ -1,7 +1,7 @@
 export type EpubPageTurnDirection = "previous" | "next";
 
-export const EPUB_PAGE_TURN_MIN_DRAG_PX = 48;
-export const EPUB_PAGE_TURN_HORIZONTAL_RATIO = 1.25;
+const EPUB_PAGE_TURN_MIN_DRAG_PX = 48;
+const EPUB_PAGE_TURN_HORIZONTAL_RATIO = 1.25;
 
 const INTERACTIVE_SELECTOR = [
   "a",

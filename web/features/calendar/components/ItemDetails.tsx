@@ -355,33 +355,4 @@ export function FootprintDetails({ day, onClose }: { day: FootprintDay; onClose:
 }
 
 /** Everything on one day, for a month cell that overflowed. */
-export function DayList({
-  day,
-  items,
-  onOpen,
-  onClose,
-  renderChip,
-}: {
-  day: Date
-  items: CalendarItem[]
-  onOpen: (item: CalendarItem, element: HTMLElement) => void
-  onClose: () => void
-  renderChip: (item: CalendarItem, onClick: (element: HTMLElement) => void) => ReactNode
-}) {
-  
-  return (
-    <div className="dt-cal-detail">
-      <div className="dt-cal-detail-actions">
-        <HeaderActionButton icon={X} label={"Close"} onClick={onClose} />
-      </div>
-      <p className="dt-cal-daylist-title">
-        {formatDate(day, "en", { weekday: 'long', month: 'long', day: 'numeric' })}
-      </p>
-      <div className="dt-cal-daylist">
-        {items.map(item => (
-          <div key={item.key}>{renderChip(item, element => onOpen(item, element))}</div>
-        ))}
-      </div>
-    </div>
-  )
-}
+

@@ -44,7 +44,7 @@ export function sessionUnitKey(
     : meta.sourceCwd;
 }
 
-export function scopeContainsSession(
+function scopeContainsSession(
   scope: AgentScope,
   meta: SessionImportMeta,
   createdAtSec: number,

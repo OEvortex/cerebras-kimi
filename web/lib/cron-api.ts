@@ -69,19 +69,11 @@ async function json<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>
 }
 
-export function listCronJobs(signal?: AbortSignal) {
-  return json<{ jobs: CronJob[] }>('/jobs', { signal })
-}
-
 export function createCronJob(payload: CreateCronJob) {
   return json<{ job: CronJob; ok: boolean }>('/jobs', {
     method: 'POST',
     body: JSON.stringify(payload),
   })
-}
-
-export function cancelCronJob(jobId: string) {
-  return json<{ ok: boolean }>(`/jobs/${encodeURIComponent(jobId)}`, { method: 'DELETE' })
 }
 
 export function recentCronReports(since: number, signal?: AbortSignal) {
@@ -92,6 +84,4 @@ export function recentCronReports(since: number, signal?: AbortSignal) {
 }
 
 /** Same-origin URL the calendar's reminder runtime can poll. */
-export function cronStreamUrl(path = '/reports'): string {
-  return scopedUrl(`${endpoint}${path}`)
-}
+

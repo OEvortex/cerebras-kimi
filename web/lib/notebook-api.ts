@@ -365,58 +365,11 @@ export async function listNotebookEntries(
   return expectJson<NotebookEntryListResponse>(response);
 }
 
-export async function getNotebookEntry(
-  entryId: number,
-): Promise<NotebookEntry> {
-  const response = await apiFetch(
-    apiUrl(`/api/question-notebook/entries/${entryId}`),
-    {
-      cache: "no-store",
-    },
-  );
-  return expectJson<NotebookEntry>(response);
-}
 
-export async function lookupNotebookEntry(
-  sessionId: string,
-  questionId: string,
-  turnId?: string | null,
-): Promise<NotebookEntry | null> {
-  const params = new URLSearchParams({
-    session_id: sessionId,
-    question_id: questionId,
-    // Probe quietly: a not-yet-saved question returns 204 instead of 404, so
-    // it stays out of the server error log and the browser network console.
-    missing_ok: "true",
-  });
-  if (turnId) params.set("turn_id", turnId);
-  const response = await apiFetch(
-    apiUrl(`/api/question-notebook/entries/lookup/by-question?${params}`),
-  );
-  // 204 (missing_ok hit) and 404 (older servers) both mean "no entry yet".
-  if (response.status === 204 || response.status === 404) return null;
-  return expectJson<NotebookEntry>(response);
-}
 
-export async function lookupNotebookEntryByOrigin(
-  originType: Exclude<QuestionOriginType, "conversation">,
-  originRef: string,
-  questionId: string,
-  turnId?: string | null,
-): Promise<NotebookEntry | null> {
-  const params = new URLSearchParams({
-    origin_type: originType,
-    origin_ref: originRef,
-    question_id: questionId,
-    missing_ok: "true",
-  });
-  if (turnId) params.set("turn_id", turnId);
-  const response = await apiFetch(
-    apiUrl(`/api/question-notebook/entries/lookup/by-question?${params}`),
-  );
-  if (response.status === 204 || response.status === 404) return null;
-  return expectJson<NotebookEntry>(response);
-}
+
+
+
 
 export async function updateNotebookEntry(
   entryId: number,

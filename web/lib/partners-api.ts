@@ -4,17 +4,7 @@ import { apiFetch, apiUrl } from "@/shared/api/client";
 import type { LLMSelection } from "@/features/chat/model/protocol";
 import type { ChatWorkspaceRegistration } from "@/lib/workspaces-api";
 
-export async function getPartnerWorkspaces(
-  partnerId: string,
-): Promise<ChatWorkspaceRegistration[]> {
-  const response = await apiFetch(
-    apiUrl(`/api/partners/${encodeURIComponent(partnerId)}/workspaces`),
-  );
-  const result = await json<{ workspaces: ChatWorkspaceRegistration[] }>(
-    response,
-  );
-  return result.workspaces;
-}
+
 
 export interface PartnerInfo {
   partner_id: string;
@@ -207,17 +197,7 @@ export async function getPartner(
   );
 }
 
-export async function createPartner(
-  payload: CreatePartnerPayload,
-): Promise<PartnerInfo> {
-  return json(
-    await apiFetch(apiUrl("/api/partners"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    }),
-  );
-}
+
 
 export async function confirmPartnerDraft(
   draftId: string,
@@ -235,93 +215,23 @@ export async function confirmPartnerDraft(
   );
 }
 
-export async function updatePartner(
-  partnerId: string,
-  payload: Partial<CreatePartnerPayload> & {
-    channels?: Record<string, unknown>;
-  },
-): Promise<PartnerInfo> {
-  return json(
-    await apiFetch(apiUrl(`/api/partners/${encodeURIComponent(partnerId)}`), {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    }),
-  );
-}
 
-export async function startPartner(partnerId: string): Promise<PartnerInfo> {
-  return json(
-    await apiFetch(
-      apiUrl(`/api/partners/${encodeURIComponent(partnerId)}/start`),
-      { method: "POST" },
-    ),
-  );
-}
 
-export async function stopPartner(partnerId: string): Promise<void> {
-  await json(
-    await apiFetch(
-      apiUrl(`/api/partners/${encodeURIComponent(partnerId)}/stop`),
-      { method: "POST" },
-    ),
-  );
-}
 
-export async function destroyPartner(partnerId: string): Promise<void> {
-  await json(
-    await apiFetch(apiUrl(`/api/partners/${encodeURIComponent(partnerId)}`), {
-      method: "DELETE",
-    }),
-  );
-}
 
-export async function getPartnerSoul(partnerId: string): Promise<string> {
-  const data = await json<{ content: string }>(
-    await apiFetch(
-      apiUrl(`/api/partners/${encodeURIComponent(partnerId)}/soul`),
-    ),
-  );
-  return data.content ?? "";
-}
 
-export async function savePartnerSoul(
-  partnerId: string,
-  content: string,
-): Promise<void> {
-  await json(
-    await apiFetch(
-      apiUrl(`/api/partners/${encodeURIComponent(partnerId)}/soul`),
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
-      },
-    ),
-  );
-}
 
-export async function getSoulSources(): Promise<SoulSources> {
-  return json(await apiFetch(apiUrl("/api/partners/soul-sources")));
-}
 
-export async function createSoulTemplate(
-  id: string,
-  name: string,
-  content: string,
-): Promise<SoulTemplate> {
-  return json(
-    await apiFetch(apiUrl("/api/partners/souls"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, name, content }),
-    }),
-  );
-}
 
-export async function getToolOptions(): Promise<ToolOptions> {
-  return json(await apiFetch(apiUrl("/api/partners/tool-options")));
-}
+
+
+
+
+
+
+
+
+
 
 export async function getPartnerCommands(): Promise<PartnerCommandInfo[]> {
   const data = await json<{ commands: PartnerCommandInfo[] }>(
@@ -330,50 +240,11 @@ export async function getPartnerCommands(): Promise<PartnerCommandInfo[]> {
   return data.commands;
 }
 
-export async function getPartnerAssets(
-  partnerId: string,
-): Promise<PartnerAssets> {
-  return json(
-    await apiFetch(
-      apiUrl(`/api/partners/${encodeURIComponent(partnerId)}/assets`),
-    ),
-  );
-}
 
-export async function addPartnerAssets(
-  partnerId: string,
-  assets: {
-    knowledge_bases?: string[];
-    skills?: string[];
-    notebooks?: string[];
-  },
-): Promise<{ assets: PartnerAssets } & ProvisioningReport> {
-  return json(
-    await apiFetch(
-      apiUrl(`/api/partners/${encodeURIComponent(partnerId)}/assets`),
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(assets),
-      },
-    ),
-  );
-}
 
-export async function removePartnerAsset(
-  partnerId: string,
-  assetType: "knowledge_base" | "skill" | "notebook",
-  name: string,
-): Promise<{ assets: PartnerAssets }> {
-  return json(
-    await apiFetch(
-      apiUrl(
-        `/api/partners/${encodeURIComponent(partnerId)}/assets/${assetType}/${encodeURIComponent(name)}`,
-      ),
-      { method: "DELETE" },
-    ),
-  );
-}
+
+
+
 
 export interface ChannelSchemaEntry {
   name: string;
@@ -410,16 +281,7 @@ export interface PartnerChannelRuntimeResponse {
   channels: Record<string, PartnerChannelRuntimeEntry>;
 }
 
-export async function getPartnerChannelRuntime(
-  partnerId: string,
-): Promise<PartnerChannelRuntimeResponse> {
-  return json(
-    await apiFetch(
-      apiUrl(`/api/partners/${encodeURIComponent(partnerId)}/channels/status`),
-      { cache: "no-store" },
-    ),
-  );
-}
+
 
 export type PartnerChannelOnboardingChannel = "feishu" | "wecom";
 
@@ -445,82 +307,17 @@ export interface PartnerChannelOnboardingSession {
   error_code?: string;
 }
 
-export function supportsChannelOnboarding(
-  channel: string,
-  available: boolean | undefined,
-): boolean {
-  return available !== false && (channel === "feishu" || channel === "wecom");
-}
 
-export async function startChannelOnboarding(
-  partnerId: string,
-  channel: PartnerChannelOnboardingChannel,
-): Promise<PartnerChannelOnboardingSession> {
-  return json(
-    await apiFetch(
-      apiUrl(
-        `/api/partners/${encodeURIComponent(partnerId)}/channel-onboarding/start`,
-      ),
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ channel }),
-      },
-    ),
-  );
-}
 
-export async function getChannelOnboarding(
-  partnerId: string,
-  sessionId: string,
-): Promise<PartnerChannelOnboardingSession> {
-  return json(
-    await apiFetch(
-      apiUrl(
-        `/api/partners/${encodeURIComponent(partnerId)}/channel-onboarding/${encodeURIComponent(sessionId)}`,
-      ),
-      { cache: "no-store" },
-    ),
-  );
-}
 
-export async function cancelChannelOnboarding(
-  partnerId: string,
-  sessionId: string,
-): Promise<PartnerChannelOnboardingSession> {
-  return json(
-    await apiFetch(
-      apiUrl(
-        `/api/partners/${encodeURIComponent(partnerId)}/channel-onboarding/${encodeURIComponent(sessionId)}`,
-      ),
-      { method: "DELETE" },
-    ),
-  );
-}
 
-export async function applyChannelOnboarding(
-  partnerId: string,
-  sessionId: string,
-): Promise<{ session: PartnerChannelOnboardingSession }> {
-  return json(
-    await apiFetch(
-      apiUrl(
-        `/api/partners/${encodeURIComponent(partnerId)}/channel-onboarding/${encodeURIComponent(sessionId)}/apply`,
-      ),
-      { method: "POST" },
-    ),
-  );
-}
 
-export async function getChannelSchemas(): Promise<ChannelsSchemaResponse> {
-  // no-store: availability reflects live server imports (e.g. a dependency
-  // installed minutes ago) — a cached copy here shows phantom-missing channels.
-  return json(
-    await apiFetch(apiUrl("/api/partners/channels/schema"), {
-      cache: "no-store",
-    }),
-  );
-}
+
+
+
+
+
+
 
 export async function getPartnerHistory(
   partnerId: string,
@@ -556,32 +353,9 @@ export async function getPartnerHistoryPage(
   );
 }
 
-export async function getPartnerWebContinuity(
-  partnerId: string,
-): Promise<PartnerWebContinuity> {
-  return json(
-    await apiFetch(
-      apiUrl(`/api/partners/${encodeURIComponent(partnerId)}/web-continuity`),
-      { cache: "no-store" },
-    ),
-  );
-}
 
-export async function setPartnerWebContinuity(
-  partnerId: string,
-  state: PartnerWebContinuity,
-): Promise<PartnerWebContinuity> {
-  return json(
-    await apiFetch(
-      apiUrl(`/api/partners/${encodeURIComponent(partnerId)}/web-continuity`),
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(state),
-      },
-    ),
-  );
-}
+
+
 
 export async function getPartnerSessions(
   partnerId: string,
@@ -662,41 +436,11 @@ export interface PartnerLinkCode {
   command: string;
 }
 
-export async function createPartnerLinkCode(
-  partnerId: string,
-): Promise<PartnerLinkCode> {
-  return json(
-    await apiFetch(
-      apiUrl(`/api/partners/${encodeURIComponent(partnerId)}/links/code`),
-      { method: "POST" },
-    ),
-  );
-}
 
-export async function listPartnerLinks(
-  partnerId: string,
-): Promise<PartnerLink[]> {
-  const data = await json<{ links: PartnerLink[] }>(
-    await apiFetch(
-      apiUrl(`/api/partners/${encodeURIComponent(partnerId)}/links`),
-    ),
-  );
-  return data.links ?? [];
-}
 
-export async function removePartnerLink(
-  partnerId: string,
-  key: string,
-): Promise<void> {
-  await json(
-    await apiFetch(
-      apiUrl(
-        `/api/partners/${encodeURIComponent(partnerId)}/links/${encodeURIComponent(key)}`,
-      ),
-      { method: "DELETE" },
-    ),
-  );
-}
+
+
+
 
 // ── WeChat QR onboarding (#951) ───────────────────────────────────────────────
 //
@@ -720,32 +464,9 @@ export interface WeixinQrSession {
   qr_svg?: string;
 }
 
-export async function startWeixinQr(
-  partnerId: string,
-): Promise<WeixinQrSession> {
-  return json(
-    await apiFetch(
-      apiUrl(
-        `/api/partners/${encodeURIComponent(partnerId)}/channels/weixin/qr`,
-      ),
-      { method: "POST" },
-    ),
-  );
-}
 
-export async function pollWeixinQr(
-  partnerId: string,
-  sessionId: string,
-): Promise<WeixinQrSession> {
-  return json(
-    await apiFetch(
-      apiUrl(
-        `/api/partners/${encodeURIComponent(partnerId)}/channels/weixin/qr/${encodeURIComponent(sessionId)}`,
-      ),
-      { cache: "no-store" },
-    ),
-  );
-}
+
+
 
 /** Resolve older saved consultations which did not yet carry native session IDs. */
 export async function getPartnerConsultationSession(chatSessionId: string, partnerName: string): Promise<{ partner_id: string; session_key: string } | null> {

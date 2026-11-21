@@ -1,4 +1,5 @@
 import type { NoteBlock } from '@/lib/notes-api'
+import { compileNoteui, NOTEUI_FENCES } from './noteui'
 
 /**
  * Math spans the notebook model emits / imports. BlockNote's markdown parser
@@ -200,7 +201,16 @@ export function parseNoteMarkdown(
       const close = new RegExp(`^\\s*${fence[1][0]}{${fence[1].length},}\\s*$`)
       while (end < lines.length && !close.test(lines[end])) end++
       const fenceKind = FENCE_LEARNING_KINDS[fence[2]]
-      if (end < lines.length && (['mermaid', 'flow', 'seq'].includes(fence[2]) || fenceKind)) {
+      if (end < lines.length && NOTEUI_FENCES.has(fence[2])) {
+        flush()
+        const body = lines.slice(index + 1, end).join('\n')
+        try {
+          result.push(...compileNoteui(body))
+        } catch {
+          // A broken program stays literal so the learner can fix it.
+          prose.push(...lines.slice(index, end + 1))
+        }
+      } else if (end < lines.length && (['mermaid', 'flow', 'seq'].includes(fence[2]) || fenceKind)) {
         flush()
         const body = lines.slice(index + 1, end).join('\n')
         let data = '{}'

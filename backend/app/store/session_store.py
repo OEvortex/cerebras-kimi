@@ -6,11 +6,9 @@ Sessions live in one WAL-mode SQLite database (``data/deeptutor.sqlite3``):
   header/entries).
 * ``messages`` / ``turns`` — the UI-facing rows: chat messages with their
   streamed events, and per-turn event logs used for WS replay after reconnects.
-* ``vtx_items`` — the raw input-item dicts the vtx ``Session`` protocol
-  consumes via ``VtxSessionAdapter``.
+* ``vtx_items`` — legacy raw input-item dicts kept for old session records.
 * ``session_fts`` — an FTS5 index over message text used by the REST search
   endpoint.
-* ``session_embeddings`` — cached message vectors for optional semantic search.
 
 Legacy ``data/sessions/*.json`` records are imported on first open and moved to
 ``data/sessions-legacy/``; the files are not read after that.
@@ -133,14 +131,6 @@ CREATE TABLE IF NOT EXISTS vtx_items (
     PRIMARY KEY (session_id, seq)
 );
 CREATE INDEX IF NOT EXISTS idx_vtx_items_session ON vtx_items(session_id, seq);
-
-CREATE TABLE IF NOT EXISTS session_embeddings (
-    model TEXT NOT NULL,
-    session_id TEXT NOT NULL,
-    hash TEXT NOT NULL,
-    vec TEXT NOT NULL,
-    PRIMARY KEY (model, session_id)
-);
 """
 
 _FTS_SCHEMA = """
@@ -654,7 +644,7 @@ class SessionStore:
                 if exists is None:
                     connection.execute("ROLLBACK")
                     return False
-                for table in ("messages", "turns", "vtx_items", "session_embeddings"):
+                for table in ("messages", "turns", "vtx_items"):
                     connection.execute(
                         f"DELETE FROM {table} WHERE session_id = ?", (session_id,)
                     )
@@ -1054,61 +1044,6 @@ class SessionStore:
         turn["events"].append(event)
         turn["last_seq"] = event.get("seq", turn["last_seq"])
 
-    def finish_turn(
-        self, session: dict[str, Any], turn_id: str, status: str
-    ) -> None:
-        turn = session["turns"].get(turn_id)
-        if turn is not None:
-            turn["status"] = status
-            turn["finished_at"] = _now()
-        session["status"] = "idle" if status == "completed" else status
-
-    # -- embedding cache (optional semantic search) -------------------------
-
-    def load_embeddings(self) -> dict[str, dict[str, Any]]:
-        """Cached message embeddings keyed ``"<model>:<session_id>"``."""
-        with self._connect() as connection:
-            rows = connection.execute(
-                "SELECT model, session_id, hash, vec FROM session_embeddings"
-            ).fetchall()
-        cache: dict[str, dict[str, Any]] = {}
-        for row in rows:
-            vector = _loads(row["vec"], [])
-            if isinstance(vector, list) and vector:
-                cache[f"{row['model']}:{row['session_id']}"] = {
-                    "hash": row["hash"],
-                    "vec": vector,
-                }
-        return cache
-
-    def save_embeddings(self, entries: dict[str, dict[str, Any]]) -> None:
-        rows = []
-        for key, entry in entries.items():
-            model, _, session_id = key.partition(":")
-            vector = entry.get("vec")
-            if not (model and session_id and isinstance(vector, list) and vector):
-                continue
-            rows.append((model, session_id, str(entry.get("hash") or ""), _dumps(vector)))
-        if not rows:
-            return
-        with self._connect() as connection:
-            connection.execute("BEGIN IMMEDIATE")
-            try:
-                connection.executemany(
-                    """
-                    INSERT INTO session_embeddings (model, session_id, hash, vec)
-                    VALUES (?, ?, ?, ?)
-                    ON CONFLICT(model, session_id) DO UPDATE SET
-                        hash = excluded.hash,
-                        vec = excluded.vec
-                    """,
-                    rows,
-                )
-                connection.execute("COMMIT")
-            except Exception:
-                connection.execute("ROLLBACK")
-                raise
-
     def turn_events(self, turn_id: str, after_seq: int = 0) -> List[dict[str, Any]]:
         """Persisted event log for a finished turn (WS replay after restart)."""
         with self._connect() as connection:
@@ -1129,38 +1064,3 @@ class SessionStore:
 def _derive_title(content: str) -> str:
     text = " ".join(content.split())
     return text[:60] + ("…" if len(text) > 60 else "")
-
-
-class VtxSessionAdapter:
-    """vtx ``Session`` protocol over a session document's ``vtx_items``.
-
-    The runner calls these methods around every turn; each mutation is
-    persisted immediately so a crash mid-turn never loses committed history.
-    """
-
-    def __init__(self, store: SessionStore, session: dict[str, Any]) -> None:
-        self._store = store
-        self._session = session
-        self.session_id = session["id"]
-
-    async def get_items(self, limit: int | None = None) -> list[dict[str, Any]]:
-        items = self._session.get("vtx_items", [])
-        if limit is not None:
-            items = items[-limit:]
-        return [dict(item) for item in items]
-
-    async def add_items(self, items: list[dict[str, Any]]) -> None:
-        self._session.setdefault("vtx_items", []).extend(dict(i) for i in items)
-        self._store.save(self._session)
-
-    async def pop_item(self) -> dict[str, Any] | None:
-        items = self._session.get("vtx_items", [])
-        if not items:
-            return None
-        item = items.pop()
-        self._store.save(self._session)
-        return item
-
-    async def clear_session(self) -> None:
-        self._session["vtx_items"] = []
-        self._store.save(self._session)

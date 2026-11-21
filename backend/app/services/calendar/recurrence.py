@@ -25,9 +25,6 @@ UTC_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 WALL_FORMAT = "%Y-%m-%dT%H:%M:%S"
 MAX_INSTANCES = 1000  # per series per query
 MAX_COUNT = 10000
-# A date is a different instant in every zone (UTC-12 … UTC+14); stored spans
-# of all-day events are widened by this much so one index serves every zone.
-ALL_DAY_PAD = timedelta(hours=14)
 
 _RULE_KEYS = (
     "FREQ",
@@ -230,22 +227,6 @@ class Timing:
         )
 
     @property
-    def api_start(self) -> str:
-        return (
-            self.dtstart
-            if self.all_day
-            else format_instant(from_wall(self.dtstart, self.tzid, self.start_fold))
-        )
-
-    @property
-    def api_end(self) -> str:
-        return (
-            self.dtend
-            if self.all_day
-            else format_instant(from_wall(self.dtend, self.tzid, self.end_fold))
-        )
-
-    @property
     def first(self) -> datetime:
         """DTSTART in rule space: naive midnight, or aware wall time."""
         if self.all_day:
@@ -323,24 +304,6 @@ class Timing:
                 break
             count += 1
         return count
-
-    def span(self) -> tuple[str, str | None]:
-        """A UTC superset of every instance, for the indexed range query."""
-        pad = ALL_DAY_PAD if self.all_day else timedelta(0)
-        first = _as_utc(self.first)
-        last = first
-        if self.rrule:
-            parts = parse_rule(self.rrule)
-            if "UNTIL" in parts:
-                until = _parse_until(parts["UNTIL"])
-                last = _as_utc(
-                    until if isinstance(until, datetime) else datetime.combine(until, time())
-                )
-            elif "COUNT" in parts:
-                last = _as_utc(list(self.starts())[-1])
-            else:
-                return format_instant(first - pad), None
-        return format_instant(first - pad), format_instant(last + self.duration + pad)
 
 
 def _as_utc(moment: datetime) -> datetime:

@@ -22,8 +22,8 @@ export interface EventDraft {
   taskWorkspaceId: string | null
 }
 
-export const DEFAULT_TIMED_REMINDERS = [10]
-export const DEFAULT_ALL_DAY_REMINDERS: number[] = []
+const DEFAULT_TIMED_REMINDERS = [10];
+const DEFAULT_ALL_DAY_REMINDERS: number[] = [];
 
 export function blankDraft(
   start: Date,

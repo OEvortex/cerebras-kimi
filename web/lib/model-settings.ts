@@ -7,7 +7,7 @@ import type {
   ServiceName,
 } from "./model-catalog-types";
 
-export const MODEL_SERVICES: ServiceName[] = [
+const MODEL_SERVICES: ServiceName[] = [
   "llm",
   "task",
   "embedding",
@@ -16,16 +16,6 @@ export const MODEL_SERVICES: ServiceName[] = [
   "imagegen",
   "videogen",
 ];
-export const MODEL_SERVICE_LABELS: Record<ServiceName, string> = {
-  llm: "Chat model",
-  task: "Task model",
-  embedding: "Embedding",
-  search: "Search",
-  tts: "Text-to-Speech",
-  stt: "Speech-to-Text",
-  imagegen: "Image Generation",
-  videogen: "Video Generation",
-};
 
 export type ProviderGroup = {
   id: string;

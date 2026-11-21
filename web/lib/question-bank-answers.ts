@@ -20,7 +20,7 @@ export function questionResultBadge(entry: { result?: string; is_correct: boolea
 }
 
 /** Fold letters and option text so choice matching is not whitespace-sensitive. */
-export function foldedAnswer(value: string): string {
+function foldedAnswer(value: string): string {
   return value.trim().replace(/\s+/g, " ").toUpperCase();
 }
 

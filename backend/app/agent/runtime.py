@@ -108,12 +108,6 @@ def _suppress_vtx_selection_writes():
             setattr(_vr, name, fn)
 
 
-# underscore-prefixed and not exported, so we match on type name — the same
-# dispatch the SDK docs recommend.
-def _event_name(event: Any) -> str:
-    return type(event).__name__
-
-
 @dataclass
 class TurnHandle:
     turn_id: str
@@ -198,7 +192,6 @@ class AgentRuntime:
         install_model_fetch_cache()
         self._turns: dict[str, TurnHandle] = {}
         self._vtx_runtimes: dict[str, Any] = {}
-        self._session_locks: dict[str, asyncio.Lock] = {}
         # turn_id -> (future to resolve, tool_call_id, question prompts by id)
         self._ask_user_waiters: dict[str, tuple[Any, str, dict[str, str]]] = {}
         # Keeps post-turn work (title generation) from being garbage collected
@@ -269,9 +262,6 @@ class AgentRuntime:
                     "reply_preview": text.strip(),
                 }))
         return True
-
-    def _lock_for(self, session_id: str) -> asyncio.Lock:
-        return self._session_locks.setdefault(session_id, asyncio.Lock())
 
     # -- agent construction -------------------------------------------------
 
@@ -1067,15 +1057,6 @@ class AgentRuntime:
             return [e for e in handle.events if (e.get("seq") or 0) > after_seq]
         # Fall back to the persisted log (turn finished or server restarted).
         return self._store.turn_events(turn_id, after_seq)
-
-    def latest_turn_for_session(self, session_id: str) -> str | None:
-        session = self._store.get(session_id)
-        if not session:
-            return None
-        turns = session.get("turns", {})
-        if not turns:
-            return None
-        return max(turns, key=lambda t: turns[t].get("created_at", 0))
 
 
 def _new_id(prefix: str) -> str:

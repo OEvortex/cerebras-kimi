@@ -18,7 +18,7 @@
  */
 
 /** Extension (lowercase, with leading dot) → Prism language name. */
-export const CODE_EXT_TO_LANG: Record<string, string> = {
+const CODE_EXT_TO_LANG: Record<string, string> = {
   // Mainstream
   ".py": "python",
   ".js": "javascript",

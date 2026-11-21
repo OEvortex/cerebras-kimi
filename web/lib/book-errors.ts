@@ -29,4 +29,4 @@ export function bookErrorMessage(error: unknown): string {
 }
 
 /** The codes this module has wording for — exported for the test to assert on. */
-export const KNOWN_BOOK_ERROR_CODES = Object.keys(CODE_MESSAGES);
+

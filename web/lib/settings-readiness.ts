@@ -1,7 +1,7 @@
 import { apiFetch, apiUrl } from "@/shared/api/client";
 import { settingsAnchorHref } from "@/features/settings/navigation/settings-nav";
 
-export const READINESS_STATES = [
+const READINESS_STATES = [
   "enabled_verified",
   "available_disabled",
   "unavailable",
@@ -12,7 +12,7 @@ export const READINESS_STATES = [
 export type ReadinessState = (typeof READINESS_STATES)[number];
 
 /** States in which a capability is running, or one toggle away from it. */
-export const USABLE_READINESS_STATES: ReadonlySet<ReadinessState> = new Set([
+const USABLE_READINESS_STATES: ReadonlySet<ReadinessState> = new Set([
   "enabled_verified",
   "available_disabled",
 ]);
@@ -24,7 +24,7 @@ export const USABLE_READINESS_STATES: ReadonlySet<ReadinessState> = new Set([
  * fault. Only something the install *needs*, or something the operator did
  * configure and that now fails, earns a place in the attention list.
  */
-export const READINESS_SEVERITIES = [
+const READINESS_SEVERITIES = [
   "blocker",
   "warning",
   "suggestion",
@@ -66,7 +66,7 @@ export interface SettingsReadinessSnapshot {
  * last. Sections the backend adds later fall in after these, in the order it
  * sent them, rather than disappearing.
  */
-export const READINESS_SECTION_ORDER = [
+const READINESS_SECTION_ORDER = [
   "catalog",
   "knowledge",
   "document_parsing",

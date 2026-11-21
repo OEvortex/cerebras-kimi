@@ -20,8 +20,7 @@ export interface YouTubePlayerLike {
   destroy(): void
 }
 
-export const DEFAULT_PLAYBACK_RATE = 1
-export const WATCHING_PLAYBACK_RATES = [0.75, 1, 1.25, 1.5, 1.75, 2] as const
+const DEFAULT_PLAYBACK_RATE = 1;
 
 function normalizePlaybackRate(rate: number): number {
   const parsed = Number(rate)

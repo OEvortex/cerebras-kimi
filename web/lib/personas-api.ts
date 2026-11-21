@@ -64,64 +64,13 @@ export async function listPersonas(options?: {
   );
 }
 
-export async function getPersona(name: string): Promise<PersonaDetail> {
-  const response = await apiFetch(
-    apiUrl(`/api/personas/${encodeURIComponent(name)}`),
-    {
-      cache: "no-store",
-    },
-  );
-  const data = await asJson(response);
-  return {
-    ...normalizeInfo({ ...data, name: data?.name ?? name }),
-    content: String(data?.content ?? ""),
-  };
-}
 
-export async function createPersona(
-  payload: CreatePersonaPayload,
-): Promise<PersonaInfo> {
-  const response = await apiFetch(apiUrl("/api/personas"), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      name: payload.name,
-      description: payload.description,
-      content: payload.content,
-    }),
-  });
-  const data = await asJson(response);
-  invalidatePersonasCache();
-  return normalizeInfo({ ...data, name: data?.name ?? payload.name });
-}
 
-export async function updatePersona(
-  name: string,
-  payload: UpdatePersonaPayload,
-): Promise<PersonaInfo> {
-  const response = await apiFetch(
-    apiUrl(`/api/personas/${encodeURIComponent(name)}`),
-    {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    },
-  );
-  const data = await asJson(response);
-  invalidatePersonasCache();
-  return normalizeInfo({ ...data, name: data?.name ?? name });
-}
 
-export async function deletePersona(name: string): Promise<void> {
-  const response = await apiFetch(
-    apiUrl(`/api/personas/${encodeURIComponent(name)}`),
-    {
-      method: "DELETE",
-    },
-  );
-  await asJson(response);
-  invalidatePersonasCache();
-}
+
+
+
+
 
 export function invalidatePersonasCache() {
   invalidateClientCache(PERSONAS_CACHE_PREFIX);

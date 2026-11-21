@@ -490,22 +490,6 @@ export async function deleteSession(sessionId: string, workspaceId?: string): Pr
   notifySessionsChanged();
 }
 
-export async function recordQuizResults(
-  sessionId: string,
-  answers: QuizResultItem[],
-  turnId?: string | null,
-): Promise<void> {
-  const response = await apiFetch(
-    apiUrl(`/api/sessions/${sessionId}/quiz-results`),
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ answers, turn_id: turnId || "" }),
-    },
-  );
-  await expectJson<{ recorded: boolean }>(response);
-}
-
 export interface DeleteMessageResult {
   /** Little Tutor threads the server detached from the deleted messages. */
   detachedThreadIds: string[];

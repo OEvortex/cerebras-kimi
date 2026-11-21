@@ -9,9 +9,9 @@
  *
  * Keep the set in step with `_FORBIDDEN_CHARS` in that module.
  */
-export const KB_NAME_FORBIDDEN_CHARS = '<>:"/\\|?*#%';
+const KB_NAME_FORBIDDEN_CHARS = '<>:"/\\|?*#%';
 
-export const KB_NAME_MAX_LENGTH = 120;
+const KB_NAME_MAX_LENGTH = 120;
 
 /**
  * Returns the offending characters, in the order the backend reports them, or

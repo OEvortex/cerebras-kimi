@@ -25,7 +25,6 @@ from .narration import Clip, narrate, voice_module
 from .runtime import build_lesson, ensure_runtime, prepare_workdir, write_page
 
 MAX_ATTEMPTS = 4
-MAX_LAYOUT_ROUNDS = 2
 
 
 def _slug_for(title: str) -> str:

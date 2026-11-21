@@ -33,10 +33,6 @@ export function selectedBooksToPayload(
     .filter((ref) => ref.book_id && ref.page_ids.length > 0);
 }
 
-export function countSelectedBookPages(refs: SelectedBookReference[]): number {
-  return refs.reduce((total, ref) => total + ref.pages.length, 0);
-}
-
 export function normalizeBookReferences(
   value: unknown,
 ): BookReferencePayload[] {

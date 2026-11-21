@@ -301,7 +301,7 @@ export const formatKnowledgeTimestamp = (value?: string): string | null => {
   return parsed ? parsed.toLocaleString() : value || null;
 };
 
-export const MARGINNOTE4_KB_TYPE = "marginnote4";
+const MARGINNOTE4_KB_TYPE = "marginnote4";
 
 /**
  * A connected subagent (partner or local CLI), reachable live via
@@ -311,9 +311,6 @@ export const MARGINNOTE4_KB_TYPE = "marginnote4";
  * "attach knowledge" picker, where surfacing it is the point.
  */
 export const SUBAGENT_KB_TYPE = "subagent";
-
-export const isSubagentKb = (kb: KnowledgeBase): boolean =>
-  kb.metadata?.type === SUBAGENT_KB_TYPE;
 
 /**
  * A connected MarginNote 4 library.
@@ -325,7 +322,7 @@ export const isSubagentKb = (kb: KnowledgeBase): boolean =>
 export const isMarginNoteKb = (kb: KnowledgeBase): boolean =>
   kb.metadata?.type === MARGINNOTE4_KB_TYPE;
 
-export const KB_DETAIL_SECTIONS = [
+const KB_DETAIL_SECTIONS = [
   "files",
   "add",
   "folders",
@@ -356,8 +353,6 @@ export const kbDetailSections = (kb: KnowledgeBase): KbDetailSection[] =>
       );
 
 /** Local source folders belong to ordinary, DeepTutor-managed indexed KBs. */
-export const kbSupportsLinkedFolders = (kb: KnowledgeBase): boolean =>
-  !isMarginNoteKb(kb) && !kb.metadata?.type;
 
 /** The retrieval engine a KB is bound to. Connected vaults badge by source. */
 export const kbProvider = (kb: KnowledgeBase): string => {

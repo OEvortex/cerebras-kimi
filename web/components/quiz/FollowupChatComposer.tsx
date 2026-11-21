@@ -16,7 +16,6 @@
 import { memo, useCallback, useMemo } from "react";
 import { MessageSquare } from "lucide-react";
 
-
 import StandaloneComposer, {
   type StandaloneComposerSubmission,
 } from "@/components/chat/home/StandaloneComposer";
@@ -46,7 +45,7 @@ const FOLLOWUP_CAPABILITIES = [
 
 /** One prompt per thing the thread is pinned to. A side chat names who will
  *  read it, since that is the one thing that changes what to write. */
-export function followupPlaceholder(
+function followupPlaceholder(
   context: QuizFollowupTabContext,
 ): string {
   const side = context.sideChat;

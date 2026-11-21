@@ -85,18 +85,6 @@ export function buildSubscribeTurn(input: {
   };
 }
 
-export function buildSubscribeSession(input: {
-  sessionId: string;
-  afterSeq?: number;
-}): SubscribeSessionCommand {
-  return {
-    type: "subscribe_session",
-    session_id: id(input.sessionId, "session_id"),
-    after_seq: sequence(input.afterSeq ?? 0),
-    protocol_version: PROTOCOL_VERSION,
-  };
-}
-
 export function buildResumeTurn(input: {
   turnId: string;
   afterSeq?: number;
@@ -126,18 +114,6 @@ export function buildCancelTurn(
   };
 }
 
-export function buildRegenerate(input: {
-  sessionId: string;
-  overrides?: Record<string, unknown>;
-}): RegenerateCommand {
-  return {
-    type: "regenerate",
-    session_id: id(input.sessionId, "session_id"),
-    overrides: input.overrides ?? {},
-    protocol_version: PROTOCOL_VERSION,
-  };
-}
-
 export function buildSubmitUserReply(input: {
   turnId: string;
   text?: string;
@@ -153,44 +129,6 @@ export function buildSubmitUserReply(input: {
     text: input.text,
     answers: input.answers,
     command_id: commandId(input.commandId),
-    protocol_version: PROTOCOL_VERSION,
-  };
-}
-
-export function buildUserInput(input: {
-  turnId: string;
-  content: string;
-  commandId?: string;
-}): UserInputCommand {
-  return {
-    type: "user_input",
-    turn_id: id(input.turnId, "turn_id"),
-    content: input.content,
-    command_id: commandId(input.commandId),
-    protocol_version: PROTOCOL_VERSION,
-  };
-}
-
-export function buildCheckActiveTurn(
-  sessionId: string,
-): CheckActiveTurnCommand {
-  return {
-    type: "check_active_turn",
-    session_id: id(sessionId, "session_id"),
-    protocol_version: PROTOCOL_VERSION,
-  };
-}
-
-export function buildUnsubscribe(input: {
-  turnId?: string;
-  sessionId?: string;
-}): UnsubscribeCommand {
-  if (!input.turnId && !input.sessionId)
-    throw new TypeError("unsubscribe requires a target");
-  return {
-    type: "unsubscribe",
-    turn_id: input.turnId ? id(input.turnId, "turn_id") : undefined,
-    session_id: input.sessionId ? id(input.sessionId, "session_id") : undefined,
     protocol_version: PROTOCOL_VERSION,
   };
 }

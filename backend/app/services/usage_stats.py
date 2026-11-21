@@ -77,7 +77,6 @@ def record_turn_timing(
     except Exception:  # noqa: BLE001
         pass
 
-_BACKFILL_FLAG = "usage/vtx_backfill_v1"
 
 
 def _int(value: Any) -> int:
@@ -233,35 +232,6 @@ def record_live_turn(
         _insert_rows(settings, rows)
     except Exception:  # noqa: BLE001 - accounting must never break a turn
         pass
-
-
-def backfill_vtx_entries(settings: Settings) -> int:
-    """One-time import of historical usage from ``sessions.vtx_entries``.
-
-    Returns the number of rows inserted. Guarded by a state flag so it
-    only runs once per database.
-    """
-    try:
-        if database.get_state(settings, _BACKFILL_FLAG):
-            return 0
-        inserted = 0
-        with database.connect(settings) as conn:
-            conn.execute(_TABLE)
-            sessions = conn.execute(
-                "SELECT id, vtx_entries FROM sessions"
-                " WHERE vtx_entries IS NOT NULL AND vtx_entries != ''"
-            ).fetchall()
-        for row in sessions:
-            session_id = row["id"]
-            entries = _entries_from(row["vtx_entries"])
-            rows = _call_rows(entries, session_id=session_id, turn_id="")
-            if rows:
-                _insert_rows(settings, rows)
-                inserted += len(rows)
-        database.put_state(settings, _BACKFILL_FLAG, {"rows": inserted})
-        return inserted
-    except Exception:  # noqa: BLE001
-        return 0
 
 
 def _zone(name: str) -> ZoneInfo:

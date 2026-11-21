@@ -29,7 +29,7 @@ const ICONS: Record<string, LucideIcon> = {
   guided_learning: GraduationCap,
 }
 
-export function favoriteIcon(kind: string): LucideIcon {
+function favoriteIcon(kind: string): LucideIcon {
   return ICONS[kind] || Bookmark
 }
 

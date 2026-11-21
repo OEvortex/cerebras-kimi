@@ -24,7 +24,7 @@ import type { StreamEvent } from "@/features/chat/model/protocol";
 import { toolResultPayload } from "@/lib/tool-event";
 
 /** Tool-metadata key the posed card travels under. */
-export const MASTERY_QUESTION_KEY = "mastery_question";
+const MASTERY_QUESTION_KEY = "mastery_question";
 export const MASTERY_ANSWER_REJECTED_MESSAGE =
   "These answers could not be submitted. Please review or retry.";
 /**
@@ -188,7 +188,7 @@ export function readPosedQuestion(event: StreamEvent): MasteryQuestion | null {
  * objective ends up with a run of cards in one message. Each of those cards
  * has to render its own question, and the id is what tells them apart.
  */
-export function collectMasteryQuestions(
+function collectMasteryQuestions(
   events: StreamEvent[] | undefined,
 ): Map<string, MasteryQuestion> {
   const questions = new Map<string, MasteryQuestion>();

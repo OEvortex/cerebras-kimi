@@ -115,44 +115,11 @@ export async function getPartnerGroup(groupId: string): Promise<PartnerGroup> {
   );
 }
 
-export async function createPartnerGroup(
-  payload: CreatePartnerGroupPayload,
-): Promise<PartnerGroup> {
-  return json(
-    await apiFetch(apiUrl("/api/partner-groups"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    }),
-  );
-}
 
-export async function updatePartnerGroup(
-  groupId: string,
-  payload: Partial<CreatePartnerGroupPayload>,
-): Promise<PartnerGroup> {
-  return json(
-    await apiFetch(
-      apiUrl(`/api/partner-groups/${encodeURIComponent(groupId)}`),
-      {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      },
-    ),
-  );
-}
 
-export async function deletePartnerGroup(groupId: string): Promise<void> {
-  await json(
-    await apiFetch(
-      apiUrl(`/api/partner-groups/${encodeURIComponent(groupId)}`),
-      {
-        method: "DELETE",
-      },
-    ),
-  );
-}
+
+
+
 
 export async function getPartnerGroupHistory(
   groupId: string,
@@ -180,30 +147,9 @@ export async function getPartnerGroupWhiteboard(
   );
 }
 
-export async function getPartnerGroupInvocations(
-  groupId: string,
-  sessionKey: string,
-): Promise<PartnerInvocation[]> {
-  const query = new URLSearchParams({ session_key: sessionKey });
-  return json(
-    await apiFetch(
-      apiUrl(
-        `/api/partner-groups/${encodeURIComponent(groupId)}/invocations?${query}`,
-      ),
-      { cache: "no-store" },
-    ),
-  );
-}
 
-export function partnerGroupSessionKey(groupId: string): string {
-  const storageKey = `deeptutor:partner-group:${groupId}:session`;
-  if (typeof window === "undefined") return "default";
-  const existing = browserStorage.readRaw("local", storageKey);
-  if (existing) return existing;
-  const created = `group-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-  browserStorage.writeRaw("local", storageKey, created);
-  return created;
-}
+
+
 
 export interface PartnerGroupSession {
   session_key: string;
@@ -224,22 +170,10 @@ export async function listPartnerGroupSessions(
   );
 }
 
-export async function deletePartnerGroupSession(
-  groupId: string,
-  sessionKey: string,
-): Promise<void> {
-  await json(
-    await apiFetch(
-      apiUrl(
-        `/api/partner-groups/${encodeURIComponent(groupId)}/sessions/${encodeURIComponent(sessionKey)}`,
-      ),
-      { method: "DELETE" },
-    ),
-  );
-}
+
 
 /** Point this group at another (or brand new) discussion thread. */
-export function setPartnerGroupSessionKey(groupId: string, key: string): void {
+function setPartnerGroupSessionKey(groupId: string, key: string): void {
   if (typeof window === "undefined") return;
   browserStorage.writeRaw(
     "local",
@@ -248,11 +182,7 @@ export function setPartnerGroupSessionKey(groupId: string, key: string): void {
   );
 }
 
-export function createPartnerGroupSessionKey(groupId: string): string {
-  const created = `group-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-  setPartnerGroupSessionKey(groupId, created);
-  return created;
-}
+
 
 export interface DiscussionMode {
   name: string;
@@ -260,10 +190,4 @@ export interface DiscussionMode {
   description: string;
 }
 
-export async function listDiscussionModes(): Promise<DiscussionMode[]> {
-  return json(
-    await apiFetch(apiUrl("/api/partner-groups/discussion-modes"), {
-      cache: "no-store",
-    }),
-  );
-}
+

@@ -13,7 +13,7 @@ export type { AppLanguage } from "@/context/languages";
 export const ACTIVE_SESSION_STORAGE_KEY = "deeptutor.activeSessionId.tab";
 export const LANGUAGE_STORAGE_KEY = "deeptutor-language";
 export const SIDEBAR_COLLAPSED_STORAGE_KEY = "deeptutor.sidebarCollapsed";
-export const CHAT_RESPONSE_TIMEOUT_STORAGE_KEY =
+const CHAT_RESPONSE_TIMEOUT_STORAGE_KEY =
   "deeptutor.chatResponseTimeout";
 export const CODE_BLOCK_THEME_STORAGE_KEY = "deeptutor.code-block-theme";
 export const CODE_BLOCK_SHOW_LINE_NUMBERS_STORAGE_KEY =

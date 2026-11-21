@@ -565,7 +565,7 @@ function NavigatorTab({
   );
 }
 
-export function WorkspaceOutlineBranch({
+function WorkspaceOutlineBranch({
   nodes,
   activeRow,
   pageFallback,

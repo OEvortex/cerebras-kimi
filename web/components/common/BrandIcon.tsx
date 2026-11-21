@@ -1,7 +1,5 @@
 "use client";
 
-
-
 import {
   brandIconFor,
   brandInitials,
@@ -88,31 +86,4 @@ export function TrademarkNote({ className = "" }: { className?: string }) {
  * whatever generic icon it had rather than being handed a monogram that would not
  * fit the slot.
  */
-export function BrandGlyph({
-  namespace,
-  id,
-  size = 14,
-  className = "",
-}: {
-  namespace: BrandNamespace;
-  id: string;
-  size?: number;
-  className?: string;
-}) {
-  const icon = brandIconFor(namespace, id);
-  if (!icon) return null;
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width={size}
-      height={size}
-      fill="currentColor"
-      role="presentation"
-      aria-hidden
-      className={className}
-    >
-      <title>{icon.title}</title>
-      <path d={icon.path} />
-    </svg>
-  );
-}
+

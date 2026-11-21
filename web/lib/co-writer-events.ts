@@ -20,9 +20,3 @@ export function notifyCoWriterChanged(): void {
   target.dispatchEvent(new Event(EVENT_NAME));
 }
 
-export function subscribeCoWriterChanges(listener: Listener): () => void {
-  const target = getTarget();
-  if (!target) return () => {};
-  target.addEventListener(EVENT_NAME, listener);
-  return () => target.removeEventListener(EVENT_NAME, listener);
-}

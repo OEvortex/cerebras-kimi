@@ -98,7 +98,7 @@ export function mergeEventBatch(
   };
 }
 
-export function mergeSocketEnvelope(
+function mergeSocketEnvelope(
   previous: ActivityFeed,
   pathId: string,
   envelope: MasterySocketEnvelope,

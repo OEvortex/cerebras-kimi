@@ -6,15 +6,6 @@ export type NormalizedQuizQuestionType =
   | "written"
   | "coding";
 
-export const QUIZ_QUESTION_TYPES: ReadonlyArray<NormalizedQuizQuestionType> = [
-  "choice",
-  "concept",
-  "fill_in_blank",
-  "short_answer",
-  "written",
-  "coding",
-];
-
 const QUESTION_TYPE_ALIASES: Record<string, NormalizedQuizQuestionType> = {
   choice: "choice",
   multiple_choice: "choice",
@@ -62,11 +53,6 @@ export function isConceptQuizQuestion(value: unknown): boolean {
 
 export function isFillInBlankQuizQuestion(value: unknown): boolean {
   return normalizeQuizQuestionType(value) === "fill_in_blank";
-}
-
-export function isFreeTextQuizQuestion(value: unknown): boolean {
-  const t = normalizeQuizQuestionType(value);
-  return t === "short_answer" || t === "written" || t === "coding";
 }
 
 export function resolveChoiceAnswerKey(

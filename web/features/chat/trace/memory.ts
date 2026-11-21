@@ -1,8 +1,8 @@
 import type { StreamEvent } from "@/features/chat/model/protocol";
 import { shouldAppendEventContent } from "@/lib/stream";
 
-export const MAX_PREVIEW_EVENTS = 200;
-export const MAX_PREVIEW_BYTES = 128 * 1024;
+const MAX_PREVIEW_EVENTS = 200;
+const MAX_PREVIEW_BYTES = 128 * 1024;
 export const MAX_LEGACY_PAYLOAD_CHARS = 16 * 1024;
 
 const TERMINAL_TYPES = new Set(["done", "error", "cancelled"]);

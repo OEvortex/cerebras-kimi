@@ -12,7 +12,7 @@ import type {
   UiSettings,
 } from "./types";
 
-export const DIAGNOSTICS_RESULTS_KEY = "deeptutor.settings.diagnosticsResults.v1";
+const DIAGNOSTICS_RESULTS_KEY = "deeptutor.settings.diagnosticsResults.v1";
 
 export const TOUR_STEPS: TourStep[] = [
   {

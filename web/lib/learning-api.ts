@@ -43,25 +43,6 @@ export interface ProgressDetail {
   diagnostic?: unknown;
 }
 
-export async function fetchProgress(bookId: string): Promise<ProgressDetail> {
-  const res = await apiFetch(apiUrl(`/api/mastery-paths/progress/${bookId}`));
-  if (!res.ok) throw new Error(`Failed to fetch progress: ${res.status}`);
-  return res.json() as Promise<ProgressDetail>;
-}
-
-export async function initModules(bookId: string, modules: ModuleInit[]) {
-  const res = await apiFetch(
-    apiUrl(`/api/mastery-paths/progress/${bookId}/init-modules`),
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ modules }),
-    },
-  );
-  if (!res.ok) throw new Error(`Failed to init modules: ${res.status}`);
-  return res.json();
-}
-
 // ── Mastery map (the dashboard view) ──────────────────────────────────────
 // Mirrors deeptutor/learning/policy.py map_summary + next_objective.
 
@@ -158,18 +139,6 @@ export interface BoardResult {
   path_revision: number;
   cards: BoardCard[];
   modules: BoardModule[];
-}
-
-export async function fetchMasteryMap(
-  pathId: string,
-  init?: RequestInit,
-): Promise<MasteryMapResult> {
-  const res = await apiFetch(
-    apiUrl(`/api/mastery-paths/progress/${encodeURIComponent(pathId)}/map`),
-    init,
-  );
-  if (!res.ok) throw new Error(`Failed to fetch mastery map: ${res.status}`);
-  return res.json() as Promise<MasteryMapResult>;
 }
 
 export async function fetchLearningBoard(
@@ -340,12 +309,6 @@ export interface ProgressListResult {
   errors: { book_id: string; error: string }[];
 }
 
-export async function fetchAllProgress(): Promise<ProgressListResult> {
-  const res = await apiFetch(apiUrl("/api/mastery-paths/progress"));
-  if (!res.ok) throw new Error(`Failed to fetch all progress: ${res.status}`);
-  return res.json();
-}
-
 export async function deleteProgress(bookId: string) {
   const res = await apiFetch(
     apiUrl(`/api/mastery-paths/progress/${encodeURIComponent(bookId)}`),
@@ -365,54 +328,6 @@ export async function redoProgress(bookId: string) {
 }
 
 /** Drop an outstanding question, keeping every mastery level already earned. */
-export async function skipPendingQuestion(bookId: string) {
-  const res = await apiFetch(
-    apiUrl(
-      `/api/mastery-paths/progress/${encodeURIComponent(bookId)}/skip-question`,
-    ),
-    { method: "POST" },
-  );
-  if (!res.ok) throw new Error(`Failed to skip question: ${res.status}`);
-  return res.json();
-}
-
-export async function importFromBook(
-  bookId: string,
-  chapters: { title: string; knowledge_points: string[] }[],
-) {
-  const res = await apiFetch(
-    apiUrl(
-      `/api/mastery-paths/progress/${encodeURIComponent(bookId)}/import-from-book`,
-    ),
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chapters }),
-    },
-  );
-  if (!res.ok) throw new Error(`Failed to import from book: ${res.status}`);
-  return res.json();
-}
-
-export async function generateModulesFromNotebook(
-  bookId: string,
-  notebookId: string,
-  records: { id: string; type: string; title: string; output: string }[],
-): Promise<{ modules: ModuleInit[] }> {
-  const res = await apiFetch(
-    apiUrl(
-      `/api/mastery-paths/progress/${encodeURIComponent(bookId)}/generate-from-notebook`,
-    ),
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ notebook_id: notebookId, records }),
-    },
-  );
-  if (!res.ok)
-    throw new Error(`Failed to generate modules from notebook: ${res.status}`);
-  return res.json();
-}
 
 // ── Mastery Path V2 product surface ──────────────────────────────────────
 
@@ -790,20 +705,6 @@ export async function setMasterySessionMode(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ mode }),
     },
-  );
-}
-
-export function generateMasteryTopicDraft(
-  input: GenerateTopicInput,
-): Promise<TopicDraft> {
-  return masteryJson(
-    "/api/mastery-paths/topics/draft",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input),
-    },
-    "generate learning route",
   );
 }
 

@@ -153,7 +153,7 @@ const PROVIDER_ALIASES: Readonly<Record<string, string>> = {
   "bytepluscodingplan": "byteplus_coding_plan"
 };
 
-export function canonicalProviderBrand(provider?: string | null): string {
+function canonicalProviderBrand(provider?: string | null): string {
   const key = provider?.trim().toLowerCase() ?? "";
   return Object.hasOwn(PROVIDER_ALIASES, key) ? PROVIDER_ALIASES[key] : key;
 }

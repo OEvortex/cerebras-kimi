@@ -16,7 +16,7 @@ export const UI_LAYOUTS: readonly UiLayout[] = ["classic", "modern"];
 export const DEFAULT_UI_LAYOUT: UiLayout = "modern";
 export const UI_LAYOUT_STORAGE_KEY = "deeptutor.ui-layout";
 export const UI_LAYOUT_EVENT = "deeptutor:ui-layout";
-export const UI_LAYOUT_ATTRIBUTE = "data-ui-layout";
+const UI_LAYOUT_ATTRIBUTE = "data-ui-layout";
 
 export function isUiLayout(value: unknown): value is UiLayout {
   return value === "classic" || value === "modern";

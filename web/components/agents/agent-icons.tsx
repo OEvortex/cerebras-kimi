@@ -207,7 +207,7 @@ export function DeepSeekGlyph({ size = 16, ...props }: GlyphProps) {
 
 // A connected partner: a filled heart in the Partners accent, so a consulted
 // partner reads as a companion (not a CLI) everywhere a connected agent appears.
-export function PartnerGlyph({ size = 16, ...props }: GlyphProps) {
+function PartnerGlyph({ size = 16, ...props }: GlyphProps) {
   return (
     <svg
       width={size}

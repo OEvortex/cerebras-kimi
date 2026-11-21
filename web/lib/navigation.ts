@@ -3,12 +3,12 @@ import type { SessionSummary } from '@/lib/session-api'
 import { sessionRoute } from '@/lib/mastery-session'
 export type NavigationCategory = 'home' | 'learning' | 'resources' | 'personalization'
 /** Account-level places: the same in every workspace. */
-export const PERSONALIZATION_ROOTS = [
+const PERSONALIZATION_ROOTS = [
   '/personalization',
   '/agents',
   '/space/cli-apps',
   '/memory',
-] as const
+] as const;
 const under = (pathname: string, root: string) => pathname === root || pathname.startsWith(`${root}/`)
 export function categoryForPath(pathname: string): NavigationCategory {
   if (PERSONALIZATION_ROOTS.some(root => under(pathname, root))) return 'personalization'

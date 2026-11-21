@@ -79,7 +79,7 @@ export function clampPdfZoom(scale: number): number {
  * size on screen — a press from 137% went *down* to 125%. The menu keeps the
  * named stops for "jump to exactly 100%", which is what stops are good for.
  */
-export const PDF_ZOOM_STEP = 1.25;
+const PDF_ZOOM_STEP = 1.25;
 
 export function zoomedBy(scale: number, direction: 1 | -1): number {
   const current = clampPdfZoom(scale);

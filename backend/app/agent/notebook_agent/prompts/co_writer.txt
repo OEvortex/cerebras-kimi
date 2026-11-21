@@ -66,29 +66,59 @@ Everything below renders natively in the BlockNote editor:
 - Math: `$inline$`, `$$display$$`, `\(...\)`, `\[...\]` — all become KaTeX.
 - `[[` starts a page-link mention; prefer real subpages + links over it.
 
-Special fenced blocks become interactive learning content — ALWAYS prefer
-these over describing material in prose when the request is "quiz me",
-"make flashcards", "timeline", etc.:
+## Rich content: the ```noteui fence
 
-    ```quiz
-    {"questions": [{"question": "...", "question_type": "choice",
-                    "options": {"A": "...", "B": "...", "C": "...", "D": "..."},
-                    "correct_answer": "B", "explanation": "..."}]}
-    ```
-    ```flashcards
-    {"cards": [{"front": "...", "back": "..."}]}
-    ```
-    ```timeline
-    {"events": [{"date": "...", "title": "...", "description": "..."}]}
-    ```
-    ```conceptmap
-    {"nodes": [...], "edges": [...]}
-    ```
-    ```geogebra / research / mermaid / task
+Markdown covers prose. For anything structural — columns, callouts, widgets,
+computed text — write a ```noteui fence containing a NoteUI Lang program. It is
+compiled to real editor blocks; prefer it over describing visuals in prose.
 
-Mermaid fences (```mermaid) render diagrams; ```quiz/```flashcards/etc.
-compile to interactive blocks. A fence body must be valid JSON for the
-structured kinds.
+Syntax (openui-style): name = expr bindings, $name references, component
+calls Name(arg, arg, [children]), @Function(args), arrays [...], objects
+{key: value}, strings "..." / '...' / raw-backtick strings, numbers,
+true/false/null literals, + - * / %, == != < > <= >=, && || !, ternary
+cond ? a : b, obj.field (plucks a field from every row of a list), a[i].
+A program is a sequence of statements; each top-level component expression
+emits blocks in order, or bind root = Page([...]).
+
+Components (last array arg = children where shown):
+
+    Page([...])  Heading(level, text[, children])  ToggleHeading(level, text[, children])
+    Text(...)  Quote(text[, children])  Callout("tip"|"info"|"warning", text[, children])
+    Bullet(text[, children])  Numbered(text[, children])  CheckItem(text, checked?[, children])
+    ToggleItem(text[, children])  CodeBlock(lang, code)  Divider()  Math(tex)
+    Image(url, caption?)  Video(url)  Audio(url)  File(url, name?)
+    Table([[cell, ...], ...])  Columns([Column([...]), ...])  Column([...])  (2–5)
+    TableOfContents()  WebCard(url, title?, description?)  HtmlEmbed(source)  TaskView()
+    Clip(title, markdown, sourceUrl?)
+    Quiz({...})  Flashcards({...})  Timeline({...})  ConceptMap({...})
+    GeoGebra({...})  Research({...})  Task({...})  Mermaid(code-string)  Learning(kind, data, markdown?)
+    Block({...raw block json...}) — escape hatch for anything else
+
+Learning components take a data object, e.g.:
+
+    Quiz({questions: [{question: "...", question_type: "choice",
+        options: {A: "...", B: "..."}, correct_answer: "B", explanation: "..."}]})
+    Flashcards({cards: [{front: "...", back: "..."}]})
+    Timeline({events: [{date: "...", title: "...", description: "..."}]})
+    ConceptMap({nodes: [...], edges: [...]})
+
+@functions (compile-time): @Format(v,"number"|"currency"|"percent"|"compact",decimals?,currency?)
+@Plural(n,word,plural?) @Join(list,sep?,field?) @Upper/@Lower/@Capitalize/@Trim
+@Round @Abs @Floor @Ceil @Clamp @Percent @Sqrt @Pow @Random @Lerp
+@Count @First @Last @Sum @Avg @Min @Max @Includes @Find @IndexOf @Take @Slice
+@Unique @Reverse @Range @Flatten @Concat @Append @Prepend @RemoveAt @Chunk @Pick @Shuffle
+@Default @Split @Replace @Pad @Duration
+@Now @Today @FormatDate @AddDays @AddMonths @DaysBetween @MonthsBetween @StartOf
+@GroupBy @Top @Filter @Between @Bucket @Cumulative @MovingAvg @Change @Stats
+@Each(list, "x", Template(...)) — expands a component per item
+
+Text arguments parse markdown-lite inline: **bold** *italic* code-span
+~~strike~~ [text](url) $math$.
+
+The older kind fences still work and are fine for single widgets:
+
+    ```quiz / ```flashcards / ```timeline / ```conceptmap / ```geogebra / ```research / ```task
+    ```mermaid / ```flow / ```seq — diagrams (JSON body for structured kinds)
 
 ## Notebook structure
 

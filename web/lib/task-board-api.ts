@@ -50,7 +50,7 @@ export function normalizeTaskBoard(board: TaskBoard): TaskBoard {
     revision: board.revision ?? 0,
   }
 }
-export function publishTaskBoard(board: TaskBoard, workspaceId = activeWorkspaceId()) {
+function publishTaskBoard(board: TaskBoard, workspaceId = activeWorkspaceId()) {
   listeners.forEach(listener => listener(normalizeTaskBoard(board), workspaceId))
 }
 export function taskBoardUrl(path = '', workspaceId = activeWorkspaceId()) {
@@ -96,24 +96,7 @@ export function updateTaskCard(
     body: JSON.stringify(changes),
   })
 }
-export function updateTaskColors(colors: TaskColors): Promise<TaskBoard> {
-  return request('/colors', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(colors),
-  })
-}
-export function linkSessionTasks(
-  sessionId: string,
-  workspaceId: string,
-  taskIds: string[]
-): Promise<TaskBoard> {
-  return request(`/sessions/${encodeURIComponent(sessionId)}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ workspace_id: workspaceId, task_ids: taskIds }),
-  }, workspaceId)
-}
+
 export function setTaskStatusLink(
   sessionId: string,
   workspaceId: string,

@@ -42,7 +42,6 @@ export interface NormalisedBox {
 }
 
 /** A box covering the whole page — what "no cropping" means. */
-export const FULL_PAGE_BOX: NormalisedBox = { x0: 0, y0: 0, x1: 1, y1: 1 };
 
 /** Width used for the throwaway render the ink box is measured from. */
 const SAMPLE_WIDTH = 200;

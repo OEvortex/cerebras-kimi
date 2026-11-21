@@ -235,11 +235,6 @@ class CronService:
         }
         self._loaded_revision = revision
 
-    def reload(self) -> None:
-        """Refresh the leader's snapshot after another worker changes jobs."""
-        self._load(force=True)
-        self._wake.set()
-
     def _changed(self) -> None:
         self._loaded_revision = self.repository.revision()
         self._wake.set()
@@ -301,17 +296,6 @@ class CronService:
         removed = self.repository.delete(job_id, owner_key=owner_key)
         if removed:
             self._jobs.pop(job_id, None)
-            self._changed()
-        return removed
-
-    def remove_owner_jobs(self, owner_key: str) -> int:
-        """Drop every job belonging to *owner_key* (e.g. a destroyed partner)."""
-        self._load()
-        doomed = [job_id for job_id, job in self._jobs.items() if job.owner.key == owner_key]
-        removed = self.repository.delete_owner(owner_key)
-        for job_id in doomed:
-            del self._jobs[job_id]
-        if removed:
             self._changed()
         return removed
 

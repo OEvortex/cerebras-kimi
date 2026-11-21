@@ -36,7 +36,7 @@ async function copy(text: string): Promise<boolean> {
  * Runs this library's custom actions. Returns a promise of whether it worked,
  * or null when the event is not one of them (a built-in step the host handles).
  */
-export function runLibraryAction(event: ActionEvent): Promise<boolean> | null {
+function runLibraryAction(event: ActionEvent): Promise<boolean> | null {
   if (event.type === CopyToClipboard.name) {
     const text = (event.params as { text?: unknown }).text;
     return typeof text === "string" ? copy(text) : Promise.resolve(false);

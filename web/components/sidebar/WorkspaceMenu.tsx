@@ -14,7 +14,7 @@ import { clientEditionLabel } from '@/lib/version'
 const GLYPH_TINTS = ['#e3655b', '#d9822b', '#c9a227', '#4f9d69', '#3d8fb8', '#6c6fd1', '#a35fc0', '#c25b8a']
 
 /** A stable letter tile for a workspace; the general one wears the logo. */
-export function WorkspaceGlyph({ name, general, size = 22 }: { name: string; general: boolean; size?: number }) {
+function WorkspaceGlyph({ name, general, size = 22 }: { name: string; general: boolean; size?: number }) {
   if (general)
     return (
       <span aria-hidden className="dt-workspace-glyph is-general" style={{ width: size, height: size }}>
@@ -35,7 +35,7 @@ export function WorkspaceGlyph({ name, general, size = 22 }: { name: string; gen
 }
 
 /** The workspaces as menu items, the current one checked. */
-export function WorkspaceChoiceList({ onChoose }: { onChoose?: () => void }) {
+function WorkspaceChoiceList({ onChoose }: { onChoose?: () => void }) {
   
   const { active, choices, choose } = useWorkspaceChoices()
   return (

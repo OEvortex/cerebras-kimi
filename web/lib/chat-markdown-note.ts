@@ -17,7 +17,7 @@ export interface ChatMarkdownNoteDraft {
   saved: SavedChatMarkdownNote | null;
 }
 
-export const EMPTY_CHAT_MARKDOWN_NOTE_DRAFT: ChatMarkdownNoteDraft = {
+const EMPTY_CHAT_MARKDOWN_NOTE_DRAFT: ChatMarkdownNoteDraft = {
   title: "",
   content: "",
   saved: null,

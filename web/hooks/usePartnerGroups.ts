@@ -28,7 +28,7 @@ function publish(next: GroupList) {
   for (const listener of listeners) listener();
 }
 
-export function refreshPartnerGroups(force = false): Promise<void> {
+function refreshPartnerGroups(force = false): Promise<void> {
   if (inflight) return inflight;
   if (!force && loadedAt && Date.now() - loadedAt < STALE_MS)
     return Promise.resolve();

@@ -63,7 +63,7 @@ export function bookPageOf(session: SessionSummary): { bookId: string; pageId: s
  * The notebook companion's conversations name their page in preferences, the
  * same way a book page's tutor chat does.
  */
-export function notePageIdOf(session: SessionSummary): string {
+function notePageIdOf(session: SessionSummary): string {
   return String(session.preferences?.note_document_id || "");
 }
 

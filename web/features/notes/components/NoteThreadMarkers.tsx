@@ -345,7 +345,7 @@ function ThreadPreview({
   )
 }
 
-export function stateLabel(thread: NoteThreadView) {
+function stateLabel(thread: NoteThreadView) {
   if (thread.state === 'running') return "Running…"
   if (thread.state === 'failed') return "Failed"
   return ''

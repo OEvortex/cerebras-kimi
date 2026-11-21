@@ -27,7 +27,7 @@ export const LAYER_COLORS = {
   review: '#0f8b6c',
   automation: '#8a5cc2',
 } as const
-export const DEFAULT_EVENT_COLOR = '#2f6fde'
+const DEFAULT_EVENT_COLOR = '#2f6fde';
 
 export type LayerId = 'tasks' | 'reviews' | 'automations' | 'footprints'
 export type LayerToggles = Record<LayerId, boolean>
@@ -68,7 +68,7 @@ export interface AutomationItem extends ItemBase {
 export type CalendarItem = EventItem | TaskItem | ReviewItem | AutomationItem
 
 /** Automations are moments; they take this much room in a time grid. */
-export const AUTOMATION_MINUTES = 30
+const AUTOMATION_MINUTES = 30;
 
 export function occurrenceBounds(occurrence: Pick<Occurrence, 'all_day' | 'start' | 'end'>): {
   start: Date
@@ -79,7 +79,7 @@ export function occurrenceBounds(occurrence: Pick<Occurrence, 'all_day' | 'start
   return { start: new Date(occurrence.start), end: new Date(occurrence.end) }
 }
 
-export function eventItem(occurrence: Occurrence, calendar: CalendarEntry | undefined): EventItem {
+function eventItem(occurrence: Occurrence, calendar: CalendarEntry | undefined): EventItem {
   const { start, end } = occurrenceBounds(occurrence)
   return {
     kind: 'event',
@@ -220,6 +220,4 @@ export function compareItems(a: CalendarItem, b: CalendarItem): number {
 }
 
 /** Days from `from` to an item's first day; negative when it starts earlier. */
-export function dayOffset(from: DateKey, item: CalendarItem): number {
-  return daysBetween(from, itemDays(item)[0])
-}
+

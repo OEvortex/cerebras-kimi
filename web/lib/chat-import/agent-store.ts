@@ -136,16 +136,6 @@ export async function getAgents(): Promise<ImportAgent[]> {
   }
 }
 
-export async function getAgent(id: string): Promise<ImportAgent | undefined> {
-  try {
-    return await tx<ImportAgent | undefined>("readonly", (store) =>
-      store.get(id),
-    );
-  } catch {
-    return undefined;
-  }
-}
-
 export async function deleteAgent(id: string): Promise<void> {
   await tx("readwrite", (store) => store.delete(id));
 }

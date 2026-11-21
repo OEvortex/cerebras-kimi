@@ -47,7 +47,7 @@ export interface BuildChatMarkdownOptions {
   exportedAt?: Date;
 }
 
-export function buildChatMarkdown(
+function buildChatMarkdown(
   messages: ExportableMessage[],
   options: BuildChatMarkdownOptions = {},
 ): string {

@@ -23,8 +23,6 @@ class CronRepository(Protocol):
 
     def delete(self, job_id: str, *, owner_key: str | None = None) -> bool: ...
 
-    def delete_owner(self, owner_key: str) -> int: ...
-
 
 class SQLiteCronRepository:
     """WAL-backed cron repository shared by all backend workers.
@@ -270,22 +268,6 @@ class SQLiteCronRepository:
                     )
                 connection.execute("COMMIT")
                 return changed
-            except Exception:
-                connection.execute("ROLLBACK")
-                raise
-
-    def delete_owner(self, owner_key: str) -> int:
-        with self._connect() as connection:
-            connection.execute("BEGIN IMMEDIATE")
-            try:
-                cursor = connection.execute("DELETE FROM cron_jobs WHERE owner_key=?", (owner_key,))
-                count = max(0, int(cursor.rowcount or 0))
-                if count:
-                    connection.execute(
-                        "UPDATE cron_meta SET revision = revision + 1 WHERE singleton=1"
-                    )
-                connection.execute("COMMIT")
-                return count
             except Exception:
                 connection.execute("ROLLBACK")
                 raise

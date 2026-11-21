@@ -231,9 +231,7 @@ async function unwrap<T>(response: Response): Promise<T> {
   throw new Error(detail);
 }
 
-export async function getSupportedFormats(): Promise<SupportedFormats> {
-  return unwrap(await apiFetch(apiUrl(`${BASE}/supported-formats`)));
-}
+
 
 export async function listMaterials(): Promise<MaterialInfo[]> {
   return unwrap(
@@ -267,13 +265,7 @@ export async function getMaterial(materialId: string): Promise<MaterialDetail> {
   );
 }
 
-export async function deleteMaterial(materialId: string): Promise<void> {
-  await unwrap(
-    await apiFetch(apiUrl(`${BASE}/materials/${materialId}`), {
-      method: "DELETE",
-    }),
-  );
-}
+
 
 export async function getUnitText(
   materialId: string,
@@ -489,15 +481,7 @@ export async function submitReadingQuizAnswers(
   return { answers: data.answers ?? [], reward: data.reward };
 }
 
-export async function listReadingQuizRewards(
-  materialId: string,
-): Promise<{ rewards: ReadingQuizReward[]; total_stars: number }> {
-  return unwrap(
-    await apiFetch(apiUrl(`${BASE}/materials/${materialId}/quiz/rewards`), {
-      cache: "no-store",
-    }),
-  );
-}
+
 
 /** URL of the original bytes. Served with Range support so pdf.js can stream. */
 export function rawMaterialUrl(materialId: string): string {

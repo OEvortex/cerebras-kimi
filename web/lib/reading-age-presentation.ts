@@ -1,4 +1,4 @@
-export const PRIMARY_READING_ACTIONS = [
+const PRIMARY_READING_ACTIONS = [
   "read_aloud:read",
   "vocabulary:explain",
   "quiz:start",

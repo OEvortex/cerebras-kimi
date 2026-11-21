@@ -13,7 +13,7 @@ import re
 from typing import Any
 
 from .review import page_cards
-from .storage import CoWriterDocument, CoWriterStorage
+from .storage import CoWriterStorage
 
 ANKI_HEADERS: tuple[str, ...] = (
     "#separator:tab",
@@ -114,18 +114,6 @@ def markdown_to_anki_html(text: str) -> str:
     html_body = _paragraphs(marked)
     html_body = _SLOT.sub(lambda match: slots[int(match.group(1))], html_body)
     return _anki_field(html_body)
-
-
-def cards_from_document(doc: CoWriterDocument) -> list[dict[str, Any]]:
-    """Return flashcards from one note, skipping malformed blocks.
-
-    Args:
-        doc: Loaded notebook page.
-
-    Returns:
-        Cards in ``page_cards`` order.
-    """
-    return list(page_cards(doc))
 
 
 def cards_from_storage(storage: CoWriterStorage) -> list[dict[str, Any]]:

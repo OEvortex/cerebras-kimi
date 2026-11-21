@@ -196,8 +196,4 @@ function traffic(input: unknown) {
 }
 
 /** The function-map tool provider for `Renderer`. */
-export const demoTools: Record<string, (args: Record<string, unknown>) => Promise<unknown>> = {
-  get_orders: async (args) => ({ rows: orders(args) }),
-  get_tickets: async (args) => ({ rows: tickets(args) }),
-  get_traffic: async (args) => ({ rows: traffic(args) }),
-};
+

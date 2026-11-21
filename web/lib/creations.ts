@@ -55,10 +55,6 @@ export function isCreationKind(value: unknown): value is CreationKind {
   return value === "skill" || value === "persona";
 }
 
-export function creationKindDef(value: string | null | undefined): CreationKindDef | null {
-  return isCreationKind(value) ? CREATE_KINDS[value] : null;
-}
-
 /**
  * Lightweight client-side signal for "a draft of this kind was just saved" —
  * same shape as `co-writer-events`/`session-events`: the composer's Skills

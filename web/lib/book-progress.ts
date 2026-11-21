@@ -89,7 +89,7 @@ export interface BookProgress {
   critique: { rounds: number; issues: number };
 }
 
-export const STAGE_ORDER: StageId[] = [
+const STAGE_ORDER: StageId[] = [
   "ideation",
   "exploration",
   "synthesis",
@@ -97,7 +97,6 @@ export const STAGE_ORDER: StageId[] = [
   "overview",
   "compilation",
 ];
-
 
 export function emptyBookProgress(): BookProgress {
   const stages = Object.fromEntries(
@@ -116,7 +115,6 @@ export function emptyBookProgress(): BookProgress {
     critique: { rounds: 0, issues: 0 },
   };
 }
-
 
 function patchStage(
   state: BookProgress,

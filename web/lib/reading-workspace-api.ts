@@ -321,24 +321,7 @@ export async function removeReadingWorkspaceMaterial(
   return result.workspace;
 }
 
-export async function createReadingConversation(
-  workspaceId: string,
-  title = "New reading conversation",
-  activeMaterialId = "",
-): Promise<ReadingConversation> {
-  return (
-    await json<{ session: ReadingConversation }>(
-      `/workspaces/${workspaceId}/sessions`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          title,
-          active_material_id: activeMaterialId,
-        }),
-      },
-    )
-  ).session;
-}
+
 
 /**
  * One question the learner could ask about what they are reading right now.

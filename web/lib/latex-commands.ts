@@ -132,7 +132,7 @@ const KATEX_COMMAND_SOURCE = [
   "xrightequilibrium xrightharpoondown xrightharpoonup xrightleftarrows",
   "xrightleftharpoons xtofrom xtwoheadleftarrow xtwoheadrightarrow yen zeta",].join(" ");
 
-export const KATEX_COMMANDS: ReadonlySet<string> = new Set(
+const KATEX_COMMANDS: ReadonlySet<string> = new Set(
   KATEX_COMMAND_SOURCE.split(" "),
 );
 

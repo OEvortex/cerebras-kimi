@@ -137,7 +137,7 @@ export function injectKaTeX(html: string): string {
  * interactive JS — and the sandbox already isolates it in a null origin
  * with no access to the host page.
  */
-export function sanitizeIframeHtml(html: string): string {
+function sanitizeIframeHtml(html: string): string {
   return html
     .replace(
       /\s(href|src|formaction)\s*=\s*(['"])\s*javascript:[\s\S]*?\2/gi,

@@ -147,7 +147,7 @@ function asReadingSelection(
   };
 }
 
-export function hydrateRequestSnapshot(
+function hydrateRequestSnapshot(
   message: SessionMessage,
   content: string,
   attachments: MessageAttachment[],

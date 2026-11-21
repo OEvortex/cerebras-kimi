@@ -37,7 +37,7 @@ export interface NoteSuggestion {
 }
 /** A document request that kept its HTTP status, so callers can tell a page
  *  that no longer exists from a transient failure. */
-export class NoteRequestError extends Error {
+class NoteRequestError extends Error {
   readonly status: number
 
   constructor(message: string, status: number) {

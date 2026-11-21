@@ -17,7 +17,7 @@ export const MAX_FONT_SIZE = 28;
 export const DEFAULT_LINE_WIDTH = 84;
 export const MIN_LINE_WIDTH = 48;
 export const MAX_LINE_WIDTH = 104;
-export const READER_PREFS_KEY = "dt.reader.textPreferences";
+const READER_PREFS_KEY = "dt.reader.textPreferences";
 export const DEFAULT_READER_DISPLAY_PREFERENCES: ReaderDisplayPreferences = {
   fontSize: DEFAULT_FONT_SIZE,
   lineWidth: DEFAULT_LINE_WIDTH,
