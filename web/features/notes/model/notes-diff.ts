@@ -6,7 +6,7 @@
  * paired and diffed again by word to keep the highlights narrow.
  */
 
-export type DiffOp = 'equal' | 'add' | 'remove'
+export type DiffOp = 'equal' | 'add' | 'remove' | 'replace'
 
 export interface DiffSegment {
   value: string
@@ -107,27 +107,41 @@ function wordDiff(before: string, after: string): DiffSegment[] {
 
 /** Produce a side-by-side, word-highlighted line diff of two Markdown strings. */
 export function diffMarkdown(before: string, after: string): DiffLine[] {
-  const oldLines = (before || '').split('\n')
-  const newLines = (after || '').split('\n')
+  const oldLines = before ? before.split('\n') : []
+  const newLines = after ? after.split('\n') : []
   const lines: DiffLine[] = []
   let oldNumber = 0
   let newNumber = 0
 
-  for (const part of opcodes(oldLines, newLines)) {
+  const parts = opcodes(oldLines, newLines)
+  let index = 0
+  while (index < parts.length) {
+    const part = parts[index]
     if (part.op === 'equal') {
-      for (let k = part.aStart; k < part.aEnd; k++) {
+      for (let k = 0; k < part.aEnd - part.aStart; k++) {
         lines.push({
           op: 'equal',
           oldNumber: ++oldNumber,
           newNumber: ++newNumber,
-          old: plain(oldLines[k], 'equal'),
-          new: plain(newLines[k + (part.bStart - part.aStart)], 'equal'),
+          old: plain(oldLines[part.aStart + k], 'equal'),
+          new: plain(newLines[part.bStart + k], 'equal'),
         })
       }
+      index++
       continue
     }
-    const removed = oldLines.slice(part.aStart, part.aEnd)
-    const added = newLines.slice(part.bStart, part.bEnd)
+    // A delete immediately followed by an insert is a replacement: pair the
+    // lines so only the words that actually changed are highlighted.
+    const removed: string[] = []
+    const added: string[] = []
+    while (parts[index]?.op === 'remove') {
+      removed.push(...oldLines.slice(parts[index].aStart, parts[index].aEnd))
+      index++
+    }
+    while (parts[index]?.op === 'add') {
+      added.push(...newLines.slice(parts[index].bStart, parts[index].bEnd))
+      index++
+    }
     const pairs = Math.max(removed.length, added.length)
     for (let k = 0; k < pairs; k++) {
       const oldLine = removed[k]
@@ -135,17 +149,11 @@ export function diffMarkdown(before: string, after: string): DiffLine[] {
       const both = oldLine !== undefined && newLine !== undefined
       const segments = both ? wordDiff(oldLine, newLine) : null
       lines.push({
-        op: part.op,
+        op: both ? 'replace' : oldLine === undefined ? 'add' : 'remove',
         oldNumber: oldLine === undefined ? undefined : ++oldNumber,
         newNumber: newLine === undefined ? undefined : ++newNumber,
-        old:
-          oldLine === undefined
-            ? null
-            : segments || plain(oldLine, 'remove'),
-        new:
-          newLine === undefined
-            ? null
-            : segments || plain(newLine, 'add'),
+        old: oldLine === undefined ? null : segments || plain(oldLine, 'remove'),
+        new: newLine === undefined ? null : segments || plain(newLine, 'add'),
       })
     }
   }
