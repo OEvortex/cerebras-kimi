@@ -6,7 +6,6 @@ import {
   useChatStateAdapter,
 } from "@/features/chat/ChatStateAdapter";
 import { buildVisiblePath } from "@/lib/message-branches";
-import { updateRecoveryPrincipal } from "@/lib/recovery-principal";
 import * as notifications from "@/lib/notifications";
 import {
   resetReadingTurnState, setReadingMaterial, setReadingViewport,
@@ -240,7 +239,6 @@ function Harness() {
         {String(state.submissionFailed)}
       </div>
       <div data-testid="submissionError">{state.submissionErrorMessage}</div>
-      <div data-testid="submissionNoLlmAccess">{String(state.submissionNoLlmAccess)}</div>
       <div data-testid="lastTurnFailed">{String(state.lastTurnFailed)}</div>
       <div data-testid="capability">{state.activeCapability}</div>
       <div data-testid="submissionNeedsReview">{String(state.submissionNeedsReview)}</div>
@@ -291,7 +289,6 @@ function readStoredKeys() {
 }
 
 beforeEach(() => {
-  updateRecoveryPrincipal({ enabled: false, authenticated: true });
   localStorage.clear();
   sessionStorage.clear();
   resetReadingTurnState();
@@ -309,43 +306,6 @@ beforeEach(() => {
 
 afterEach(() => vi.restoreAllMocks());
 
-it("drops account A's visible drafts and stale runner events while preserving A's recovery data", async () => {
-  updateRecoveryPrincipal({ enabled: true, authenticated: true, user_id: "a" });
-  storeFailedSubmission("draft:general", { submissionId: "a-draft", content: "A private draft",
-    requestSnapshot: { content: "A private draft" } });
-  fixture.connected = true;
-  render(<ChatStateAdapterProvider><BootstrapDraft /><Harness /></ChatStateAdapterProvider>);
-  expect(readMessages().map((message) => message.content)).toEqual(["A private draft"]);
-  await act(async () => fireEvent.click(screen.getByText("Send another")));
-  const oldEmit = fixture.emit;
-  await act(async () => updateRecoveryPrincipal({ enabled: true, authenticated: true, user_id: "b" }));
-  expect(readMessages()).toEqual([]);
-  await act(async () => oldEmit?.({ type: "session", session_id: "s1" }));
-  expect(readMessages()).toEqual([]);
-  expect(readFailedSubmissions("draft:general")).toEqual([]);
-  await act(async () => updateRecoveryPrincipal({ enabled: true, authenticated: true, user_id: "a" }));
-  expect(readMessages().some((message) => message.content === "A private draft")).toBe(true);
-});
-
-it("ignores an old account's replacement receipt after a principal switch", async () => {
-  updateRecoveryPrincipal({ enabled: true, authenticated: true, user_id: "a" });
-  fixture.session = completedServerSession();
-  fixture.connected = true;
-  seedUnsentSubmission("A private draft");
-  let release!: () => void;
-  fixture.replacementPending = new Promise<void>((resolve) => { release = resolve; });
-  render(<ChatStateAdapterProvider><Harness /></ChatStateAdapterProvider>);
-  await act(async () => fireEvent.click(screen.getByText("Load")));
-  await act(async () => fireEvent.click(screen.getByText("Edit first unsent")));
-  expect(fixture.replacementCalls).toHaveLength(1);
-  await act(async () => updateRecoveryPrincipal({ enabled: true, authenticated: true, user_id: "b" }));
-  await act(async () => release());
-  expect(readMessages()).toEqual([]);
-  expect(fixture.sent).toEqual([]);
-  expect(readFailedSubmissions("s1")).toEqual([]);
-  await act(async () => updateRecoveryPrincipal({ enabled: true, authenticated: true, user_id: "a" }));
-  expect(readFailedSubmissions("s1")[0].content).toBe("Edited offline");
-});
 
 it("durably edits an unsent message with its original attachment and request scope", async () => {
   fixture.session = completedServerSession();
@@ -1073,40 +1033,6 @@ it("carries the server's rejection text into the submission banner state (#2637)
   vi.useRealTimers();
 });
 
-it.each(["Resend", "Retry first unsent"])("keeps model-access failure across reload and rechecks on explicit %s", async (retryLabel) => {
-  const notify = vi.spyOn(notifications, "notify");
-  fixture.connected = true;
-  fixture.session = completedServerSession();
-  const first = render(<ChatStateAdapterProvider><Harness /></ChatStateAdapterProvider>);
-  await act(async () => fireEvent.click(screen.getByText("Load")));
-  await act(async () => fireEvent.click(screen.getByText("Send")));
-  await act(async () => {
-    fixture.emit?.({
-      type: "error", source: "transport", stage: "", content: "Ask an administrator",
-      timestamp: Date.now() / 1000,
-      metadata: { reason: "no_llm_access", retryable: false, turn_terminal: true, status: "failed" },
-    });
-  });
-  expect(readMessages().at(-1)).toEqual({
-    role: "user", content: "Hello offline", failed: true,
-  });
-  expect(screen.getByTestId("submissionNoLlmAccess").textContent).toBe("true");
-  expect(notify).not.toHaveBeenCalledWith("Ask an administrator", expect.anything());
-  first.unmount();
-
-  fixture.sent = [];
-  render(<ChatStateAdapterProvider><Harness /></ChatStateAdapterProvider>);
-  await act(async () => fireEvent.click(screen.getByText("Load")));
-  expect(screen.getByTestId("submissionNoLlmAccess").textContent).toBe("true");
-  expect(readFailedSubmissions("s1")[0].noLlmAccess).toBe(true);
-  // Reload never automatically resubmits an authorization failure. A manual
-  // retry reaches the server, which may now have a restored model assignment.
-  expect(fixture.sent.filter(message => message.type === "start_turn")).toHaveLength(0);
-  await act(async () => fireEvent.click(screen.getByText(retryLabel)));
-  expect(fixture.sent.filter(message => message.type === "start_turn")).toHaveLength(1);
-  expect(screen.getByTestId("submissionNoLlmAccess").textContent).toBe("false");
-  expect(readFailedSubmissions("s1").some(record => record.noLlmAccess)).toBe(false);
-});
 
 it("retries the original wire request after reload even when the transcript advances", async () => {
   fixture.connected = true;

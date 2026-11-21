@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
@@ -25,18 +25,20 @@ describe("NotebookUIView", () => {
     expect(document.querySelectorAll(".nb-nav-link").length).toBe(3);
   });
 
-  it("renders LaTeX as KaTeX, not raw source", () => {
+  it("renders LaTeX as KaTeX, not raw source", async () => {
     const { container } = render(<NotebookUIView content={PROGRAM} />);
-    expect(container.querySelectorAll(".katex").length).toBeGreaterThan(0);
+    await waitFor(() => {
+      expect(container.querySelectorAll(".katex").length).toBeGreaterThan(0);
+    });
     expect(container.querySelector(".katex-html")).not.toBeNull();
   });
 
   it("lets the learner answer a quiz that was authored in the program", async () => {
     const user = userEvent.setup();
     render(<NotebookUIView content={PROGRAM} />);
-    await user.click(screen.getByText("Stroma"));
+    await user.click(await screen.findByText("Stroma"));
     await user.click(screen.getByRole("button", { name: /reveal answer/i }));
-    expect(screen.getByText(/The Calvin cycle runs in the stroma/)).toBeTruthy();
+    expect(await screen.findByText(/The Calvin cycle runs in the stroma/)).toBeTruthy();
   });
 
   it("flips a flashcard authored in the program", async () => {

@@ -28,28 +28,19 @@ type RenderProps = {
   renderNode: (node: unknown) => React.ReactNode;
 };
 
-const arrayOf = (value: unknown): any[] => (Array.isArray(value) ? value : []);
+function arrayOf<T = unknown>(value: unknown): T[] {
+  return Array.isArray(value) ? (value as T[]) : [];
+}
 const stringOf = (value: unknown, fallback = ""): string =>
   typeof value === "string" ? value : value == null ? fallback : String(value);
 
 /** All prose goes through the app's one Markdown renderer, never a second one. */
-function Prose({
-  content,
-  className,
-  enableMath,
-}: {
-  content: string;
-  className?: string;
-  enableMath?: boolean;
-}) {
+function Prose({ content, className }: { content: string; className?: string }) {
+  // No forced `enableMath`: MarkdownRenderer decides from the content, so
+  // plain prose stays on its cheap synchronous renderer while formulas take
+  // the rich path. That matters for a stream that re-renders every chunk.
   return (
-    <MarkdownRenderer
-      content={content}
-      variant="compact"
-      allowHtml={false}
-      enableMath={enableMath}
-      className={className}
-    />
+    <MarkdownRenderer content={content} variant="compact" allowHtml={false} className={className} />
   );
 }
 
@@ -167,13 +158,13 @@ function PageBlock({ props, renderNode }: RenderProps) {
 /* -------------------------------------------------------------------------- */
 
 function HeadingBlock({ props }: RenderProps) {
-  const level = Math.min(6, Math.max(1, Math.round(Number(props.level) || 2)));
+  const level = globalThis.Math.min(6, globalThis.Math.max(1, globalThis.Math.round(Number(props.level) || 2)));
   const hashes = "#".repeat(level);
-  return <Prose content={`${hashes} ${stringOf(props.text)}`} className="nb-heading" enableMath />;
+  return <Prose content={`${hashes} ${stringOf(props.text)}`} className="nb-heading" />;
 }
 
 function ParaBlock({ props }: RenderProps) {
-  return <Prose content={stringOf(props.text)} className="nb-para" enableMath />;
+  return <Prose content={stringOf(props.text)} className="nb-para" />;
 }
 
 function ListBlock({ props }: RenderProps) {
@@ -183,7 +174,7 @@ function ListBlock({ props }: RenderProps) {
     return `${ordered ? `${index + 1}.` : "-"} ${text}`;
   });
   if (!lines.length) return null;
-  return <Prose content={lines.join("\n")} className="nb-list" enableMath />;
+  return <Prose content={lines.join("\n")} className="nb-list" />;
 }
 
 function MathBlock({ props }: RenderProps) {
@@ -191,7 +182,7 @@ function MathBlock({ props }: RenderProps) {
   if (!tex) return null;
   return (
     <div className="nb-math">
-      <Prose content={`$$${tex}$$`} enableMath />
+      <Prose content={`$$${tex}$$`} />
       {props.caption ? <Prose content={stringOf(props.caption)} className="nb-caption" /> : null}
     </div>
   );
@@ -203,7 +194,7 @@ function CalloutBlock({ props }: RenderProps) {
   return (
     <aside className={`nb-callout nb-callout-${kind}`}>
       {props.title ? <Prose content={`**${stringOf(props.title)}**`} /> : null}
-      <Prose content={stringOf(props.text)} enableMath />
+      <Prose content={stringOf(props.text)} />
     </aside>
   );
 }
@@ -212,7 +203,7 @@ function QuoteBlock({ props }: RenderProps) {
   const lines = stringOf(props.text).split("\n").map((line) => `> ${line}`).join("\n");
   return (
     <div className="nb-quote">
-      <Prose content={lines} enableMath />
+      <Prose content={lines} />
       {props.cite ? <Prose content={`— ${stringOf(props.cite)}`} className="nb-caption" /> : null}
     </div>
   );
@@ -382,7 +373,7 @@ function ConceptMapAdapter({ props }: RenderProps) {
   return (
     <div className="nb-learning">
       <BlockTitle text={stringOf(props.title)} />
-      <Prose content={markdown} enableMath />
+      <Prose content={markdown} />
     </div>
   );
 }

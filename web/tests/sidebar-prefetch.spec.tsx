@@ -38,9 +38,6 @@ vi.mock("@/context/AppShellContext", () => ({
     setSidebarCollapsed: fixture.setCollapsed,
   }),
 }));
-vi.mock("@/components/access/CapabilityAccessContext", () => ({
-  useCapabilityAccess: () => ({ has: () => true }),
-}));
 vi.mock("@/components/layout/AppShell", () => ({
   useSidebarDrawer: () => ({ close: fixture.close }),
 }));

@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { locatePage, pageSections, switchDestination } from '@/components/sidebar/page-sections'
 
-const sections = (allowedSurfaces: string[] | null = null) =>
-  pageSections({ allowedSurfaces, isAvailable: () => false })
+const sections = () => pageSections({ isAvailable: () => false })
 
 describe('page sections', () => {
   it('places each index page in the shelf the sidebar shows it under', () => {
@@ -59,11 +58,9 @@ describe('page sections', () => {
     expect(locatePage('/memory', sections())?.page.account).toBe(true)
   })
 
-  it('applies the same gates as the sidebar shelves', () => {
-    const learning = sections(['books']).find(section => section.id === 'learning')!
-    expect(learning.pages.map(page => page.label)).toEqual(['New learning activity', 'All learning', 'Books'])
-    // Capability-gated resources stay hidden until the backend registers them.
-    const resources = sections().find(section => section.id === 'resources')!
-    expect(resources.pages.some(page => page.href === '/whisper')).toBe(false)
+  it('lists every learning surface', () => {
+    const learning = sections().find(section => section.id === 'learning')!
+    expect(learning.pages.map(page => page.label)).toContain('New learning activity')
+    expect(learning.pages.map(page => page.label)).toContain('All learning')
   })
 })

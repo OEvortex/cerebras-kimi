@@ -11,7 +11,7 @@ live as pages, headings, LaTeX, quizzes and flashcards.
 | --- | --- |
 | `backend/app/agent/notebook_ui_prompt.txt` | The DSL spec / system prompt (source of truth for the model). |
 | `backend/app/api/notebook_ui.py` | `POST /api/notebook-ui/generate` — SSE stream of `content` deltas, then the full program. |
-| `notebook-ui-lang/components.tsx` | Custom OpenUI component library: `Notebook`, `Page`, `Heading`, `Para`, `Math`, `Quiz`, `Flashcards`, … |
+| `notebook-ui-lang/components.tsx` | Small OpenUI library: the `Notebook`/`Page` shell plus thin adapters. Prose/code/maths go through `MarkdownRenderer`; quiz/flashcards/timeline/diagram reuse the notes and book renderers. |
 | `notebook-ui-lang/library.ts` | `createLibrary(...)` with root `Notebook`. |
 | `notebook-ui-lang/lang.ts` | Program extraction + `compileNotebookProgram()` → BlockNote page plans. |
 | `NotebookUIView.tsx` | The streaming renderer (`@openuidev/react-lang` `Renderer` + the custom library). |

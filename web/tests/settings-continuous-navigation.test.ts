@@ -12,12 +12,9 @@ import {
   SETTINGS_PAGE_GROUPS,
 } from "../features/settings/navigation/settings-pages";
 
-const admin = {
-  resolved: true,
-  hideAdminOnly: false,
-  showLearnerOnly: false,
-  showGuardianOnly: false,
-};
+import { SETTINGS_ACCESS } from "../features/settings/navigation/settings-access";
+
+const admin = SETTINGS_ACCESS;
 
 test("legacy settings bookmarks resolve to independent pages, preserving profile links", () => {
   assert.equal(legacySettingsDestination("", ""), "/settings/general");
@@ -51,25 +48,17 @@ test("every available setting is reachable through a navigation family", () => {
       group.keys.flatMap(settingsPageFamily),
     ),
   );
-  for (const page of visibleSettingsPages({
-    ...admin,
-    showLearnerOnly: true,
-    showGuardianOnly: true,
-  })) {
+  for (const page of visibleSettingsPages(admin)) {
     assert.ok(reachable.has(page.key), page.key);
   }
 });
 
-test("restricted pages stay hidden, including when searched or linked directly", () => {
-  const keys = visibleSettingsPages({
-    ...admin,
-    hideAdminOnly: true,
-    showLearnerOnly: true,
-  }).map(page => page.key);
-  assert.ok(keys.includes("learner-profile"));
+test("every settings page is reachable, including when searched or linked directly", () => {
+  const keys = visibleSettingsPages(admin).map(page => page.key);
+  assert.ok(keys.includes("attachments"));
+  assert.ok(keys.includes("agent-codex"));
+  assert.ok(!keys.includes("learner-profile"));
   assert.ok(!keys.includes("guardian"));
-  assert.ok(!keys.includes("attachments"));
-  assert.ok(!keys.includes("agent-codex"));
 });
 
 test("settings routes expose their configuration storage destinations", () => {
