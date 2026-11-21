@@ -117,9 +117,9 @@ export default function NoteEditorHandles({ editor }: { editor: NotesEditor }) {
     if (!blockId || !root) return
     root.style.transform = ''
     const outer = editor.domElement?.querySelector<HTMLElement>(
-      `.bn-block-outer[data-id="${CSS.escape(blockId)}"]`
+      `.bn-block[data-id="${CSS.escape(blockId)}"]`
     )
-    const content = outer?.querySelector<HTMLElement>(':scope > .bn-block > .bn-block-content')
+    const content = outer?.querySelector<HTMLElement>(':scope > .bn-block-content')
     if (!outer || !content) return
     const top = outer.getBoundingClientRect().top
     const inline = content.querySelector<HTMLElement>('.bn-inline-content')

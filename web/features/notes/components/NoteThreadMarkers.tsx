@@ -24,7 +24,7 @@ type Placement = { blockId: string; top: number }
 /** Where a block's first line sits, relative to the editor container. */
 export function blockLineCenter(container: HTMLElement, blockId: string): number | null {
   const outer = container.querySelector<HTMLElement>(
-    `.bn-block-outer[data-id="${CSS.escape(blockId)}"]`
+    `.bn-block[data-id="${CSS.escape(blockId)}"]`
   )
   const content = outer?.querySelector<HTMLElement>('.bn-block-content')
   if (!content) return null

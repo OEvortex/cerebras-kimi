@@ -321,7 +321,7 @@ export default function NoteWorkspace({
   )
   const scrollToBlock = useCallback((blockId: string, flash = true) => {
     const el = root.current?.querySelector<HTMLElement>(
-      `.dt-note-editor .bn-block-outer[data-id="${CSS.escape(blockId)}"]`
+      `.dt-note-editor .bn-block[data-id="${CSS.escape(blockId)}"]`
     )
     if (!el) return
     el.scrollIntoView({ block: 'center', behavior: 'smooth' })

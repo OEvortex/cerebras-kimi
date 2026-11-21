@@ -68,7 +68,7 @@ export default function NoteOutline({
         const top = scroller.getBoundingClientRect().top + 96
         let active: string | null = headings[0]?.id ?? null
         for (const heading of headings) {
-          const el = scroller.querySelector(`.bn-block-outer[data-id="${CSS.escape(heading.id)}"]`)
+          const el = scroller.querySelector(`.bn-block[data-id="${CSS.escape(heading.id)}"]`)
           if (!el) continue
           if (el.getBoundingClientRect().top <= top) active = heading.id
           else break

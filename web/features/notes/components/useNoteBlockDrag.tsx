@@ -32,7 +32,7 @@ export default function useNoteBlockDrag<B extends BlockSchema, I extends Inline
   }, [menu])
   const destination = (event: PointerEvent<HTMLButtonElement>): Drop | null => {
     const element = document.elementFromPoint(event.clientX, event.clientY)
-      ?.closest<HTMLElement>('.bn-block-outer[data-id]')
+      ?.closest<HTMLElement>('.bn-block[data-id]')
     if (!element || !editor.domElement?.contains(element)) return null
     const id = element.dataset.id!
     const content = element.querySelector<HTMLElement>('.bn-block-content') || element

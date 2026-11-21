@@ -175,7 +175,7 @@ export default function NoteEditor({
         // one is the only sign the learner is looking at it.
         const target = e.target as HTMLElement
         if (target.closest('.bn-side-menu, .dt-note-orbs, .dt-note-ask-orb')) return
-        const id = target.closest<HTMLElement>('.bn-block-outer[data-id]')?.dataset.id
+        const id = target.closest<HTMLElement>('.bn-block[data-id]')?.dataset.id
         if (id) latest.current.onFocusBlock?.(id)
       }}
       onKeyDownCapture={e => {
@@ -259,7 +259,7 @@ export default function NoteEditor({
         />
         {activeThread && (
           // The line the open conversation is about stays marked while it is open.
-          <style>{`.dt-note-editor .bn-block-outer[data-id="${CSS.escape(activeThread.blockId)}"] > .bn-block > .bn-block-content { background: var(--dt-note-anchor-bg); box-shadow: -6px 0 0 var(--dt-note-anchor-bg), 6px 0 0 var(--dt-note-anchor-bg); border-radius: 4px; }`}</style>
+          <style>{`.dt-note-editor .bn-block[data-id="${CSS.escape(activeThread.blockId)}"] .bn-block-content { background: var(--dt-note-anchor-bg); box-shadow: -6px 0 0 var(--dt-note-anchor-bg), 6px 0 0 var(--dt-note-anchor-bg); border-radius: 4px; }`}</style>
         )}
         <NoteInlineReviews
           editor={editor}
