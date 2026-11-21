@@ -15,15 +15,26 @@ function parse(markdown: string): NoteBlock[] {
   return parseNoteMarkdown(markdown, text => editor.tryParseMarkdownToBlocks(text) as NoteBlock[])
 }
 
+const textOf = (content: unknown): string => {
+  if (typeof content === 'string') return content
+  if (!Array.isArray(content)) return ''
+  return content
+    .map(item => {
+      const node = item as { type?: string; text?: string; content?: unknown }
+      return node?.type === 'text' ? String(node.text ?? '') : textOf(node?.content)
+    })
+    .join('')
+}
+
 const formulas = (blocks: NoteBlock[]): string[] => {
   const out: string[] = []
   const walk = (list: NoteBlock[]) =>
     list.forEach(block => {
-      if (block.type === 'math') out.push(String((block.props as { formula?: string }).formula))
+      if (block.type === 'mathBlock') out.push(textOf(block.content))
       const inline = (items: unknown): void => {
         if (Array.isArray(items))
-          items.forEach((item: { type?: string; props?: { formula?: string }; content?: unknown }) => {
-            if (item?.type === 'inlineMath') out.push(String(item.props?.formula))
+          items.forEach((item: { type?: string; content?: unknown }) => {
+            if (item?.type === 'math') out.push(textOf(item.content))
             else if (item?.content) inline(item.content)
           })
         else if (items && typeof items === 'object' && 'rows' in items) {
@@ -62,7 +73,7 @@ describe('notebook LaTeX markdown rendering', () => {
       '',
       'After',
     ].join('\n'))
-    expect(blocks.filter(b => b.type === 'math').map(b => (b.props as { formula: string }).formula))
+    expect(blocks.filter(b => b.type === 'mathBlock').map(b => textOf(b.content)))
       .toEqual(['A_{21} = B_{21}\\frac{8\\pi h \\nu^3}{c^3}', 'g_1 B_{12} = g_2 B_{21}'])
   })
 

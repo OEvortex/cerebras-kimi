@@ -129,6 +129,8 @@ def validate_blocks(blocks: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 if not safe_link(item.get("href")):
                     raise ValueError("Unsupported link URL")
                 inline(item.get("content", []), depth + 1)
+            elif kind == "math":
+                inline(item.get("content", []), depth + 1)
             elif kind in {"pageLink", "inlineMath", "noteDate"}:
                 props = item.get("props", {})
                 if not isinstance(props, dict) or any(
@@ -170,6 +172,7 @@ def validate_blocks(blocks: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "file",
                 "divider",
                 "math",
+                "mathBlock",
                 "clip",
                 "learning",
                 "noteUpload",
@@ -271,7 +274,10 @@ def inline_markdown(content: Any) -> str:
             else inline_markdown(item.get("content"))
         )
         if item.get("type") in {"math", "inlineMath"}:
-            text = "$" + str(item.get("props", {}).get("formula", "")) + "$"
+            formula = item.get("props", {}).get("formula")
+            if formula is None:
+                formula = inline_markdown(item.get("content"))
+            text = "$" + str(formula) + "$"
         if item.get("type") == "pageLink":
             props = item.get("props", {})
             text = f"[{props.get('title', 'Page')}](/co-writer/{props.get('pageId', '')})"
@@ -339,8 +345,11 @@ def blocks_to_markdown(blocks: list[dict[str, Any]], depth: int = 0) -> str:
             text = ""
         elif kind == "divider":
             text = "---"
-        elif kind == "math":
-            text = "$$\n" + str(props.get("formula", "")) + "\n$$"
+        elif kind in {"math", "mathBlock"}:
+            formula = props.get("formula")
+            if formula is None:
+                formula = inline_markdown(block.get("content"))
+            text = "$$\n" + str(formula) + "\n$$"
         elif kind in ("learning", "clip"):
             text = str(props.get("markdown") or props.get("prompt") or props.get("title") or "")
             if kind == "learning":

@@ -40,7 +40,7 @@ type InlineItem = {
 }
 
 /**
- * Swap placeholders for `inlineMath` inline nodes. Handles plain text runs,
+ * Swap placeholders for `math` inline nodes. Handles plain text runs,
  * nested inline content (links) and table cells, so a placeholder never leaks
  * into the editor as literal text.
  */
@@ -66,7 +66,7 @@ function restoreInline(value: unknown, spans: MathSpan[]): unknown {
             out.push(
               isCode
                 ? { ...item, text: span.source }
-                : { type: 'inlineMath', props: { formula: span.formula } }
+                : { type: 'math', content: span.formula }
             )
           cursor = match.index! + match[0].length
         }
@@ -108,7 +108,7 @@ function restoreMath(blocks: NoteBlock[], spans: MathSpan[]): NoteBlock[] {
 /**
  * Keep editor.md math and diagram fences intact while migrating ordinary
  * Markdown into BlockNote blocks. Math is masked before the Markdown parser
- * runs and restored as `math` / `inlineMath` nodes afterwards, so formulas
+ * runs and restored as `mathBlock` / `math` nodes afterwards, so formulas
  * render with KaTeX instead of leaking raw LaTeX into the page.
  */
 export function parseNoteMarkdown(
@@ -132,8 +132,9 @@ export function parseNoteMarkdown(
       flush()
       result.push({
         id: crypto.randomUUID(),
-        type: 'math',
-        props: { formula: formula[1] },
+        type: 'mathBlock',
+        props: {},
+        content: formula[1],
         children: [],
       })
       continue
@@ -144,8 +145,9 @@ export function parseNoteMarkdown(
         flush()
         result.push({
           id: crypto.randomUUID(),
-          type: 'math',
-          props: { formula: lines.slice(index + 1, end).join('\n') },
+          type: 'mathBlock',
+          props: {},
+          content: lines.slice(index + 1, end).join('\n'),
           children: [],
         })
         index = end
@@ -157,8 +159,9 @@ export function parseNoteMarkdown(
       flush()
       result.push({
         id: crypto.randomUUID(),
-        type: 'math',
-        props: { formula: tex[1] },
+        type: 'mathBlock',
+        props: {},
+        content: tex[1],
         children: [],
       })
       continue
@@ -169,8 +172,9 @@ export function parseNoteMarkdown(
         flush()
         result.push({
           id: crypto.randomUUID(),
-          type: 'math',
-          props: { formula: lines.slice(index + 1, end).join('\n') },
+          type: 'mathBlock',
+          props: {},
+          content: lines.slice(index + 1, end).join('\n'),
           children: [],
         })
         index = end

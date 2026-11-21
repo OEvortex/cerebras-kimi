@@ -103,7 +103,7 @@ export default function useNoteSlashItems({
         if (created) {
           // Form blocks own focus. Focusing the editor here immediately blurs an
           // auto-focused formula input and closes it before the user can type.
-          if (['math', 'webCard', 'htmlEmbed', 'learning'].includes(created.type)) {
+          if (['mathBlock', 'webCard', 'htmlEmbed', 'learning'].includes(created.type)) {
             // SuggestionMenu restores editor focus after the insertion callback.
             // Hand it to the new form after that transaction and React commit.
             requestAnimationFrame(() => {
@@ -324,7 +324,7 @@ export default function useNoteSlashItems({
           'Write a mathematical expression using LaTeX.',
           ['math', 'formula'],
           Sigma,
-          () => insert({ type: 'math' }),
+          () => insert({ type: 'mathBlock' }),
           'math',
           '$$'
         ),
@@ -377,7 +377,7 @@ export default function useNoteSlashItems({
           'Place a formula within a sentence.',
           ['inline math', 'inline formula'],
           Sigma,
-          () => editor.insertInlineContent([{ type: 'inlineMath', props: { formula: 'x^2' } }, ' ']),
+          () => editor.insertInlineContent([{ type: 'math', content: 'x^2' }, ' ']),
           'inlineMath',
           '$…$'
         ),

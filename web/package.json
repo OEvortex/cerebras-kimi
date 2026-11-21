@@ -31,8 +31,9 @@
     "openui:prompt": "openui generate lib/openui/library.ts --out lib/openui/generated/system-prompt.txt --prompt-options promptOptions && openui generate lib/openui/library.ts --out lib/openui/generated/dashboard-system-prompt.txt --prompt-options dashboardPromptOptions && rm -f lib/openui/generated/*system-prompt.spec.json && node ./scripts/compact-openui-prompt.mjs --sync-backend"
   },
   "dependencies": {
-    "@blocknote/core": "0.56.0",
-    "@blocknote/react": "0.56.0",
+    "@blocknote/core": "0.57.0",
+    "@blocknote/math-block": "0.57.0",
+    "@blocknote/react": "0.57.0",
     "@hyperframes/player": "0.9.40",
     "@openuidev/intelligent-ui-library": "^0.0.2",
     "@openuidev/lang-core": "^1.1.1",

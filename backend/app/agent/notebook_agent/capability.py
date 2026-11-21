@@ -19,8 +19,8 @@ from typing import Any
 
 from vtx.agent.tools.task import SubagentSpec, resolve_subagent_runner
 
-from .prompt import load_writer_prompt
-from .tools import WRITER_TOOL_NAMES, register_writer_tools
+from .prompt import load_co_writer_prompt
+from .tools import COWRITER_TOOL_NAMES, register_writer_tools
 
 MAX_TURNS = 60
 
@@ -105,11 +105,11 @@ async def launch_notebook_job(
         )
 
     spec = SubagentSpec(
-        name="notebook-writer",
-        description="Writes the learner's notebook as one document",
-        instructions=load_writer_prompt(),
+        name="co-writer",
+        description="Co-writer — writes and manages the learner's notebook",
+        instructions=load_co_writer_prompt(),
         instructions_mode="replace",
-        tools_allow=list(WRITER_TOOL_NAMES),
+        tools_allow=list(COWRITER_TOOL_NAMES),
         tools_deny=[],
         max_turns=MAX_TURNS,
     )
@@ -166,7 +166,7 @@ async def launch_notebook_job(
 
                     session.append_message(UserMessage(content=(
                         f"<vtx:background-task-completion> Background task "
-                        f"'{label}' (notebook-writer) finished with status "
+                        f"'{label}' (co-writer) finished with status "
                         f"{status}. Final answer:\n{report}"
                         "</vtx:background-task-completion>"
                     )))
@@ -209,7 +209,7 @@ async def launch_notebook_job(
         "Notebook job launched in the background.\n"
         f"  task_id: {record.task_id}\n"
         f"  label: {label}\n"
-        "The notebook-writer sub-agent is building the pages now (this can "
+        "The Co-writer sub-agent is building the pages now (this can "
         "take several minutes). Its report will be delivered automatically "
         "when it finishes — tell the learner the notebook is being built and "
         "they will see the result soon; do not claim the pages already exist.\n"

@@ -52,11 +52,12 @@ def test_notebook_tools_are_only_exposed_for_note_threads(tmp_path, monkeypatch)
     def names() -> set[str]:
         return {t.name for t in builtin_tools(settings)}
 
-    assert "note_read" not in names()
+    assert "nb_read" not in names()
 
     set_note_context("abc123")
     exposed = names()
-    assert {"note_read", "note_suggest", "flashcards"} <= exposed
+    assert {"nb_read", "nb_list", "nb_search", "nb_patch"} <= exposed
+    assert "note_suggest" not in exposed
 
 
 def test_note_read_returns_block_ids(tmp_path, monkeypatch):

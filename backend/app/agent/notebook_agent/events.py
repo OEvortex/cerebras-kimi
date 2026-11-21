@@ -73,25 +73,25 @@ def progress_callback(tool_call_id: str, payload: dict[str, Any]) -> None:
     if turn is None or runtime is None:
         return
     kind = str(payload.get("kind") or "progress")
-    if payload.get("subagent") not in (None, "notebook-writer"):
+    if payload.get("subagent") not in (None, "co-writer", "notebook-writer"):
         return
 
     labels = {
-        "subagent_start": "Starting notebook writer",
+        "subagent_start": "Starting Co-writer",
         "text_delta": "Writing notebook",
         "tool_start": "Looking up notebook pages",
         "tool_result": "Finished a lookup",
         "turn_end": "Drafting pages",
         "subagent_end": "Notebook draft complete",
-        "error": "Notebook writer hit an error",
-        "cancelled": "Notebook writer cancelled",
-        "interrupted": "Notebook writer interrupted",
+        "error": "Co-writer hit an error",
+        "cancelled": "Co-writer cancelled",
+        "interrupted": "Co-writer interrupted",
     }
     content = str(labels.get(kind, kind))
     if kind == "tool_start":
         content = f"Calling {payload.get('tool_name') or 'a tool'}"
     if kind == "error":
-        content = f"Notebook writer error: {str(payload.get('error') or '')[:300]}"
+        content = f"Co-writer error: {str(payload.get('error') or '')[:300]}"
 
     meta: dict[str, Any] = {
         "tool_call_id": tool_call_id,
@@ -102,7 +102,7 @@ def progress_callback(tool_call_id: str, payload: dict[str, Any]) -> None:
             "tool": str(payload.get("tool_name") or "") if kind else "",
             "tool_counts": payload.get("tool_counts") or {},
             "turns": int(payload.get("turns") or 0),
-            "subagent": "notebook-writer",
+            "subagent": "co-writer",
         },
     }
     try:

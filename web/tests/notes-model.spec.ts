@@ -17,8 +17,8 @@ describe('notebook migration and generated content', () => {
       parse
     )
     expect(JSON.stringify(blocks)).toContain('【重点】《保留》')
-    expect(JSON.stringify(blocks)).toContain('inlineMath')
-    expect(blocks.find(b => b.type === 'math')?.props.formula).toBe('y = x^2')
+    expect(JSON.stringify(blocks)).toContain('"math"')
+    expect(blocks.find(b => b.type === 'mathBlock')?.content).toBe('y = x^2')
     expect(blocks.find(b => b.type === 'learning')?.props.markdown).toContain('st=>start: Start')
   })
   it('keeps unfinished math input as ordinary text', () => {

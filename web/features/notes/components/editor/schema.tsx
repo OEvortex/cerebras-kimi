@@ -1,23 +1,24 @@
 'use client'
 
-import { useState } from 'react'
-import dynamic from '@/shared/router/dynamic'
 import {
   BlockNoteEditor,
   BlockNoteSchema,
-  createExtension,
   defaultBlockSpecs,
   defaultInlineContentSpecs,
 } from '@blocknote/core'
 import { createReactBlockSpec, createReactInlineContentSpec } from '@blocknote/react'
-import { InputRule, inputRules } from '@tiptap/pm/inputrules'
+import {
+  createReactInlineMathSpec,
+  createReactMathBlockSpec,
+} from '@blocknote/math-block'
+import '@blocknote/math-block/style.css'
+import dynamic from '@/shared/router/dynamic'
 import { ArrowUpRight, FileText } from 'lucide-react'
 
 import type { NoteBlock } from '@/lib/notes-api'
 import { parseNoteMarkdown } from '../../model/markdown'
 import NoteFavoriteBlock from '../NoteFavoriteBlock'
 import { noteFile } from '../NoteFile'
-import NoteMath from '../NoteMath'
 import {
   callout,
   htmlEmbed,
@@ -34,41 +35,8 @@ import { noteUpload } from '../NoteUpload'
 const Markdown = dynamic(() => import('@/components/common/MarkdownRenderer'), { ssr: false })
 const LearningContent = dynamic(() => import('../NoteLearningContent'), { ssr: false })
 
-const math = createReactBlockSpec(
-  { type: 'math', propSchema: { formula: { default: '' } }, content: 'none' },
-  {
-    render: function MathBlock({ block, editor }) {
-      
-      const [editing, setEditing] = useState(!block.props.formula)
-      return (
-        <div className="dt-note-math" contentEditable={false}>
-          {editing ? (
-            <input
-              autoFocus
-              aria-label={"Math formula"}
-              value={block.props.formula}
-              onChange={e => editor.updateBlock(block, { props: { formula: e.target.value } })}
-              onBlur={() => {
-                if (block.props.formula.trim()) setEditing(false)
-              }}
-              onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === 'Escape') {
-                  e.preventDefault()
-                  setEditing(false)
-                  editor.focus()
-                }
-              }}
-            />
-          ) : (
-            <button onClick={() => setEditing(true)}>
-              <NoteMath formula={block.props.formula} display />
-            </button>
-          )}
-        </div>
-      )
-    },
-  }
-)
+const mathBlockSpec = createReactMathBlockSpec()
+const mathInlineSpec = createReactInlineMathSpec()
 
 const clip = createReactBlockSpec(
   {
@@ -145,7 +113,9 @@ const learning = createReactBlockSpec(
       <LearningContent
         id={block.id}
         {...block.props}
-        onChange={props => editor.updateBlock(block, { props })}
+        onChange={(props: { prompt?: string; data?: string; kind?: string; markdown?: string }) =>
+          editor.updateBlock(block, { props })
+        }
       />
     ),
   }
@@ -168,63 +138,11 @@ const pageLink = createReactInlineContentSpec(
   }
 )
 
-const inlineMath = createReactInlineContentSpec(
-  { type: 'inlineMath', propSchema: { formula: { default: '' } }, content: 'none' },
-  {
-    render: function InlineMath({ inlineContent, updateInlineContent }) {
-      
-      const [edit, setEdit] = useState(false)
-      return (
-        <span contentEditable={false} className="dt-note-inline-math">
-          {edit ? (
-            <input
-              aria-label={"Math formula"}
-              autoFocus
-              value={inlineContent.props.formula}
-              onChange={e =>
-                updateInlineContent({ type: 'inlineMath', props: { formula: e.target.value } })
-              }
-              onBlur={() => setEdit(false)}
-              onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === 'Escape') {
-                  e.preventDefault()
-                  setEdit(false)
-                }
-              }}
-            />
-          ) : (
-            <button onClick={() => setEdit(true)}>
-              <NoteMath formula={inlineContent.props.formula} />
-            </button>
-          )}
-        </span>
-      )
-    },
-  }
-)
-
-export const noteInputRules = createExtension({
-  key: 'note-input-rules',
-  inputRules: [{ find: /^\$\$\s$/, replace: () => ({ type: 'math', props: { formula: '' } }) }],
-  prosemirrorPlugins: [
-    inputRules({
-      rules: [
-        new InputRule(/(?:^|[^$])\$([^$\n]+)\$$/, (state, match, start, end) => {
-          const node = state.schema.nodes.inlineMath
-          if (!node) return null
-          const offset = match[0].startsWith('$') ? 0 : 1
-          return state.tr.replaceWith(start + offset, end, node.create({ formula: match[1] }))
-        }),
-      ],
-    }),
-  ],
-})
-
 export const schema = BlockNoteSchema.create({
   blockSpecs: {
     ...defaultBlockSpecs,
     file: noteFile(),
-    math: math(),
+    mathBlock: mathBlockSpec,
     clip: clip(),
     learning: learning(),
     noteUpload: noteUpload(),
@@ -237,15 +155,44 @@ export const schema = BlockNoteSchema.create({
     htmlEmbed: htmlEmbed(),
     taskView: taskView(),
   },
-  inlineContentSpecs: { ...defaultInlineContentSpecs, pageLink, inlineMath, noteDate },
+  inlineContentSpecs: { ...defaultInlineContentSpecs, pageLink, math: mathInlineSpec, noteDate },
 })
 
 export type NotesEditor = typeof schema.BlockNoteEditor
 
+/** Legacy custom math shapes (`math` block / `inlineMath` inline with a
+ *  `formula` prop) -> official math-block specs (`mathBlock` block /
+ *  `math` inline with plain-text content). */
+function migrateMathTypes(blocks: NoteBlock[]): NoteBlock[] {
+  const migrateContent = (content: unknown): unknown => {
+    if (!Array.isArray(content)) return content
+    return content.map(item => {
+      if (!item || typeof item !== 'object') return item
+      const node = item as { type?: string; props?: { formula?: string }; content?: unknown }
+      if (node.type === 'inlineMath')
+        return { type: 'math', content: node.props?.formula ?? '' }
+      return { ...node, content: migrateContent(node.content) }
+    })
+  }
+  return blocks.map(block => {
+    const migrated = { ...block, content: migrateContent(block.content) } as NoteBlock
+    if (block.type === 'math') {
+      const props = (block.props ?? {}) as { formula?: string }
+      return {
+        ...migrated,
+        type: 'mathBlock',
+        props: {},
+        content: props.formula ?? '',
+      } as NoteBlock
+    }
+    return { ...migrated, children: migrateMathTypes(block.children || []) }
+  })
+}
+
 /** Drop inline content a block type cannot hold. A stray string there (a model
  *  echoing "timeline" into a learning block) makes the editor reject the page. */
 export function fitSchema(blocks: NoteBlock[]): NoteBlock[] {
-  return blocks.map(block => {
+  return migrateMathTypes(blocks).map(block => {
     const spec = (schema.blockSchema as Record<string, { content?: string } | undefined>)[
       block.type
     ]

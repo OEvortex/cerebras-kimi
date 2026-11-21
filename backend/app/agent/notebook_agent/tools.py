@@ -482,6 +482,10 @@ SHARED_TOOL_NAMES = ("web", "paper_search", "knowledge_base_search")
 
 WRITER_TOOL_NAMES = NB_OWN_TOOL_NAMES + SHARED_TOOL_NAMES
 
+# The Co-writer agent uses exactly this tool list, both as the sub-agent
+# dispatched by the main assistant and as the companion in the notebook chat.
+COWRITER_TOOL_NAMES = WRITER_TOOL_NAMES
+
 _registered = False
 
 

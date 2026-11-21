@@ -69,6 +69,7 @@ export function useNoteThreads({
   embedded,
   flush,
   onSuggestions,
+  onPageChanged,
   onError,
 }: {
   pageId: string
@@ -76,6 +77,8 @@ export function useNoteThreads({
   embedded: boolean
   flush: () => Promise<void>
   onSuggestions: () => void
+  /** Co-writer applies edits directly; reload the open page when a turn ends. */
+  onPageChanged?: () => void
   onError: (message: string) => void
 }) {
   
@@ -110,9 +113,9 @@ export function useNoteThreads({
   const [tick, setTick] = useState(0)
   const pending = useRef<PendingSend | null>(null)
   const kbApplied = useRef(new Set<string>())
-  const latest = useRef({ onSuggestions, onError, flush })
+  const latest = useRef({ onSuggestions, onPageChanged, onError, flush })
   useLayoutEffect(() => {
-    latest.current = { onSuggestions, onError, flush }
+    latest.current = { onSuggestions, onPageChanged, onError, flush }
   })
   const loadGenerations = useCallback(() => {
     if (generations.current === null) generations.current = readJson(generationsKey, [])
@@ -182,6 +185,7 @@ export function useNoteThreads({
     }
     void refresh()
     latest.current.onSuggestions()
+    latest.current.onPageChanged?.()
   }, [refresh, runningKey])
   // A turn running in another tab is only known from the server.
   const remoteRunning = threads.some(t => t.status === 'running' && !running.has(t.session_id))
@@ -512,7 +516,10 @@ export function useNoteThreads({
             started: g.started || started.includes(g.blockId),
           }))
       )
-      if (finished.length) latest.current.onSuggestions()
+      if (finished.length) {
+        latest.current.onSuggestions()
+        latest.current.onPageChanged?.()
+      }
     }
   }, [loadGenerations, loaded, running, saveGenerations, state, threads, tick])
 

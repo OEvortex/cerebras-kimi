@@ -41,8 +41,8 @@ def builtin_tools(settings: Settings, enabled: list[str] | None = None) -> list[
         # `ask_user` is intentionally not registered for now.
         "mastery": dt_tools.mastery,
         "video": dt_tools.video,
-        # Background notebook builder: dispatches the notebook-writer
-        # sub-agent (own prompt + nb_* tools) via vtx's task machinery.
+        # Background notebook builder: dispatches the Co-writer sub-agent
+        # (shared prompt + nb_* tools) via vtx's task machinery.
         "notebook": dt_tools.notebook,
         # Scheduled reminders: the run lands in the turn's own session and
         # shows up on the calendar's Automations layer.
