@@ -1,10 +1,10 @@
-"""The notebook writer's tool surface.
+"""Co-writer's tool surface, shared by the notebook chat and the sub-agent.
 
-The writer's *output* is the notebook: its final message is a notebook
-document (see ``document.py``) that the host compiles into pages, so it needs
-no write tools at all. What remains is navigation — finding existing pages so
-the document can extend them instead of duplicating — plus ``nb_update_page``
-for retitling/reparenting after the fact, and the shared research tools.
+Co-writer's output is the notebook itself: pages are edited directly with
+``nb_patch`` (create/update/delete/move), and ``nb_read``/``nb_list``/
+``nb_search`` keep it from duplicating existing notes. The shared research
+tools cover outside material. The same list is used by the sub-agent the main
+assistant dispatches through its ``notebook`` tool.
 
 These tools are registered into vtx's global tool registry (not the main
 agent's explicit tool list) so a ``SubagentSpec`` can select exactly them via

@@ -27,7 +27,7 @@ EventTitle = Annotated[str, StringConstraints(strip_whitespace=True, max_length=
 EventNotes = Annotated[str, StringConstraints(max_length=5000)]
 EventLocation = Annotated[str, StringConstraints(strip_whitespace=True, max_length=300)]
 Scope = Literal["this", "following", "all"]
-EventSource = Literal["user", "dito", "import"]
+EventSource = Literal["user", "co_writer", "import"]
 
 # Minutes before the start. All-day events may also go negative, down to one
 # minute before the day ends: -540 reads "on the day at 09:00".

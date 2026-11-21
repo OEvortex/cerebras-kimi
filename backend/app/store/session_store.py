@@ -8,8 +8,8 @@ Sessions live in one WAL-mode SQLite database (``data/deeptutor.sqlite3``):
   streamed events, and per-turn event logs used for WS replay after reconnects.
 * ``vtx_items`` — the raw input-item dicts the vtx ``Session`` protocol
   consumes via ``VtxSessionAdapter``.
-* ``session_fts`` — an FTS5 index over message text, shared by the REST search
-  endpoint and Dito's ``session_search`` tool so ranking is identical.
+* ``session_fts`` — an FTS5 index over message text used by the REST search
+  endpoint.
 * ``session_embeddings`` — cached message vectors for optional semantic search.
 
 Legacy ``data/sessions/*.json`` records are imported on first open and moved to
@@ -722,8 +722,6 @@ class SessionStore:
         """Ranked message hits grouped by session (best hit per session).
 
         Uses the FTS5 index when available and falls back to a token LIKE scan.
-        The result shape is shared by the REST search endpoint and Dito's
-        ``session_search`` tool.
         """
         needle = (query or "").strip()
         self._last_total = 0

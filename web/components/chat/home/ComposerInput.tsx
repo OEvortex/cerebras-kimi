@@ -22,7 +22,6 @@ import { shouldSubmitOnEnter } from "@/lib/composer-keyboard";
 import { useAutoSizedTextarea } from "@/lib/use-auto-sized-textarea";
 import { useImeComposing } from "@/lib/use-ime-composing";
 import { ComposerLead, type LeadToken } from "./ComposerLead";
-import { useGhostText } from "@/lib/ghost-text/use-ghost-text";
 
 /** The lead strip overhangs by its tokens' own padding; text starts a gap after it. */
 const LEAD_BLEED = 6;
@@ -214,7 +213,6 @@ export const ComposerInput = memo(
     // `showAtPopup` doesn't change.
     const inputRef = useRef("");
     const [cursorPos, setCursorPos] = useState(0);
-    const ghost = useGhostText(input, cursorPos);
     const { isComposingRef, onCompositionStart, onCompositionEnd } =
       useImeComposing();
     // Helper that always updates state and ref together so they can't drift.
@@ -375,21 +373,6 @@ export const ComposerInput = memo(
           handleSelectAgentMention(filteredAgents[0].name);
           return;
         }
-        // Tab accepts the ghost-text suggestion when one is showing.
-        if (e.key === "Tab" && !e.shiftKey && ghost.suggestion) {
-          e.preventDefault();
-          const caret = e.currentTarget.selectionStart ?? inputRef.current.length;
-          const next = ghost.accept(inputRef.current, caret);
-          if (next != null) {
-            setInputBoth(next);
-            onInputChange(next);
-            requestAnimationFrame(() => {
-              const el = textareaRef.current;
-              if (el) el.setSelectionRange(next.length, next.length);
-            });
-          }
-          return;
-        }
         // Tab takes the offered question — but only into an empty composer, so
         // Tab keeps meaning "leave this box" the moment there is a draft in it.
         if (
@@ -425,7 +408,6 @@ export const ComposerInput = memo(
         isComposingRef,
         onInputChange,
         placeholderCompletion,
-        ghost,
         setInputBoth,
         lead,
         armed,
@@ -677,19 +659,6 @@ export const ComposerInput = memo(
               transition: "height 0.15s ease-out, text-indent 0.18s cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           />
-          {ghost.suggestion && !showHintOverlay ? (
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 overflow-hidden whitespace-pre-wrap break-words text-[16px] leading-relaxed"
-            >
-              <span className="text-transparent">
-                {input.slice(0, cursorPos)}
-              </span>
-              <span className="text-[var(--muted-foreground)]">
-                {ghost.suggestion}
-              </span>
-            </div>
-          ) : null}
           {showHintOverlay ? (
             <div
               aria-hidden="true"

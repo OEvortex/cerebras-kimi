@@ -1,4 +1,4 @@
-"""Bridge the notebook writer sub-agent's progress into DeepTutor's live chat.
+"""Bridge the Co-writer sub-agent's progress into DeepTutor's live chat.
 
 Two gaps this closes:
 

@@ -13,7 +13,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from .dito import DITO_SYSTEM_PROMPT, notebook_context_block
+from .co_writer import CO_WRITER_SYSTEM_PROMPT, notebook_context_block
 
 # The generated OpenUI Lang spec lives next to this module. It teaches the
 # model to answer with declarative UI programs instead of Markdown.
@@ -82,7 +82,7 @@ def build_deeptutor_prompt(
         session_id = current_session_id.get()
         base = (
             "# Notebook companion\n\n"
-            + DITO_SYSTEM_PROMPT
+            + CO_WRITER_SYSTEM_PROMPT
             + notebook_context_block(page_id, session_id, block_id, kind)
             + "\n\n# The learner\n\n"
             + DEEPTUTOR_BASE

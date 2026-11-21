@@ -1,9 +1,9 @@
-"""Dispatch the notebook writer sub-agent.
+"""Dispatch the Co-writer sub-agent.
 
 Mirrors ``video_lesson.capability``: the main agent only supplies the
-learner's request; a dedicated writer sub-agent with its own prompt and a
-toolset (``nb_read``/``nb_list``/``nb_search`` plus write tools
-``nb_patch`` plus research tools) edits the notebook directly — the same operations a
+learner's request; Co-writer uses the same system prompt and tool list as the
+notebook chat (``nb_read``/``nb_list``/``nb_search``/``nb_patch`` plus the
+shared research tools) and edits the notebook directly — the same operations a
 user performs in the editor.
 
 ``background=True`` (the default) registers the run with vtx's

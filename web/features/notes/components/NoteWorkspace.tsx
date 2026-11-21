@@ -269,6 +269,21 @@ export default function NoteWorkspace({
     embedded,
     flush,
     onSuggestions: refreshSuggestions,
+    onPageChanged: () => {
+      // Co-writer writes pages directly; pull the new content into the open
+      // editor once a turn settles, but never clobber unsaved local edits.
+      if (version.current !== savedVersion.current) return
+      void getNote(docId)
+        .then(result => {
+          if (version.current !== savedVersion.current) return
+          latest.current = result
+          setPage(result)
+          editor.current?.replace(result.blocks || editor.current.parse(result.content))
+          savedVersion.current = version.current
+          refreshPages()
+        })
+        .catch(() => {})
+    },
     onError: message => setError(message),
   })
   const findBlock = useCallback((blockId: string) => {

@@ -848,7 +848,7 @@ class AgentRuntime:
                                 stage="responding",
                                 metadata={
                                     "response": (
-                                        "The notebook writer is building the "
+                                        "Co-writer is building the "
                                         "pages. You will see the result here "
                                         "when it finishes."
                                     ),

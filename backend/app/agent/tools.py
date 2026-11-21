@@ -23,7 +23,7 @@ def builtin_tools(settings: Settings, enabled: list[str] | None = None) -> list[
     """
     from . import dt_tools
     from . import kb_tools as _kb
-    from . import dito
+    from . import co_writer
 
     registry: dict[str, Any] = {
         # DeepTutor portable ports (dt_tools.py)
@@ -56,12 +56,12 @@ def builtin_tools(settings: Settings, enabled: list[str] | None = None) -> list[
     # The notebook companion gets its own playbook: read the page and propose
     # reviewable changes (including learning blocks/flashcards). These tools
     # are absent from ordinary chat turns.
-    if dito.is_dito_turn():
-        registry.update({dito_tool.name: dito_tool for dito_tool in dito.dito_tools()})
-        # Dito's toolset is deliberately narrower than the main chat's: no
+    if co_writer.is_co_writer_turn():
+        registry.update({tool_.name: tool_ for tool_ in co_writer.co_writer_tools()})
+        # Co-writer's toolset is deliberately narrower than the main chat's: no
         # video, cron, mastery, workspace files or question bank.
         for name in list(registry):
-            if name not in dito.DITO_TOOL_NAMES:
+            if name not in co_writer.CO_WRITER_TOOL_NAMES:
                 registry.pop(name)
     # web_search is the frontend's toggle name for the merged `web` tool.
     enabled = [{"web_search": "web"}.get(n, n) for n in (enabled or [])]

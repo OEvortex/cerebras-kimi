@@ -2,8 +2,8 @@
 
 Same shape as ``vtx.coding_agent.tools``: a ``*Params`` pydantic model with
 per-field descriptions plus a ``BaseTool`` subclass whose ``execute``
-returns ``ToolResult``. The notebook companion (Dito) lives in ``dito.py``;
-its tools are re-exported below.
+returns ``ToolResult``. The notebook companion (Co-writer) lives in
+``co_writer.py``.
 """
 
 from __future__ import annotations
@@ -114,24 +114,6 @@ def _fail(text: str) -> ToolResult:
 
 
 notes = NotesTool()
-
-
-# ---------------------------------------------------------------------------
-# Notebook companion (Dito) — prompts and tools live in ``dito.py`` and are
-# registered only while a Co-Writer page is bound. Re-exported here so the
-# existing tool registry and tests can keep importing them from dt_tools.
-# ---------------------------------------------------------------------------
-
-from .dito import (  # noqa: E402,F401
-    flashcards,
-    note_create,
-    note_list,
-    note_open,
-    note_read,
-    note_search,
-    note_suggest,
-    session_search,
-)
 
 
 class QuestionBankParams(BaseModel):
