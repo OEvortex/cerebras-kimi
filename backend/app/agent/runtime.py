@@ -500,6 +500,10 @@ class AgentRuntime:
                 ToolApprovalEvent, ToolEndEvent, ToolResultEvent, ToolStartEvent,
             )
             from vtx.core.permissions import ApprovalResponse
+
+            from .notebook_agent import events as notebook_events
+
+            notebook_events.set_runtime(self)
         except Exception:  # noqa: BLE001
             return False
 
@@ -555,11 +559,6 @@ class AgentRuntime:
                 from .tools import builtin_tools as _bt
                 fns = _bt(self._settings, command.get("tools"))
                 tools = [_SdkToolAdapter(t) for t in fns] + ext_tools
-                # Forward the notebook writer's sub-agent events (text deltas,
-                # tool calls, turn counts) into this turn's SSE stream.
-                from .notebook_agent import events as notebook_events
-
-                notebook_events.set_runtime(self)
 
                 runtime = ConversationRuntime(
                     cwd=cwd, model=model, model_provider=provider,

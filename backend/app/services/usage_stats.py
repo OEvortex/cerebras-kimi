@@ -192,8 +192,10 @@ def usage_for_year(settings: Settings, year: int, timezone: str) -> dict[str, An
                 "tracked_turns": 0,
             },
         )
-        day["total_tokens"] += int(row["total_tokens"] or 0)
-        day["total_calls"] += int(row["calls"] or 1)
+        row_tokens = int(row["total_tokens"] or 0)
+        row_calls = int(row["calls"] or 1)
+        day["total_tokens"] += row_tokens
+        day["total_calls"] += row_calls
         day["turns"] += 1
         if int(row["total_tokens"] or 0) > 0:
             day["tracked_turns"] += 1
@@ -207,6 +209,9 @@ def usage_for_year(settings: Settings, year: int, timezone: str) -> dict[str, An
             },
         )
         bump(model_row)
+        if int(row["total_tokens"] or 0) == 0:
+            model_row["estimated_calls"] += int(row["calls"] or 1)
+            totals["estimated_calls"] += int(row["calls"] or 1)
 
         totals["total_tokens"] += int(row["total_tokens"] or 0)
         totals["prompt_tokens"] += int(row["input_tokens"] or 0)
@@ -227,7 +232,6 @@ def usage_for_year(settings: Settings, year: int, timezone: str) -> dict[str, An
     _finish_totals(totals)
     for model_row in models.values():
         _finish_totals(model_row)
-        model_row.pop("estimated_calls", None)
 
     return {
         "year": year,

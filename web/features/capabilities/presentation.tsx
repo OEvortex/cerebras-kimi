@@ -23,6 +23,7 @@ export type ToolName =
   | "brainstorm"
   | "geogebra_analysis"
   | "web_search"
+  | "notebook"
   | "exec"
   | "reason"
   | "paper_search"
@@ -39,6 +40,7 @@ export const ALL_TOOLS: ToolDef[] = [
   { name: "brainstorm", label: "Brainstorm", icon: Lightbulb },
   { name: "geogebra_analysis", label: "GeoGebra", icon: Compass },
   { name: "web_search", label: "Web Search", icon: Globe },
+  { name: "notebook", label: "Notebook Writer", icon: NotebookPen },
   { name: "exec", label: "Execute", icon: Code2 },
   { name: "reason", label: "Reason", icon: Sparkles },
   { name: "paper_search", label: "Arxiv Search", icon: FileSearch },

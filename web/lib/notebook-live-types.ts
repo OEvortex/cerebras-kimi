@@ -76,11 +76,32 @@ export function notebookPageLinks(report: string): { id: string; label: string }
 }
 
 const COMPLETION_EVENT = "dt:notebook-completed";
-const completions = new Map<string, NotebookCompletion>();
+const STORAGE_KEY = "dt:notebook-completions";
+
+function loadCompletions(): Map<string, NotebookCompletion> {
+  if (typeof window === "undefined") return new Map();
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const rows = raw ? (JSON.parse(raw) as NotebookCompletion[]) : [];
+    return new Map(rows.filter((row) => row?.task_id).map((row) => [row.task_id, row]));
+  } catch {
+    return new Map();
+  }
+}
+
+const completions = loadCompletions();
 
 export function rememberNotebookCompletion(completion: NotebookCompletion): void {
   completions.set(completion.task_id, completion);
   if (typeof window !== "undefined") {
+    try {
+      window.localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify([...completions.values()].slice(-40)),
+      );
+    } catch {
+      // Storage is best effort; the live panel still updates in memory.
+    }
     window.dispatchEvent(new CustomEvent(COMPLETION_EVENT, { detail: completion }));
   }
 }
