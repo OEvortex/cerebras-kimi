@@ -2,11 +2,9 @@
 
 Mirrors ``video_lesson.capability``: the main agent only supplies the
 learner's request; a dedicated writer sub-agent with its own prompt and a
-small navigation toolset (``nb_read``/``nb_list``/``nb_search``/
-``nb_update_page`` plus research tools) produces the whole notebook as ONE
-Markdown-superset document — the "notebook document" format in
-``document.py``. The host compiles that document into the page tree, so the
-model needs no write tools: its output IS the notebook.
+toolset (``nb_read``/``nb_list``/``nb_search`` plus write tools
+``nb_patch`` plus research tools) edits the notebook directly — the same operations a
+user performs in the editor.
 
 ``background=True`` (the default) registers the run with vtx's
 ``BackgroundTaskManager`` so the parent turn returns immediately and the
@@ -21,12 +19,10 @@ from typing import Any
 
 from vtx.agent.tools.task import SubagentSpec, resolve_subagent_runner
 
-from .document import compile_notebook, format_report
 from .prompt import load_writer_prompt
 from .tools import WRITER_TOOL_NAMES, register_writer_tools
 
 MAX_TURNS = 60
-MAX_ATTEMPTS = 2
 
 
 def _build_prompt(request: str, title: str, parent_page_id: str) -> str:
@@ -41,10 +37,12 @@ def _build_prompt(request: str, title: str, parent_page_id: str) -> str:
         ),
         "Learner request:\n" + request.strip() + "\n",
         (
-            "First check the notebook with nb_list/nb_search so the document "
-            "extends existing pages instead of duplicating them. Your entire "
-            "final message must be the notebook document — no preamble, no "
-            "report."
+            "Work like a user editing the notebook: check existing pages with "
+            "nb_list/nb_search first, then make ALL writes with nb_patch — "
+            "create pages, apply exact-match edits, append, rewrite, delete, "
+            "and move/reparent in atomic batches. Use nb_read (offset/limit) "
+            "before editing a page you haven't seen. Your final message is a "
+            "short report of what you created or changed — not the content."
         ),
     ]
     return "".join(p for p in parts if p)
@@ -69,54 +67,20 @@ async def _run_writer(
     )
 
 
-async def _run_and_compile(
+async def _run_writer_only(
     parent_ctx: Any,
     spec: SubagentSpec,
     prompt: str,
     tool_call_id: str,
     label: str,
-    *,
-    parent_page_id: str,
-    fallback_title: str,
 ) -> Any:
-    """Run the writer, then compile its document into pages.
-
-    On a compile failure the writer gets one retry with the error as
-    feedback (same pattern as the video lesson's frame-check loop).
-    """
-    feedback = ""
-    last_error = ""
-    for attempt in range(1, MAX_ATTEMPTS + 1):
-        attempt_prompt = prompt
-        if feedback:
-            attempt_prompt += (
-                "\n\nYour previous document could not be compiled:\n"
-                + feedback[:4000]
-                + "\nOutput the corrected notebook document again — the "
-                "entire final message, nothing else."
-            )
-        result = await _run_writer(
-            parent_ctx, spec, attempt_prompt,
-            f"{tool_call_id}_a{attempt}", label,
-        )
-        if result.error and not result.final_text:
-            raise RuntimeError(f"Notebook writer failed: {result.error}")
-        try:
-            report = compile_notebook(
-                result.final_text or "",
-                parent_page_id=parent_page_id,
-                fallback_title=fallback_title,
-            )
-        except Exception as exc:  # noqa: BLE001 - feed back, then retry
-            last_error = str(exc)
-            feedback = f"Compilation failed: {exc}"
-            continue
-        result.final_text = format_report(report, fallback_title=fallback_title)
-        return result
-    raise RuntimeError(
-        f"Notebook writer failed: the document could not be compiled after "
-        f"{MAX_ATTEMPTS} attempts. {last_error[:400]}"
+    """Run the writer once; its tools do the editing, text is the report."""
+    result = await _run_writer(
+        parent_ctx, spec, prompt, tool_call_id, label,
     )
+    if result.error and not result.final_text:
+        raise RuntimeError(f"Notebook writer failed: {result.error}")
+    return result
 
 
 async def launch_notebook_job(
@@ -163,9 +127,8 @@ async def launch_notebook_job(
         status = "completed"
         report = ""
         try:
-            result = await _run_and_compile(
+            result = await _run_writer_only(
                 ctx, spec, prompt, tool_call_id, label,
-                parent_page_id=parent_page_id, fallback_title=title,
             )
             report = result.final_text or ""
             return result

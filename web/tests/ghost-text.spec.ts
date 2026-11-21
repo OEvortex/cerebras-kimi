@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { TinyTokenizer } from "@/lib/ghost-text/tiny-tokenizer";
 import { ghostTextEnabled, setGhostTextEnabled } from "@/lib/ghost-text/enabled";
+import { finalizeSuggestion } from "@/lib/ghost-text/suggestion";
 
 const tokenizerJson = JSON.parse(
   readFileSync(resolve(__dirname, "../public/tinynext/tokenizer.json"), "utf-8"),
@@ -31,5 +32,24 @@ describe("ghost text tokenizer", () => {
     setGhostTextEnabled(false);
     expect(ghostTextEnabled()).toBe(false);
     setGhostTextEnabled(true);
+  });
+});
+
+describe("ghost text suggestion", () => {
+  it("keeps the whole continuation instead of cutting at the last space", () => {
+    // Regression: the old whole-word trim turned " the capital of France." into
+    // "" whenever the model stopped before another space.
+    expect(finalizeSuggestion(" the capital of France.")).toBe(" the capital of France.");
+    expect(finalizeSuggestion(" the following")).toBe(" the following");
+    // Leading space is kept: it is the real gap after the caret.
+    expect(finalizeSuggestion(" molecules")).toBe(" molecules");
+  });
+
+  it("drops trailing whitespace and too-short fragments", () => {
+    expect(finalizeSuggestion(" the  ")).toBe(" the");
+    expect(finalizeSuggestion(" the")).toBe(" the");
+    expect(finalizeSuggestion("")).toBe("");
+    expect(finalizeSuggestion(" a")).toBe("");
+    expect(finalizeSuggestion("  ")).toBe("");
   });
 });

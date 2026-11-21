@@ -13,16 +13,23 @@
 import * as ort from "onnxruntime-web";
 
 import { TinyTokenizer } from "./tiny-tokenizer";
+import { finalizeSuggestion } from "./suggestion";
 
 ort.env.wasm.wasmPaths =
   "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.31.1/dist/";
 ort.env.wasm.numThreads = 1;
 
 const BASE = "/tinynext";
-const CUTOFF = 0.4;
+// Greedy decode stops when the continuation stops looking like English.
+// The old 0.4 cumulative cutoff fired on the very first token for almost
+// every prompt (a 12M-param model rarely puts 40% on one token), so the
+// suggestion was always empty. Token-level confidence is the useful signal;
+// the cumulative one only guards against long implausible runs.
+const MIN_TOKEN_PROBABILITY = 0.01;
+const MIN_SEQUENCE_PROBABILITY = 0.0005;
+const MAX_STEPS = 24;
 const MAX_WORDS = 6;
 const MAX_CHARS = 48;
-const MIN_CHARS = 4;
 const LAYERS = 8;
 const HEADS = 5;
 const HEAD_DIM = 64;
@@ -74,7 +81,7 @@ async function suggest(before: string): Promise<string> {
   let out = "";
   let probability = 1;
 
-  for (let step = 0; step < 30; step += 1) {
+  for (let step = 0; step < MAX_STEPS; step += 1) {
     const row = logits.data as Float32Array;
     let max = -Infinity;
     for (let index = 0; index < vocab; index += 1) {
@@ -98,9 +105,9 @@ async function suggest(before: string): Promise<string> {
         top = index;
       }
     }
-    if (top < 0 || topProbability < 0.05) break;
+    if (top < 0 || topProbability < MIN_TOKEN_PROBABILITY) break;
     probability *= topProbability;
-    if (probability < CUTOFF) break;
+    if (probability < MIN_SEQUENCE_PROBABILITY) break;
 
     const text = tokenizer.tokenText(top);
     if (tokenizer.specials.has(top) || !text.trim()) break;
@@ -120,11 +127,8 @@ async function suggest(before: string): Promise<string> {
     cache = { k: result.present_k, v: result.present_v };
   }
 
-  // Keep only whole words; stay quiet unless there is something worth showing.
-  const trimmed = out.includes(" ")
-    ? out.slice(0, out.lastIndexOf(" ") + 1).trimEnd()
-    : out;
-  return trimmed.length >= MIN_CHARS ? trimmed : "";
+  // Byte-level BPE can leave a half-written trailing word; see suggestion.ts.
+  return finalizeSuggestion(out);
 }
 
 self.onmessage = async (event: MessageEvent) => {

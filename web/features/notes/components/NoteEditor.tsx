@@ -75,7 +75,7 @@ export default function NoteEditor({
           ...base,
           placeholders: {
             ...base.placeholders,
-            default: "Write, press / to insert, or Space to ask Dito",
+            default: "Write, press / to insert, or Space to ask Co-writer",
           },
         }
       })(),

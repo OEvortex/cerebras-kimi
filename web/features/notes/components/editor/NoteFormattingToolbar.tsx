@@ -95,7 +95,7 @@ export default function NoteFormattingToolbar({
         onClick={() => setPanel(panel === 'ai' ? null : 'ai')}
       >
         <Sparkles size={14} />
-        {"Ask Dito"}
+        {"Ask Co-writer"}
         <ChevronDown size={12} className="opacity-60" />
       </button>
       <button

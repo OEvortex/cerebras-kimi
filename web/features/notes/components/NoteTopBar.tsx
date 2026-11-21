@@ -192,7 +192,7 @@ export default function NoteTopBar({
         onClick={onToggleCompanion}
       >
         <Sparkles size={14} strokeWidth={1.8} />
-        {"Ask Dito"}
+        {"Ask Co-writer"}
       </button>
       <div ref={menu} className="relative">
         <Tooltip label={"More"} side="bottom" suppressed={open}>

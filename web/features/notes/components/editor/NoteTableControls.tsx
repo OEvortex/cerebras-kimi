@@ -215,7 +215,7 @@ export default function NoteTableControls({ editor }: { editor: NotesEditor }) {
         const cell = cells[index]
         if (!cell) return
         const target = Array.isArray(cell) ? newCellWithContent(cell) : cell
-        target.props = { ...(target.props || {}), backgroundColor: color }
+        target.props = { ...target.props, backgroundColor: color }
         cells[index] = target
       }
       if (menu === 'row') {
@@ -262,7 +262,6 @@ export default function NoteTableControls({ editor }: { editor: NotesEditor }) {
           changeTable((content, rows, columns) => {
             const index = (isRow ? position.row : position.column) + 1
             if (isRow) {
-              const cells = content.rows[position.row]?.cells || []
               content.rows.splice(index, 0, {
                 cells: Array.from({ length: columns }, () => newCell()),
               })
@@ -279,7 +278,6 @@ export default function NoteTableControls({ editor }: { editor: NotesEditor }) {
           changeTable((content, rows, columns) => {
             const index = isRow ? position.row : position.column
             if (isRow) {
-              const cells = content.rows[position.row]?.cells || []
               content.rows.splice(index, 0, {
                 cells: Array.from({ length: columns }, () => newCell()),
               })

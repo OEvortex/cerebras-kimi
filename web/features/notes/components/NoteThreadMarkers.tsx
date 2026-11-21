@@ -170,7 +170,7 @@ function AskOrb({ top, onAsk }: { top: number; onAsk: () => void }) {
     <button
       className="dt-note-ask-orb"
       style={{ top }}
-      aria-label={"Ask Dito about this line"}
+      aria-label={"Ask Co-writer about this line"}
       onMouseDown={e => e.preventDefault()}
       onClick={onAsk}
     >

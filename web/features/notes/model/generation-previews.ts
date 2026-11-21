@@ -1,5 +1,5 @@
 /**
- * What a learning block shows while Dito fills it.
+ * What a learning block shows while Co-writer fills it.
  *
  * The page decides (it knows which conversation is generating which block);
  * the block only reads. A store rather than DOM events because blocks render

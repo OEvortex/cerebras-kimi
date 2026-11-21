@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 
 /** What a learning block can be made into. One list for the insert menu, a
- *  block's own kind switcher and Dito's "generate here" menu, so the three
+ *  block's own kind switcher and Co-writer's "generate here" menu, so the three
  *  never offer different things. */
 export interface LearningKind {
   kind: string

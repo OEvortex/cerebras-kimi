@@ -1780,7 +1780,7 @@
   line-height: 1.6;
 }
 
-/* Selection toolbar: Dito first, then marks; every choice opens below. */
+/* Selection toolbar: Co-writer first, then marks; every choice opens below. */
 .dt-note-toolbar {
   gap: 1px;
   padding: 3px;

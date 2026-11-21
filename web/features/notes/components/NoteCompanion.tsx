@@ -1,6 +1,6 @@
 'use client'
 /**
- * Dito — a conversation held at one line of the page.
+ * Co-writer — a conversation held at one line of the page.
  *
  * The panel opens on a line (a selection, the line's own "ask" orb, a
  * learning block's Generate) and shows that line's conversation; closing it
@@ -10,7 +10,7 @@
  *
  * The transcript is the main chat's own component, since the conversation is
  * an ordinary session in the shared runtime. The composer is the notebook's:
- * on a page Dito explains, rewrites and makes learning material in place, so
+ * on a page Co-writer explains, rewrites and makes learning material in place, so
  * it offers that instead of chat's modes, skills and connectors.
  */
 import './note-companion.css'
@@ -177,7 +177,7 @@ export default function NoteCompanion(props: NoteCompanionProps) {
 function EmbeddedNotice({ pageId, onClose }: NoteCompanionProps) {
   
   return (
-    <aside className="dt-note-companion" aria-label={"Dito"}>
+    <aside className="dt-note-companion" aria-label={"Co-writer"}>
       <header className="dt-note-companion-head">
         <Sparkles
           size={15}
@@ -185,13 +185,13 @@ function EmbeddedNotice({ pageId, onClose }: NoteCompanionProps) {
           className="shrink-0 text-[var(--primary)]"
           aria-hidden
         />
-        <h2 className="flex-1">{"Dito"}</h2>
+        <h2 className="flex-1">{"Co-writer"}</h2>
         <button className="dt-note-icon-button" aria-label={"Close"} onClick={onClose}>
           <X size={16} strokeWidth={1.7} />
         </button>
       </header>
       <div className="dt-note-companion-welcome">
-        <p>{"Dito works beside the page in the notebook, so this conversation stays yours."}</p>
+        <p>{"Co-writer works beside the page in the notebook, so this conversation stays yours."}</p>
         <Link className="dt-note-companion-link" href={`/co-writer/${encodeURIComponent(pageId)}`}>
           {"Open in the notebook"} →
         </Link>
@@ -254,7 +254,7 @@ function ThreadPanel({
         block_id: anchorText === null ? '' : thread.blockId,
         markdown: message.content,
         blocks: block ? [block] : undefined,
-        explanation: "Dito",
+        explanation: "Co-writer",
       })
         .then(() => {
           onSuggestions()
@@ -349,7 +349,7 @@ function ThreadPanel({
   const [make, setMake] = useState<string | null>(thread.regenerate?.kind ?? null)
   const [again, setAgain] = useState(Boolean(thread.regenerate))
   return (
-    <aside className="dt-note-companion" aria-label={"Dito"}>
+    <aside className="dt-note-companion" aria-label={"Co-writer"}>
       <header className="dt-note-companion-head">
         <Sparkles
           size={15}
@@ -358,7 +358,7 @@ function ThreadPanel({
           aria-hidden
         />
         <div className="min-w-0 flex-1">
-          <h2 className="truncate">{current?.title || "Dito"}</h2>
+          <h2 className="truncate">{current?.title || "Co-writer"}</h2>
           <p>
             {streaming
               ? "Working…"
@@ -749,8 +749,8 @@ function ThreadComposer({
         rows={1}
         value={text}
         disabled={disabled}
-        aria-label={"Message Dito"}
-        placeholder={(target ? target.placeholder : awaitingUserReply ? 'Answer Dito…' : hasQuote ? 'Ask about the selection, or say how to change it…' : aboutCard ? 'Ask about this block, or say how to change it…' : 'Ask about this line, or tell Dito what to write…')}
+        aria-label={"Message Co-writer"}
+        placeholder={(target ? target.placeholder : awaitingUserReply ? 'Answer Co-writer…' : hasQuote ? 'Ask about the selection, or say how to change it…' : aboutCard ? 'Ask about this block, or say how to change it…' : 'Ask about this line, or tell Co-writer what to write…')}
         onChange={e => setText(e.target.value)}
         onKeyDown={e => {
           if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {

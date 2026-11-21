@@ -271,7 +271,7 @@ export default function CoWriterHomePage() {
       <PageHeader
         icon={PenLine}
         title={"Notebook"}
-        description={"Pages for what you are learning — write, link, and study them with Dito."}
+        description={"Pages for what you are learning — write, link, and study them with Co-writer."}
         action={
           <div className="flex shrink-0 items-center gap-2">
             <NoteReview />
@@ -309,7 +309,7 @@ export default function CoWriterHomePage() {
         <div className="dt-notes-empty">
           <span aria-hidden>📓</span>
           <h2>{"Your notebook is empty"}</h2>
-          <p>{"Start a page for a topic, a lecture or a paper. Dito can help you write and turn it into practice."}</p>
+          <p>{"Start a page for a topic, a lecture or a paper. Co-writer can help you write and turn it into practice."}</p>
           <div>
             <button
               type="button"

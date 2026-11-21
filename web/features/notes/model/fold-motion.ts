@@ -1,5 +1,5 @@
 /**
- * Closing Dito folds the conversation back into its orb on the line.
+ * Closing Co-writer folds the conversation back into its orb on the line.
  *
  * Three beats, all on the compositor (transform, opacity, filter): the panel
  * itself, cloned, collapses toward the orb and dissolves; a spark of light

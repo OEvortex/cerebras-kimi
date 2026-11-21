@@ -30,7 +30,7 @@ function lineKind(text: string): string {
   if (/^#{1,6}\s/.test(value)) return 'is-heading'
   if (/^[-*+]\s/.test(value)) return 'is-list'
   if (/^>\s?/.test(value)) return 'is-quote'
-  if (/^```/.test(value)) return 'is-code'
+  if (value.startsWith('```')) return 'is-code'
   return ''
 }
 

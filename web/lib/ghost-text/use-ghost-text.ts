@@ -27,6 +27,9 @@ function getWorker(): Worker {
       if (process.env.NODE_ENV !== "production") {
         console.warn("[ghost-text] worker error", event.message);
       }
+      // Drop the broken worker so the next ask() can spawn a fresh one;
+      // keeping it around used to kill ghost text until a page reload.
+      worker = null;
       for (const resolve of pending.values()) resolve("");
       pending.clear();
     };
@@ -41,10 +44,11 @@ function ask(text: string): Promise<string> {
   return new Promise((resolve) => {
     pending.set(id, resolve);
     w.postMessage({ type: "suggest", id, text });
-    // Never leave a caller hanging if the worker dies.
+    // Never leave a caller hanging if the worker dies. The first request has
+    // to load the 15 MB model + wasm runtime, so this has to be generous.
     setTimeout(() => {
       if (pending.delete(id)) resolve("");
-    }, 4000);
+    }, 15000);
   });
 }
 

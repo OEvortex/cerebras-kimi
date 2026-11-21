@@ -620,6 +620,7 @@ export default memo(function ChatComposer({
               <Tooltip label={ghostOn ? "Ghost text: on (Tab accepts)" : "Ghost text: off"}>
                 <button
                   type="button"
+                  aria-label={ghostOn ? "Ghost text: on (Tab accepts)" : "Ghost text: off"}
                   aria-pressed={ghostOn}
                   onClick={() => setGhostTextEnabled(!ghostOn)}
                   className={`flex size-8 items-center justify-center rounded-lg transition-colors ${

@@ -468,7 +468,7 @@ export default function NoteBlockPreview({
           </p>
           <small className="dt-note-preview-row">
             <Sparkles size={12} />
-            {"Dito suggests · you accept or dismiss"}
+            {"Co-writer suggests · you accept or dismiss"}
           </small>
         </div>
       )

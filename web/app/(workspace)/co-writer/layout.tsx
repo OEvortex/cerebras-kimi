@@ -2,7 +2,7 @@ import { GeogebraTabProvider } from "@/context/GeogebraTabContext";
 import { QuizFollowupProvider } from "@/context/QuizFollowupContext";
 
 /**
- * Dito, the note page's companion, is a conversation in the workspace-level
+ * Co-writer, the note page's companion, is a conversation in the workspace-level
  * chat runtime, so it needs the same viewer providers the reading companion
  * gets from its layout (quiz follow-ups, the GeoGebra tab).
  */

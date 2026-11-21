@@ -242,7 +242,7 @@ export default function useNoteEditorLifecycle({
           block_id: block.id,
           markdown: edited,
           blocks: replacement.length ? replacement : undefined,
-          explanation: 'Dito',
+          explanation: 'Co-writer',
         })
         onRefreshSuggestions?.()
         notify("Suggested an edit below your selection")

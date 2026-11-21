@@ -157,7 +157,7 @@ export default function useNoteSlashItems({
 
       const items: NoteMenuItem[] = [
         item(
-          'Ask Dito',
+          'Ask Co-writer',
           'Suggested',
           'Write, explain or improve this part of your note.',
           ['ai', 'generate', 'continue'],

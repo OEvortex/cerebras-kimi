@@ -1,5 +1,5 @@
 /* Notebook page chrome: a full-bleed document between an optional page tree
-   and the Dito companion. Text columns share one measure so the title, the
+   and the Co-writer companion. Text columns share one measure so the title, the
    blocks and the backlinks start on the same edge. */
 .dt-note-workspace {
   /* A Notion-like surface: a calm, near-neutral canvas, one sans-serif voice
@@ -1129,70 +1129,89 @@ button.dt-note-tree-toggle:hover {
   color: var(--foreground);
 }
 
-/* ---- Inline subpages (Notion-style child page links) ------------------ */
+/* ---- Inline subpages: a quiet list of child-page rows, like Notion ---- */
 .dt-note-subpages {
   max-width: var(--note-measure);
-  margin: 28px auto 0;
-  padding-top: 18px;
+  margin: 36px auto 0;
+  padding-top: 14px;
   border-top: 1px solid var(--border);
 }
 .dt-note-subpages-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
-}
-.dt-note-subpages-head h2 {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 600;
+  height: 28px;
+  margin-bottom: 4px;
+  padding: 0 6px;
+  font-size: 12.5px;
+  font-weight: 500;
   color: var(--muted-foreground);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 .dt-note-subpages-add {
-  border: none;
-  background: none;
-  padding: 2px 6px;
-  font-size: 12.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
   color: var(--muted-foreground);
+  font-size: 12.5px;
   cursor: pointer;
-  border-radius: 6px;
+  transition: background-color 120ms, color 120ms;
 }
-.dt-note-subpages-add:hover { color: var(--foreground); background: var(--accent, var(--secondary)); }
-.dt-note-subpages-add:disabled { opacity: 0.4; }
+.dt-note-subpages-add:hover {
+  background: var(--note-hover);
+  color: var(--foreground);
+}
+.dt-note-subpages-add:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 .dt-note-subpages-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
-.dt-note-subpage-card {
+.dt-note-subpage-row {
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--card, var(--background));
+  height: 34px;
+  padding: 0 8px;
+  border-radius: 6px;
   color: var(--foreground);
   text-decoration: none;
-  transition: border-color 120ms, background-color 120ms;
+  transition: background-color 120ms;
 }
-.dt-note-subpage-card:hover {
-  border-color: var(--primary);
-  background: var(--accent, var(--secondary));
+.dt-note-subpage-row:hover {
+  background: var(--note-hover);
 }
-.dt-note-subpage-icon { display: inline-flex; color: var(--muted-foreground); }
+.dt-note-subpage-icon {
+  display: inline-flex;
+  width: 18px;
+  justify-content: center;
+  color: var(--muted-foreground);
+}
 .dt-note-subpage-title {
   flex: 1;
   min-width: 0;
-  font-size: 13.5px;
-  font-weight: 500;
+  font-size: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.dt-note-subpage-arrow { color: var(--muted-foreground); flex-shrink: 0; }
+.dt-note-subpage-arrow {
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+  opacity: 0;
+  transition: opacity 120ms;
+}
+.dt-note-subpage-row:hover .dt-note-subpage-arrow,
+.dt-note-subpage-row:focus-visible .dt-note-subpage-arrow {
+  opacity: 1;
+}
 
 /* ---- Tree drag & drop -------------------------------------------------- */
 .dt-note-tree-row[draggable='true'] { cursor: grab; }

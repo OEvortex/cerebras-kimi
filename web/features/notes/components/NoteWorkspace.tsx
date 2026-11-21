@@ -1,5 +1,5 @@
 'use client'
-import { ChevronRight, FileText } from 'lucide-react'
+import { ChevronRight, FileText, Plus } from 'lucide-react'
 import dynamic from '@/shared/router/dynamic'
 import Link from '@/shared/router/link'
 import { useCallback, useEffect, useRef, useState, type ComponentType } from 'react'
@@ -904,14 +904,15 @@ export default function NoteWorkspace({
               {!!subpages.length && (
                 <section className="dt-note-subpages" aria-label={"Subpages"}>
                   <div className="dt-note-subpages-head">
-                    <h2>{"Subpages"}</h2>
+                    <span>{"Subpages"}</span>
                     <button
                       type="button"
                       className="dt-note-subpages-add"
                       disabled={mutating}
                       onClick={() => void createPage(docId)}
                     >
-                      {"+ New subpage"}
+                      <Plus size={13} strokeWidth={1.8} />
+                      {"New"}
                     </button>
                   </div>
                   <div className="dt-note-subpages-list">
@@ -919,11 +920,11 @@ export default function NoteWorkspace({
                       <Link
                         key={sub.id}
                         href={`/co-writer/${sub.id}`}
-                        className="dt-note-subpage-card"
+                        className="dt-note-subpage-row"
                         onClick={e => navigate(e, sub.id)}
                       >
                         <span className="dt-note-subpage-icon" aria-hidden>
-                          {sub.icon || <FileText size={16} strokeWidth={1.6} />}
+                          {sub.icon || <FileText size={15} strokeWidth={1.6} />}
                         </span>
                         <span className="dt-note-subpage-title">{sub.title || "Untitled"}</span>
                         <ChevronRight size={14} className="dt-note-subpage-arrow" aria-hidden />

@@ -10,7 +10,7 @@ import { AI_EDIT_MODES, streamSelectionEdit, type AiEditMode } from '@/lib/note-
  *
  * The model's rewrite never lands in the page directly: the result becomes a
  * suggestion on the page, so the learner accepts or dismisses it like any other
- * Dito proposal. The streamed draft is previewed here while it is written.
+ * Co-writer proposal. The streamed draft is previewed here while it is written.
  */
 export default function NoteAiEdit({
   selectedText,
