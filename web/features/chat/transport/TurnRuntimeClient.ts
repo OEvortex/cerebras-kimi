@@ -120,6 +120,7 @@ export class TurnRuntimeClient {
   private socket: TurnSocket | null = null;
   private reconnectHandle: unknown = null;
   private replayProbeHandle: unknown = null;
+  private lastReplayRequestAt = 0;
   private reconnectAttempt = 0;
   private generation = 0;
   private stopped = false;
@@ -568,6 +569,12 @@ export class TurnRuntimeClient {
 
   private requestReplay(): void {
     if (!this.turnId || this.terminalObserved || this.stopped) return;
+    // Gap recovery is per-event; without a floor, a burst of gapped frames
+    // POSTs one resume_from each. The in-flight replay already covers the
+    // cursor, so collapse requests that land close together.
+    const now = Date.now();
+    if (now - this.lastReplayRequestAt < 1_000) return;
+    this.lastReplayRequestAt = now;
     const cursor = { turnId: this.turnId, afterSeq: this.lastSeq };
     this.options.onReconcile?.(cursor);
     this.sendNow(buildResumeTurn(cursor));

@@ -138,6 +138,11 @@ class _ClientSession:
         self.queue: asyncio.Queue[dict[str, Any]] = asyncio.Queue(maxsize=MAX_QUEUE)
         self.last_seen = time.monotonic()
         self._tasks: set[asyncio.Task] = set()
+        # Turns this client already has a live pump for. Every subscribe used
+        # to stack another follower queue, so a reconnecting/resuming client
+        # multiplied its own event copies until the SSE queue overflowed and
+        # the client saw permanent seq gaps — which triggered more resumes.
+        self._following: set[str] = set()
 
     async def emit(self, frame: dict[str, Any]) -> None:
         try:
@@ -162,6 +167,13 @@ class _ClientSession:
         task = asyncio.create_task(coro)
         self._tasks.add(task)
         task.add_done_callback(self._tasks.discard)
+
+    def _follow_once(self, handle: Any, pump) -> None:
+        """Start ``pump`` for ``handle`` unless this client already follows it."""
+        if handle.turn_id in self._following:
+            return
+        self._following.add(handle.turn_id)
+        self._spawn(pump(handle))
 
     # -- command dispatch ----------------------------------------------------
 
@@ -201,7 +213,7 @@ class _ClientSession:
             await self.hub.runtime._emit(handle, session_event)
             await self.emit(session_event)
         await self.ack(command, handle.turn_id, True)
-        self._spawn(self._pump_raw(handle))
+        self._follow_once(handle, self._pump_raw)
 
     async def _cancel_turn(self, command: dict[str, Any]) -> None:
         turn_id = str(command.get("turn_id") or "")
@@ -244,7 +256,10 @@ class _ClientSession:
 
     async def _subscribe_turn(self, command: dict[str, Any]) -> None:
         turn_id = str(command.get("turn_id") or "")
-        after_seq = int(command.get("after_seq") or 0)
+        # ``resume_from`` carries the cursor as ``seq``; ``subscribe_turn``
+        # uses ``after_seq``. Reading only one made every resume replay the
+        # whole turn history.
+        after_seq = int(command.get("after_seq") or command.get("seq") or 0)
         if not turn_id:
             await self.emit({"type": "protocol_error", "protocol_version": "2.0",
                              "error_code": "invalid_params", "message": "turn_id required",
@@ -254,7 +269,7 @@ class _ClientSession:
             await self.emit(event)
         handle = self.hub.runtime.get_turn(turn_id)
         if handle is not None and handle.status == "running":
-            self._spawn(self._follow_turn(handle))
+            self._follow_once(handle, self._follow_turn)
         await self.ack(command, turn_id, True)
 
     async def _subscribe_session(self, command: dict[str, Any]) -> None:
@@ -273,7 +288,8 @@ class _ClientSession:
             return
         for event in self.hub.runtime.turn_events_after(handle.turn_id, after_seq):
             await self.emit(event)
-        self._spawn(self._follow_turn(handle))
+        if handle.status == "running":
+            self._follow_once(handle, self._follow_turn)
         await self.ack(command, handle.turn_id, True)
 
     async def _check_active(self, command: dict[str, Any]) -> None:
@@ -357,6 +373,7 @@ class _ClientSession:
                     return
         finally:
             handle.subscribers.discard(queue)
+            self._following.discard(handle.turn_id)
 
     async def _follow_turn(self, handle: Any) -> None:
         """Forward a running turn's raw events to a late subscriber."""
@@ -371,6 +388,7 @@ class _ClientSession:
                     return
         finally:
             handle.subscribers.discard(queue)
+            self._following.discard(handle.turn_id)
 
     # -- legacy feature channels ---------------------------------------------
 

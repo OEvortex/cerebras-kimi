@@ -1,5 +1,9 @@
 {
     "vtx.implicitContext.enabled": true,
     "vtx.defaultMode": "bypass",
-    "vtx.defaultModel": "kilo:reflection/beam-free"
+    "vtx.defaultModel": "kilo:reflection/beam-free",
+    "devin.defaultModel": "swe-2-flash-medium",
+    "devin.defaultThoughtLevel": "high",
+    "devin.defaultSpeed": "standard",
+    "devin.defaultMode": "bypass"
 }
