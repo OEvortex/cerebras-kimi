@@ -1,10 +1,8 @@
-"""The chat title is generated *after* the turn, never inside it.
+"""The chat title is generated asynchronously in parallel with the turn.
 
-Awaiting the title call before `done` made every first turn wait on a
-third-party endpoint — up to the HTTP timeout after the answer was already on
-screen. These tests pin the contract callers depend on: the turn is not held,
-the client still receives the title as a `session_meta` frame once it lands, and
-the pump's `settled` signal always fires so no event stream is left hanging.
+The title request runs non-blocking in the background from the user's message
+and emits `session_meta` as soon as it resolves (without waiting for the
+turn to complete or holding up assistant generation).
 """
 
 import asyncio
@@ -40,7 +38,7 @@ def _session():
     return {"id": "sess_1", "title": "Untitled", "title_auto": True, "turns": {}}
 
 
-def test_title_runs_off_the_turn_and_renders_as_a_late_frame(tmp_path, monkeypatch):
+def test_title_runs_non_blocking_and_emits_immediately(tmp_path, monkeypatch):
     runtime, store = _runtime(tmp_path)
     handle = _handle()
     session = _session()
@@ -55,8 +53,8 @@ def test_title_runs_off_the_turn_and_renders_as_a_late_frame(tmp_path, monkeypat
     monkeypatch.setattr("app.services.title_gen.generate_title", fake_generate)
 
     async def scenario():
-        runtime._spawn_title_update(
-            handle, session, {"content": "make me notes on pn junction"}, "holes…"
+        task = runtime._start_title_request(
+            handle, session, "make me notes on pn junction"
         )
         # The turn is not waiting on the title endpoint.
         assert not handle.settled.is_set()
@@ -66,7 +64,8 @@ def test_title_runs_off_the_turn_and_renders_as_a_late_frame(tmp_path, monkeypat
         assert session["title_auto"] is False
         await started.wait()
         release.set()
-        await asyncio.wait_for(handle.settled.wait(), timeout=5)
+        await task
+        assert handle.settled.is_set()
 
     asyncio.run(scenario())
 
@@ -87,8 +86,9 @@ def test_a_dead_title_endpoint_never_blocks_or_retries(tmp_path, monkeypatch):
     monkeypatch.setattr("app.services.title_gen.generate_title", broken)
 
     async def scenario():
-        runtime._spawn_title_update(handle, session, {"content": "hi"}, "")
-        await asyncio.wait_for(handle.settled.wait(), timeout=5)
+        task = runtime._start_title_request(handle, session, "hi")
+        await task
+        assert handle.settled.is_set()
 
     asyncio.run(scenario())
 
@@ -103,8 +103,6 @@ def test_no_title_work_leaves_the_pump_free_to_close(tmp_path):
     runtime, _store = _runtime(tmp_path)
     session = {"id": "sess_1", "title": "Named by the learner", "turns": {}}
     assert not session.get("title_auto")
-    # Nothing was spawned, so the runtime must have signalled the pump itself:
-    # this mirrors the branch in the turn epilogue.
     handle = _handle()
     handle.settled.set()
     assert handle.settled.is_set()

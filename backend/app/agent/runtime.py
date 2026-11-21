@@ -443,13 +443,12 @@ class AgentRuntime:
             metadata={"session_id": session["id"], "turn_id": turn_id},
         )
 
-        # Fire the title request now, in parallel with the turn: it only
-        # needs the user's first message, so by the time ``done`` lands the
-        # HTTP call has usually already finished and publishing costs nothing.
-        # ``title_auto`` stays set until the turn completes — a failed or
-        # cancelled first turn must not consume the one-shot title attempt.
+        # Fire the title request now in the background: it generates the title
+        # asynchronously from the user's first message and emits `session_meta`
+        # as soon as it resolves, without blocking or waiting for the assistant's
+        # turn to complete.
         if session.get("title_auto"):
-            handle.title_task = self._start_title_request(content)
+            handle.title_task = self._start_title_request(handle, session, content)
 
         # Tools that need to know who is asking (cron) read these; the turn
         # task copies this context, so each turn sees only its own values.
@@ -880,92 +879,54 @@ class AgentRuntime:
         # Persist the recorded turn (incl. done) before the done callback drops
         # the in-memory handle — replay must find these frames in the store.
         self._finalize_turn(handle, session, status)
-        # Publish the title only now, so its frame can never precede ``done``
-        # (the request itself already ran in parallel since turn start).
-        # Everything else marks the turn settled here: a pump waiting on it
-        # must not sit idle for a turn that will never publish anything.
-        if status == "completed" and session.get("title_auto"):
-            self._spawn_title_update(handle, session, user_message, assistant_text)
-        else:
-            handle.settled.set()
+        handle.settled.set()
         return True
 
-    def _start_title_request(self, user_text: str) -> asyncio.Task[str | None]:
-        """Kick off title generation without blocking the turn.
+    def _start_title_request(
+        self,
+        handle: TurnHandle,
+        session: dict[str, Any],
+        user_text: str,
+    ) -> asyncio.Task[str | None]:
+        """Kick off title generation asynchronously without blocking the turn.
 
-        Called at turn start so the request overlaps the assistant reply;
-        the title is published after ``done`` by ``_update_title``.
+        Called at turn start so the title is generated concurrently from the
+        user's prompt and emitted as a `session_meta` frame as soon as ready,
+        without waiting for the assistant turn to complete.
         """
-        from ..services.title_gen import generate_title
-
+        session["title_auto"] = False
         task = asyncio.create_task(
-            generate_title(user_text, settings=self._settings)
+            self._generate_and_emit_title(handle, session, user_text)
         )
         self._background_tasks.add(task)
         task.add_done_callback(self._background_tasks.discard)
         return task
 
-    def _spawn_title_update(
+    async def _generate_and_emit_title(
         self,
         handle: TurnHandle,
         session: dict[str, Any],
-        user_message: dict[str, Any],
-        assistant_text: str,
-    ) -> None:
-        """Publish the conversation title once the first turn completes.
+        user_text: str,
+    ) -> str | None:
+        """Generate title asynchronously and emit session_meta immediately."""
+        from ..services.title_gen import generate_title
 
-        The request itself was fired at turn start (``handle.title_task``),
-        so this usually just awaits an already-finished call. It runs as its
-        own task either way: ``done`` reaches the client immediately, the
-        title arrives a moment later as a ``session_meta`` frame, and the
-        pumps keep the socket open on ``handle.settled`` until the attempt
-        finishes either way.
-        """
-        task = asyncio.create_task(
-            self._update_title(handle, session, user_message, assistant_text)
-        )
-        # Claim the attempt synchronously: a second turn that starts before this
-        # task is scheduled must not spawn a rival call (or reset the flag).
-        session["title_auto"] = False
-        self._background_tasks.add(task)
-        task.add_done_callback(self._background_tasks.discard)
-
-    async def _update_title(
-        self,
-        handle: TurnHandle,
-        session: dict[str, Any],
-        user_message: dict[str, Any],
-        assistant_text: str,
-    ) -> None:
-        """Replace the placeholder title once the first turn completes, then
-        push it to the client as a ``session_meta`` frame.
-
-        The attempt is one-shot per session — a dead title endpoint must not
-        add latency to every later turn. The event is emitted before the save
-        so ``record_turn_event`` can persist it with the rest of the turn.
-        """
         try:
-            early = handle.title_task
-            if early is not None:
-                # Fired at turn start with the user's message only; by now it
-                # has almost always already resolved.
-                title = await early
-            else:
-                from ..services.title_gen import generate_title
-
-                title = await generate_title(
-                    str(user_message.get("content") or ""),
-                    assistant_text,
-                    settings=self._settings,
-                )
+            title = await generate_title(user_text, settings=self._settings)
             if not title:
-                return
+                return None
             session["title"] = title
-            await self._emit(handle, self._stream_event(
-                handle, "session_meta", metadata={"title": title}))
+            await self._emit(
+                handle,
+                self._stream_event(
+                    handle, "session_meta", metadata={"title": title}
+                ),
+            )
             self._store.save(session)
+            return title
         except Exception:  # noqa: BLE001
             log.warning("chat title update failed", exc_info=True)
+            return None
         finally:
             handle.settled.set()
 
