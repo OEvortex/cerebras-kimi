@@ -91,3 +91,10 @@ describe('parseNoteMarkdown with noteui fences', () => {
     expect(types(blocks)).not.toContain('callout')
   })
 })
+
+it('compiles SearchImage and WikiImage to query image blocks', () => {
+  const blocks = compileNoteui('Page([SearchImage("eiffel tower", "T"), WikiImage("Eiffel Tower")])')
+  expect(blocks[0].type).toBe('image')
+  expect(blocks[0].props).toMatchObject({ query: 'eiffel tower', via: 'search', caption: 'T' })
+  expect(blocks[1].props).toMatchObject({ query: 'Eiffel Tower', via: 'wiki' })
+})

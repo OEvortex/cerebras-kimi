@@ -150,3 +150,28 @@ def test_dsl_serializer_covers_all_valid_types():
     dsl = blocks_to_dsl(blocks)
     rebuilt = validate_blocks(coarse_markdown_to_blocks("````noteui\n" + dsl + "\n````"))
     assert types(rebuilt) == ["paragraph", "noteUpload", "webCard", "taskView"]
+
+
+def test_search_image_compiles_to_query_block():
+    blocks = compile_noteui('Page([SearchImage("eiffel tower", "The tower")])')
+    assert blocks[0]["type"] == "image"
+    props = blocks[0]["props"]
+    assert props["query"] == "eiffel tower"
+    assert props["via"] == "search"
+    assert props["caption"] == "The tower"
+    assert "url" not in props
+
+
+def test_wiki_image_compiles_and_serializes_back():
+    blocks = compile_noteui('Page([WikiImage("Eiffel Tower")])')
+    props = blocks[0]["props"]
+    assert props["via"] == "wiki"
+    dsl = blocks_to_dsl(blocks)
+    assert "WikiImage(" in dsl
+
+
+def test_search_image_rejects_empty_query():
+    import pytest
+
+    with pytest.raises(NoteUIError):
+        compile_noteui('Page([SearchImage("")])')

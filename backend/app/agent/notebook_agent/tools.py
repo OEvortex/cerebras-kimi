@@ -23,6 +23,7 @@ from vtx.protocol.types import ToolResult
 from ...services.documents.blocks import (
     blocks_to_markdown,
     coarse_markdown_to_blocks,
+    resolve_image_queries,
     walk_blocks,
 )
 from ...services.documents.storage import (
@@ -420,6 +421,8 @@ class NbPatchTool(BaseTool):
                         if re.search(r"^\s*`{3,}(noteui|nb|note)\b", create_content, re.M)
                         else None
                     )
+                    if create_blocks:
+                        await resolve_image_queries(create_blocks)
                     doc = storage.create_document(
                         title=target["title"] or None,
                         content=create_content,
@@ -434,11 +437,13 @@ class NbPatchTool(BaseTool):
                     continue  # folded into its create op
                 doc = doc_or_entry
                 if op.op == "update":
+                    new_blocks = coarse_markdown_to_blocks(payload)
+                    await resolve_image_queries(new_blocks)
                     for _attempt in range(2):
                         try:
                             storage.update_document(
                                 doc.id,
-                                blocks=coarse_markdown_to_blocks(payload),
+                                blocks=new_blocks,
                                 expected_revision=doc.revision,
                             )
                             break

@@ -664,6 +664,19 @@ def _c_media(kind):
     return build
 
 
+def _c_search_image(via: str):
+    def build(args, children):
+        _require_no_children(children, "SearchImage" if via == "search" else "WikiImage")
+        query = str(args[0]) if args else ""
+        if not query.strip():
+            raise NoteUIError("SearchImage/WikiImage need a non-empty query")
+        props: dict[str, Any] = {"query": query, "via": via}
+        if len(args) > 1:
+            props["caption"] = str(args[1])
+        return [_blk("image", props=props)]
+    return build
+
+
 def _c_table(args, children):
     _require_no_children(children, "Table")
     rows = args[0] if args else []
@@ -794,6 +807,8 @@ _COMPONENTS: dict[str, Callable[[list[Any], list[dict] | None], list[dict]]] = {
     "Divider": _c_divider,
     "Math": _c_math,
     "Image": _c_media("image"),
+    "SearchImage": _c_search_image("search"),
+    "WikiImage": _c_search_image("wiki"),
     "Video": _c_media("video"),
     "Audio": _c_media("audio"),
     "File": _c_media("file"),
@@ -1392,6 +1407,9 @@ def block_to_dsl(block: dict[str, Any]) -> str:
         formula = props.get("formula") or text()
         return f"Math({_dsl_str(formula)})"
     if kind == "image":
+        if props.get("query"):
+            name = "WikiImage" if props.get("via") == "wiki" else "SearchImage"
+            return f"{name}({_dsl_str(props['query'])}, {_dsl_str(props.get('caption', ''))})"
         return f"Image({_dsl_str(props.get('url', ''))}, {_dsl_str(props.get('caption', ''))})"
     if kind == "video":
         return f"Video({_dsl_str(props.get('url', ''))}, {_dsl_str(props.get('caption', ''))})"

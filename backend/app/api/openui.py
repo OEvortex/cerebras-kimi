@@ -231,6 +231,54 @@ def _photo_key(url: str) -> str:
     return re.sub(r"^\d+px-", "", filename)
 
 
+async def wiki_photos(title: str) -> dict[str, Any]:
+    """Lead + media-list photos and coordinates for an exact article title."""
+    encoded = quote(title.replace(" ", "_"), safe="")
+    async with httpx.AsyncClient(timeout=8.0) as client:
+        summary, media = await asyncio.gather(
+            _wiki_get(
+                client,
+                f"https://en.wikipedia.org/api/rest_v1/page/summary/{encoded}",
+            ),
+            _wiki_get(
+                client,
+                f"https://en.wikipedia.org/api/rest_v1/page/media-list/{encoded}",
+            ),
+        )
+    photos: list[str] = []
+    seen_keys: set[str] = set()
+    lead = (summary.get("thumbnail") or {}).get("source")
+    if lead:
+        photos.append(lead)
+        seen_keys.add(_photo_key(lead))
+    for item in media.get("items") or []:
+        srcset = item.get("srcset") or []
+        if item.get("type") != "image" or not srcset:
+            continue
+        src = str(srcset[0].get("src") or "")
+        if not src or _SKIP_WIKI_RE.search(src):
+            continue
+        url = f"https:{src}" if src.startswith("//") else src
+        k = _photo_key(url)
+        if k not in seen_keys:
+            photos.append(url)
+            seen_keys.add(k)
+        if len(photos) >= 3:
+            break
+    coords = summary.get("coordinates") or {}
+    info: dict[str, Any] = {"photos": photos}
+    if coords.get("lat") is not None:
+        info["lat"] = coords["lat"]
+    if coords.get("lon") is not None:
+        info["lng"] = coords["lon"]
+    return info
+
+
+async def search_images(query: str) -> list[str]:
+    """Fuzzy image URLs for a free-text query (Wikipedia + Commons)."""
+    return await _search_images(query)
+
+
 @router.get("/wiki")
 async def wiki_lookup(title: str = Query(default="")) -> JSONResponse:
     cleaned = title.strip()
@@ -240,45 +288,8 @@ async def wiki_lookup(title: str = Query(default="")) -> JSONResponse:
         )
     info = _wiki_cache.get(cleaned)
     if info is None:
-        encoded = quote(cleaned.replace(" ", "_"), safe="")
         try:
-            async with httpx.AsyncClient(timeout=8.0) as client:
-                summary, media = await asyncio.gather(
-                    _wiki_get(
-                        client,
-                        f"https://en.wikipedia.org/api/rest_v1/page/summary/{encoded}",
-                    ),
-                    _wiki_get(
-                        client,
-                        f"https://en.wikipedia.org/api/rest_v1/page/media-list/{encoded}",
-                    ),
-                )
-            photos: list[str] = []
-            seen_keys: set[str] = set()
-            lead = (summary.get("thumbnail") or {}).get("source")
-            if lead:
-                photos.append(lead)
-                seen_keys.add(_photo_key(lead))
-            for item in media.get("items") or []:
-                srcset = item.get("srcset") or []
-                if item.get("type") != "image" or not srcset:
-                    continue
-                src = str(srcset[0].get("src") or "")
-                if not src or _SKIP_WIKI_RE.search(src):
-                    continue
-                url = f"https:{src}" if src.startswith("//") else src
-                k = _photo_key(url)
-                if k not in seen_keys:
-                    photos.append(url)
-                    seen_keys.add(k)
-                if len(photos) >= 3:
-                    break
-            coords = summary.get("coordinates") or {}
-            info = {"photos": photos}
-            if coords.get("lat") is not None:
-                info["lat"] = coords["lat"]
-            if coords.get("lon") is not None:
-                info["lng"] = coords["lon"]
+            info = await wiki_photos(cleaned)
             _wiki_cache.set(cleaned, info)
         except Exception:  # noqa: BLE001
             return JSONResponse(

@@ -603,6 +603,8 @@ const COMPONENTS: Record<string, Builder> = {
     return [blk('mathBlock', {}, joinText(args))]
   },
   Image: media('image'),
+  SearchImage: searchImage('search', 'SearchImage'),
+  WikiImage: searchImage('wiki', 'WikiImage'),
   Video: media('video'),
   Audio: media('audio'),
   File: media('file'),
@@ -708,6 +710,20 @@ function media(kind: string): Builder {
     if (kind === 'file') props.name = String(args[1] ?? '')
     else if (args.length > 1) props.caption = String(args[1])
     return [blk(kind, props)]
+  }
+}
+
+// SearchImage/WikiImage compile to image blocks carrying a `query` (and `via`)
+// prop; the backend patch path resolves `url` at write time. Previews keep the
+// query so a renderer can resolve lazily.
+function searchImage(via: 'search' | 'wiki', name: string): Builder {
+  return (args, children) => {
+    noChildren(children, name)
+    const query = String(args[0] ?? '')
+    if (!query.trim()) throw new NoteUIError(`${name} needs a non-empty query`)
+    const props: Record<string, unknown> = { query, via }
+    if (args.length > 1) props.caption = String(args[1])
+    return [blk('image', props)]
   }
 }
 

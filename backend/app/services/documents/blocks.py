@@ -642,3 +642,41 @@ def walk_blocks(blocks):
     for block in blocks or []:
         yield block
         yield from walk_blocks(block.get("children", []))
+
+
+async def resolve_image_queries(blocks: list[dict[str, Any]]) -> None:
+    """Fill ``url`` on image blocks that carry a NoteUI ``query`` prop.
+
+    ``SearchImage``/``WikiImage`` compile to image blocks with ``query`` (and
+    ``via``) instead of a URL; the patch path resolves them once so the stored
+    document keeps a stable link. Failures leave the block query-only — the
+    frontend preview resolves lazily at render time.
+    """
+    targets = [
+        b
+        for b in walk_blocks(blocks)
+        if b.get("type") == "image"
+        and isinstance(b.get("props"), dict)
+        and b["props"].get("query")
+        and not b["props"].get("url")
+    ]
+    if not targets:
+        return
+    from ...api.openui import search_images, wiki_photos
+
+    async def one(props: dict[str, Any]) -> None:
+        query = str(props["query"]).strip()
+        try:
+            if props.get("via") == "wiki":
+                info = await wiki_photos(query)
+                url = (info.get("photos") or [None])[0]
+            else:
+                url = (await search_images(query) or [None])[0]
+        except Exception:  # noqa: BLE001 - resolution is best-effort
+            url = None
+        if url:
+            props["url"] = url
+
+    import asyncio
+
+    await asyncio.gather(*(one(b["props"]) for b in targets))
