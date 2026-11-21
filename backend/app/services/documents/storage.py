@@ -583,20 +583,39 @@ class CoWriterStorage:
                 refresh_review_anchors(self, doc_id, blocks, previous_blocks)
             return document
 
-    def delete_document(self, doc_id: str) -> bool:
+    def delete_document(self, doc_id: str, cascade: bool = False) -> bool:
         with self.locked():
             document = self.load_document(doc_id)
             if document is None:
                 return False
-            # Preserve children by promoting them to the deleted page's parent.
-            for summary in self.list_documents():
-                if summary.parent_id == doc_id:
-                    child = self.load_document(summary.id)
-                    if child is None:
-                        continue
-                    child.parent_id = document.parent_id
-                    child.revision += 1
-                    self._write(child, source="move")
+            if cascade:
+                # Delete the whole subtree: collect descendants first, then
+                # remove each page with its extras/assets/versions.
+                doomed = {doc_id}
+                frontier = [doc_id]
+                while frontier:
+                    current = frontier.pop()
+                    for summary in self.list_documents():
+                        if summary.parent_id == current and summary.id not in doomed:
+                            doomed.add(summary.id)
+                            frontier.append(summary.id)
+                doomed.discard(doc_id)
+                for child_id in doomed:
+                    with database.connect(self._settings) as connection:
+                        connection.execute("DELETE FROM documents WHERE id = ?", (child_id,))
+                        connection.execute("DELETE FROM doc_extras WHERE doc_id = ?", (child_id,))
+                        connection.execute("DELETE FROM doc_assets WHERE doc_id = ?", (child_id,))
+                        connection.execute("DELETE FROM document_versions WHERE doc_id = ?", (child_id,))
+            else:
+                # Preserve children by promoting them to the deleted page's parent.
+                for summary in self.list_documents():
+                    if summary.parent_id == doc_id:
+                        child = self.load_document(summary.id)
+                        if child is None:
+                            continue
+                        child.parent_id = document.parent_id
+                        child.revision += 1
+                        self._write(child, source="move")
             with database.connect(self._settings) as connection:
                 connection.execute("DELETE FROM documents WHERE id = ?", (doc_id,))
                 connection.execute("DELETE FROM doc_extras WHERE doc_id = ?", (doc_id,))

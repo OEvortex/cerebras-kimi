@@ -275,7 +275,7 @@ class NbPatchTool(BaseTool):
         "Apply page edits atomically, apply_patch style. ops: 'update' (page + "
         "edits[] or old/new/replace_all — exact-match Markdown edits), 'create' "
         "(page = new page title, content = body, parent = parent page title/id), "
-        "'delete' (page), 'move' (page + parent and/or new_title). All ops are "
+        "'delete' (page — deletes the page and all its subpages), 'move' (page + parent and/or new_title). All ops are "
         "validated first; any failure writes nothing. Pages created earlier in "
         "the same patch can be referenced by title."
     )
@@ -389,6 +389,19 @@ class NbPatchTool(BaseTool):
                     plan.append((op, (kind, target, parent)))
                 else:  # delete
                     if kind == "virtual":
+                        # Cascade through virtual children created in this patch.
+                        doomed_titles = {target["title"].lower()}
+                        changed = True
+                        while changed:
+                            changed = False
+                            for entry in virtual.values():
+                                if entry["deleted"]:
+                                    continue
+                                parent = entry.get("parent")
+                                if parent and parent[0] == "virtual" and parent[1]["title"].lower() in doomed_titles:
+                                    entry["deleted"] = True
+                                    doomed_titles.add(entry["title"].lower())
+                                    changed = True
                         target["deleted"] = True
                     plan.append((op, (kind, target, None)))
             except Exception as exc:  # noqa: BLE001
@@ -463,7 +476,7 @@ class NbPatchTool(BaseTool):
                         storage.update_document(doc.id, **kwargs)
                     results.append(f'moved "{doc.title}" ({doc.id})')
                 else:
-                    storage.delete_document(doc.id)
+                    storage.delete_document(doc.id, cascade=True)
                     results.append(f'deleted "{doc.title}" ({doc.id})')
             except Exception as exc:  # noqa: BLE001
                 return _fail(
